@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConsultaJá! — Painel do Médico</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0C110E;
+  --ink2:#2A332C;
+  --muted:#6B7870;
+  --green:#0A6640;
+  --green2:#0D8A55;
+  --green3:#12B870;
+  --pale:#EBF7F1;
+  --pale2:#D4EFE2;
+  --white:#F7FAF8;
+  --border:#D8E8DF;
+  --chat-bg:#F0F9F4;
+  --danger:#DC2626;
+  --danger-bg:#FEF2F2;
+  --warning:#D97706;
+  --warning-bg:#FFFBEB;
+  --success:#059669;
+  --success-bg:#ECFDF5;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--ink);line-height:1.6;overflow:hidden;height:100vh}
+
+/* ── LOGIN ── */
+.login-screen{
+  position:fixed;inset:0;z-index:200;
+  background:var(--white);
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity .4s,visibility .4s;
+}
+.login-screen.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.login-card{
+  width:100%;max-width:400px;padding:48px 40px;
+  background:#fff;border:1px solid var(--border);
+  border-radius:24px;
+  box-shadow:0 24px 60px rgba(10,102,64,.08);
+}
+.login-logo{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:24px;font-weight:800;color:var(--ink);
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:8px;
+}
+.login-logo .dot{
+  width:10px;height:10px;border-radius:50%;
+  background:var(--green3);
+}
+.login-subtitle{font-size:14px;color:var(--muted);margin-bottom:32px}
+.login-label{
+  font-size:12px;font-weight:600;color:var(--ink2);
+  letter-spacing:.5px;text-transform:uppercase;
+  margin-bottom:6px;display:block;
+}
+.login-input{
+  width:100%;padding:12px 16px;
+  border:1.5px solid var(--border);border-radius:12px;
+  font-family:'DM Sans',sans-serif;font-size:15px;
+  background:#fff;color:var(--ink);
+  outline:none;transition:border-color .2s;
+  margin-bottom:20px;
+}
+.login-input:focus{border-color:var(--green)}
+.login-input::placeholder{color:var(--muted)}
+.login-btn{
+  width:100%;padding:14px;
+  background:var(--green);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;
+  border:none;border-radius:100px;cursor:pointer;
+  transition:background .2s;
+}
+.login-btn:hover{background:var(--green2)}
+.login-btn:disabled{opacity:.5;cursor:not-allowed}
+.login-error{
+  font-size:13px;color:var(--danger);
+  margin-bottom:16px;display:none;
+}
+.login-error.show{display:block}
+
+/* ── DASHBOARD LAYOUT ── */
+.dashboard{
+  display:grid;
+  grid-template-columns:300px minmax(0,1fr);
+  grid-template-rows:60px minmax(0,1fr);
+  height:100vh;
+  opacity:0;pointer-events:none;
+  transition:opacity .4s;
+}
+.dashboard.active{opacity:1;pointer-events:auto}
+
+/* ── TOPBAR ── */
+.topbar{
+  grid-column:1/-1;
+  background:#fff;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;
+}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-logo{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:18px;font-weight:800;color:var(--ink);
+  display:flex;align-items:center;gap:8px;
+}
+.topbar-logo .dot{width:8px;height:8px;border-radius:50%;background:var(--green3);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.topbar-badge{
+  font-size:11px;color:var(--green);
+  background:var(--pale);border:1px solid var(--pale2);
+  padding:3px 10px;border-radius:100px;
+  font-weight:500;
+}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.topbar-status{
+  display:flex;align-items:center;gap:6px;
+  font-size:13px;color:var(--green);font-weight:500;
+}
+.topbar-status .dot{width:7px;height:7px;border-radius:50%;background:var(--green3);animation:blink 2s infinite}
+.topbar-user{
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;color:var(--ink2);
+}
+.topbar-avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--green);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:11px;font-weight:700;
+}
+.btn-logout{
+  font-size:12px;color:var(--muted);
+  background:none;border:1px solid var(--border);
+  padding:6px 14px;border-radius:100px;
+  cursor:pointer;font-family:'DM Sans',sans-serif;
+  transition:border-color .2s,color .2s;
+}
+.btn-logout:hover{border-color:var(--danger);color:var(--danger)}
+
+/* VIDaaS button */
+.btn-vidaas{
+  font-size:12px;font-weight:600;
+  background:var(--warning-bg);color:var(--warning);
+  border:1px solid #fde68a;
+  padding:6px 14px;border-radius:100px;
+  cursor:pointer;font-family:'DM Sans',sans-serif;
+  display:flex;align-items:center;gap:6px;
+  transition:all .2s;
+}
+.btn-vidaas:hover{background:#fde68a}
+.btn-vidaas.active-sig{
+  background:var(--success-bg);color:var(--success);
+  border-color:#a7f3d0;cursor:default;
+}
+.btn-vidaas.active-sig:hover{background:var(--success-bg)}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  background:#fff;
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.sidebar-header{
+  padding:20px 20px 16px;
+  border-bottom:1px solid var(--border);
+}
+.sidebar-title{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:14px;font-weight:700;color:var(--ink);
+  margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;
+}
+.sidebar-count{
+  font-size:11px;color:#fff;
+  background:var(--green);
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;
+}
+.sidebar-tabs{
+  display:flex;gap:4px;
+}
+.sidebar-tab{
+  flex:1;padding:7px 0;
+  font-size:11px;font-weight:600;text-align:center;
+  color:var(--muted);background:var(--white);
+  border:1px solid var(--border);border-radius:8px;
+  cursor:pointer;font-family:'DM Sans',sans-serif;
+  transition:all .2s;
+}
+.sidebar-tab.active{
+  background:var(--green);color:#fff;border-color:var(--green);
+}
+
+.sidebar-list{
+  flex:1;overflow-y:auto;
+  padding:12px;
+  display:flex;flex-direction:column;gap:6px;
+}
+
+.patient-card{
+  padding:14px 14px;
+  border-radius:14px;
+  border:1.5px solid transparent;
+  cursor:pointer;
+  transition:all .2s;
+  position:relative;
+}
+.patient-card:hover{background:var(--pale)}
+.patient-card.active{
+  background:var(--pale);
+  border-color:var(--green);
+}
+.patient-card.unread::before{
+  content:'';position:absolute;top:16px;left:6px;
+  width:6px;height:6px;border-radius:50%;
+  background:var(--green3);
+}
+.patient-name{
+  font-size:14px;font-weight:600;color:var(--ink);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.patient-time{font-size:10px;color:var(--muted);font-weight:400}
+.patient-queixa{
+  font-size:12px;color:var(--muted);
+  margin-top:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.patient-status{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;font-weight:600;
+  padding:2px 8px;border-radius:100px;
+  margin-top:6px;
+}
+.st-aguardando{background:var(--danger-bg);color:var(--danger)}
+.st-em_atendimento{background:var(--warning-bg);color:var(--warning)}
+.st-soap_gerado{background:var(--pale);color:var(--green)}
+.st-concluida{background:var(--success-bg);color:var(--success)}
+
+.sidebar-stats{
+  padding:16px 20px;
+  border-top:1px solid var(--border);
+  display:flex;gap:24px;
+}
+.sidebar-stat-val{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:20px;font-weight:800;color:var(--ink);
+}
+.sidebar-stat-label{font-size:10px;color:var(--muted);font-weight:500;letter-spacing:.3px}
+
+/* ── MAIN AREA ── */
+.main{
+  display:flex;flex-direction:column;
+  background:var(--chat-bg);
+  position:relative;
+  overflow:hidden;
+  min-height:0;
+}
+
+/* Empty state */
+.empty-state{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:12px;color:var(--muted);
+}
+.empty-state svg{opacity:.3}
+.empty-state p{font-size:15px}
+.empty-state small{font-size:12px;color:var(--border)}
+
+/* Chat header */
+.chat-header{
+  padding:14px 24px;
+  background:#fff;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.chat-patient-info{display:flex;align-items:center;gap:12px}
+.chat-avatar{
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:14px;font-weight:700;color:#fff;
+}
+.chat-patient-name{font-size:15px;font-weight:600;color:var(--ink)}
+.chat-patient-detail{font-size:12px;color:var(--muted)}
+.chat-actions{display:flex;gap:8px;align-items:center}
+.chat-action-btn{
+  padding:8px 16px;
+  font-size:12px;font-weight:600;
+  border-radius:100px;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  transition:all .2s;
+  display:flex;align-items:center;gap:6px;
+}
+.btn-atender{background:var(--green);color:#fff}
+.btn-atender:hover{background:var(--green2)}
+.btn-gerar{background:var(--pale);color:var(--green);border:1px solid var(--pale2)}
+.btn-gerar:hover{background:var(--pale2)}
+.btn-aprovar{background:var(--green);color:#fff}
+.btn-aprovar:hover{background:var(--green2)}
+.btn-concluir{background:var(--success-bg);color:var(--success);border:1px solid #d1fae5}
+
+/* ── IA TOGGLE ── */
+.ia-toggle{
+  display:flex;align-items:center;gap:10px;
+  padding:6px 14px 6px 16px;
+  border-radius:100px;
+  background:var(--white);
+  border:1px solid var(--border);
+  transition:border-color .2s,background .2s;
+}
+.ia-toggle.active{
+  background:var(--pale);
+  border-color:var(--pale2);
+}
+.ia-toggle-label{
+  font-size:11px;font-weight:700;letter-spacing:.8px;
+  color:var(--muted);text-transform:uppercase;
+  transition:color .2s;
+}
+.ia-toggle.active .ia-toggle-label{color:var(--green)}
+.ia-switch{
+  position:relative;display:inline-block;
+  width:34px;height:20px;flex-shrink:0;
+}
+.ia-switch input{opacity:0;width:0;height:0}
+.ia-slider{
+  position:absolute;cursor:pointer;inset:0;
+  background:#cbd5d1;border-radius:100px;
+  transition:background .25s;
+}
+.ia-slider::before{
+  content:'';position:absolute;
+  width:14px;height:14px;left:3px;top:3px;
+  background:#fff;border-radius:50%;
+  transition:transform .25s;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+.ia-switch input:checked + .ia-slider{background:var(--green3)}
+.ia-switch input:checked + .ia-slider::before{transform:translateX(14px)}
+.ia-toggle-state{
+  font-size:12px;color:var(--muted);font-weight:500;
+  min-width:62px;
+  transition:color .2s;
+}
+.ia-toggle.active .ia-toggle-state{color:var(--green);font-weight:600}
+
+/* Chat messages */
+.chat-messages{
+  flex:1;overflow-y:auto;
+  padding:20px 24px;
+  display:flex;flex-direction:column;gap:10px;
+  min-height:0;
+}
+.chat-msg{
+  max-width:70%;padding:10px 16px;
+  border-radius:16px;font-size:13px;line-height:1.6;
+  animation:msgIn .3s forwards;
+}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.chat-msg.paciente{
+  align-self:flex-start;
+  background:#fff;color:var(--ink);
+  border:1px solid var(--border);
+  border-radius:4px 16px 16px 16px;
+}
+.chat-msg.medico{
+  align-self:flex-end;
+  background:var(--green);color:#fff;
+  border-radius:16px 4px 16px 16px;
+}
+.chat-msg.sistema{
+  align-self:center;
+  background:var(--pale);color:var(--green);
+  border-radius:12px;font-size:12px;font-weight:500;
+  padding:6px 16px;
+}
+.chat-msg-time{
+  font-size:10px;margin-top:4px;
+  opacity:.6;
+}
+.chat-msg.medico .chat-msg-time{text-align:right}
+
+/* Chat input */
+.chat-input-bar{
+  padding:14px 24px;
+  background:#fff;
+  border-top:1px solid var(--border);
+  display:flex;gap:10px;align-items:center;
+  flex-shrink:0;
+}
+.chat-input{
+  flex:1;padding:11px 18px;
+  border:1.5px solid var(--border);border-radius:100px;
+  font-family:'DM Sans',sans-serif;font-size:14px;
+  background:var(--white);color:var(--ink);
+  outline:none;transition:border-color .2s;
+}
+.chat-input:focus{border-color:var(--green)}
+.chat-input::placeholder{color:var(--muted)}
+.chat-send{
+  width:42px;height:42px;border-radius:50%;
+  background:var(--green);color:#fff;
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  transition:background .2s;
+}
+.chat-send:hover{background:var(--green2)}
+.chat-send:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── SOAP PANEL ── */
+.soap-panel{
+  display:none;
+  position:absolute;inset:0;
+  background:var(--white);
+  z-index:50;
+  flex-direction:column;
+  animation:soapSlideIn .25s ease-out;
+}
+.soap-panel.active{display:flex}
+@keyframes soapSlideIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+
+.soap-header{
+  padding:18px 24px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  background:var(--white);
+}
+.soap-header-info{display:flex;align-items:center;gap:12px;min-width:0}
+.soap-avatar{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--green);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:14px;
+  flex-shrink:0;
+}
+.soap-title{font-size:15px;font-weight:600;color:var(--ink);line-height:1.2}
+.soap-subtitle{font-size:12px;color:var(--muted);margin-top:2px}
+.soap-header-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+
+.soap-btn{
+  padding:8px 14px;
+  border:1px solid var(--border);border-radius:8px;
+  background:var(--white);color:var(--ink);
+  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;
+  cursor:pointer;display:flex;align-items:center;gap:6px;
+  transition:background .15s,border-color .15s;
+}
+.soap-btn:hover{background:var(--pale);border-color:var(--green)}
+.soap-btn.ghost{border-color:transparent}
+.soap-btn.ghost:hover{background:var(--pale);border-color:var(--border)}
+
+.soap-tabs{
+  display:flex;gap:4px;
+  padding:12px 24px 0;
+  border-bottom:1px solid var(--border);
+  background:var(--white);
+}
+.soap-tab{
+  padding:10px 16px;
+  font-size:13px;font-weight:500;color:var(--muted);
+  cursor:pointer;border-bottom:2px solid transparent;
+  transition:color .15s,border-color .15s;
+  user-select:none;
+}
+.soap-tab:hover{color:var(--ink)}
+.soap-tab.active{color:var(--green);border-bottom-color:var(--green);font-weight:600}
+
+.soap-body{
+  flex:1;overflow-y:auto;
+  padding:24px;
+  background:var(--chat-bg);
+}
+
+.soap-section{display:none}
+.soap-section.active{display:block;animation:soapFade .2s ease-out}
+@keyframes soapFade{from{opacity:0}to{opacity:1}}
+
+.soap-field{margin-bottom:18px}
+.soap-field-label{
+  display:block;
+  font-size:11px;font-weight:700;letter-spacing:.6px;
+  text-transform:uppercase;color:var(--muted);
+  margin-bottom:6px;
+}
+.soap-field-hint{
+  font-size:11px;color:var(--muted);font-weight:400;
+  margin-left:8px;letter-spacing:0;text-transform:none;
+}
+.soap-input,.soap-textarea{
+  width:100%;
+  padding:12px 14px;
+  border:1px solid var(--border);border-radius:10px;
+  background:#fff;color:var(--ink);
+  font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;
+  outline:none;
+  transition:border-color .15s,box-shadow .15s;
+}
+.soap-input:focus,.soap-textarea:focus{
+  border-color:var(--green);
+  box-shadow:0 0 0 3px rgba(10,102,64,.08);
+}
+.soap-textarea{resize:vertical;min-height:80px}
+.soap-textarea.tall{min-height:120px}
+
+.soap-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.soap-row-3{display:grid;grid-template-columns:120px 1fr 140px;gap:12px}
+@media(max-width:900px){
+  .soap-row,.soap-row-3{grid-template-columns:1fr}
+}
+
+.soap-med-item{
+  display:flex;align-items:flex-start;gap:8px;
+  margin-bottom:8px;
+}
+.soap-med-item .soap-textarea{min-height:auto;padding:10px 14px}
+.soap-med-remove{
+  flex-shrink:0;
+  width:36px;height:38px;
+  border:1px solid var(--border);border-radius:10px;
+  background:#fff;color:var(--muted);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.soap-med-remove:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-bg)}
+
+.soap-btn-add{
+  width:100%;padding:10px;
+  border:1px dashed var(--border);border-radius:10px;
+  background:transparent;color:var(--muted);
+  font-family:'DM Sans',sans-serif;font-size:13px;
+  cursor:pointer;transition:all .15s;
+}
+.soap-btn-add:hover{border-color:var(--green);color:var(--green);background:var(--pale)}
+
+.soap-checkbox-row{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 14px;
+  background:var(--warning-bg);border:1px solid #FDE68A;
+  border-radius:10px;
+  margin-bottom:18px;
+  cursor:pointer;
+}
+.soap-checkbox-row input{
+  width:16px;height:16px;cursor:pointer;
+  accent-color:var(--warning);
+}
+.soap-checkbox-row label{
+  font-size:13px;color:var(--warning);font-weight:500;cursor:pointer;
+}
+
+.soap-footer{
+  padding:16px 24px;
+  border-top:1px solid var(--border);
+  background:var(--white);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.soap-save-status{
+  font-size:12px;color:var(--muted);
+  display:flex;align-items:center;gap:6px;
+}
+.soap-save-status.saved{color:var(--success)}
+.soap-save-status.saving{color:var(--warning)}
+.soap-save-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+.soap-btn-primary{
+  padding:12px 22px;
+  background:var(--green);color:#fff;
+  border:none;border-radius:100px;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;gap:8px;
+  transition:background .15s,transform .1s;
+  box-shadow:0 2px 8px rgba(10,102,64,.2);
+}
+.soap-btn-primary:hover:not(:disabled){background:var(--green2);transform:translateY(-1px)}
+.soap-btn-primary:disabled{opacity:.6;cursor:not-allowed}
+
+.soap-atestado-disabled{opacity:.45;pointer-events:none}
+
+/* Botão "Revisar SOAP" no header do chat (status = soap_gerado) */
+.btn-revisar-soap{
+  background:var(--green) !important;
+  color:#fff !important;
+  border:none !important;
+  animation:pulseRevisar 2s ease-in-out infinite;
+}
+.btn-revisar-soap:hover{background:var(--green2) !important}
+@keyframes pulseRevisar{
+  0%,100%{box-shadow:0 0 0 0 rgba(10,102,64,.4)}
+  50%{box-shadow:0 0 0 8px rgba(10,102,64,0)}
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .dashboard{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .topbar-badge{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ LOGIN SCREEN ═══════════════ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="dot"></span>
+      ConsultaJá!
+    </div>
+    <div class="login-subtitle">Painel do médico — faça login para atender</div>
+    
+    <div class="login-error" id="loginError">CRM ou senha incorretos</div>
+    
+    <label class="login-label">CRM</label>
+    <input class="login-input" id="loginCrm" type="text" placeholder="Ex: CRM-SP 222371" autocomplete="off">
+    
+    <label class="login-label">Senha</label>
+    <input class="login-input" id="loginSenha" type="password" placeholder="Sua senha">
+    
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Entrar</button>
+  </div>
+</div>
+
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
+<div class="dashboard" id="dashboard">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">
+        <span class="dot"></span>
+        ConsultaJá!
+      </div>
+      <span class="topbar-badge">Painel médico</span>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-status">
+        <span class="dot"></span>
+        <span id="statusText">Online</span>
+      </div>
+      <div class="topbar-user">
+        <div class="topbar-avatar" id="topbarAvatar">MC</div>
+        <span id="topbarName">Dr. Matheus</span>
+      </div>
+      <button class="btn-vidaas" id="btnVidaas" onclick="ativarVidaas()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M4 4l3-3 3 3M2 10h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="vidaasLabel">Ativar assinatura</span>
+      </button>
+      <button class="btn-logout" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">
+        Pacientes
+        <span class="sidebar-count" id="queueCount">0</span>
+      </div>
+      <div class="sidebar-tabs">
+        <div class="sidebar-tab active" onclick="filterTab(this,'todos')">Todos</div>
+        <div class="sidebar-tab" onclick="filterTab(this,'aguardando_medico')">Aguardando</div>
+        <div class="sidebar-tab" onclick="filterTab(this,'em_atendimento')">Atendendo</div>
+        <div class="sidebar-tab" onclick="filterTab(this,'concluida')">Concluídos</div>
+      </div>
+    </div>
+    <div class="sidebar-list" id="patientList"></div>
+    <div class="sidebar-stats">
+      <div>
+        <div class="sidebar-stat-val" id="statAguardando">0</div>
+        <div class="sidebar-stat-label">aguardando</div>
+      </div>
+      <div>
+        <div class="sidebar-stat-val" id="statAtendendo">0</div>
+        <div class="sidebar-stat-label">atendendo</div>
+      </div>
+      <div>
+        <div class="sidebar-stat-val" id="statHoje">0</div>
+        <div class="sidebar-stat-label">hoje</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CHAT AREA -->
+  <div class="main" id="mainArea">
+    <div class="empty-state" id="emptyState">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><path d="M40 32a4 4 0 01-4 4H16l-8 8V12a4 4 0 014-4h24a4 4 0 014 4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <p>Selecione um paciente para iniciar</p>
+      <small>A fila atualiza em tempo real</small>
+    </div>
+
+    <!-- Chat (hidden until patient selected) -->
+    <div id="chatArea" style="display:none;flex:1;flex-direction:column;min-height:0;overflow:hidden;">
+      <div class="chat-header">
+        <div class="chat-patient-info">
+          <div class="chat-avatar" id="chatAvatar" style="background:var(--green)">MS</div>
+          <div>
+            <div class="chat-patient-name" id="chatPatientName">Maria Silva</div>
+            <div class="chat-patient-detail" id="chatPatientDetail">Febre e dor de garganta · CJ-001</div>
+          </div>
+        </div>
+        <div class="chat-actions" id="chatActions"></div>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-bar">
+        <input class="chat-input" id="chatInput" type="text" placeholder="Digite sua mensagem..." onkeydown="if(event.key==='Enter')sendMessage()">
+        <button class="chat-send" onclick="sendMessage()">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M16 2L8 10M16 2l-5 14-3-6-6-3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════ PAINEL SOAP (sobrepõe o chat quando aberto) ═══════════════ -->
+    <div class="soap-panel" id="soapPanel">
+      <div class="soap-header">
+        <div class="soap-header-info">
+          <div class="soap-avatar" id="soapAvatar">MS</div>
+          <div style="min-width:0">
+            <div class="soap-title" id="soapTitle">Revisar SOAP e documentos</div>
+            <div class="soap-subtitle" id="soapSubtitle">paciente · CJ-000</div>
+          </div>
+        </div>
+        <div class="soap-header-actions">
+          <button class="soap-btn ghost" onclick="soapVerChat()" title="Voltar ao chat (ESC)">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3L4 7l5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Ver chat
+          </button>
+          <button class="soap-btn ghost" onclick="soapFechar()" title="Fechar">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="soap-tabs">
+        <div class="soap-tab active" data-tab="soap" onclick="soapTab('soap')">SOAP</div>
+        <div class="soap-tab" data-tab="atestado" onclick="soapTab('atestado')">Atestado</div>
+        <div class="soap-tab" data-tab="receita" onclick="soapTab('receita')">Receituário</div>
+      </div>
+
+      <div class="soap-body">
+        <!-- SOAP section -->
+        <div class="soap-section active" data-section="soap">
+          <div class="soap-field">
+            <label class="soap-field-label">S <span class="soap-field-hint">Subjetivo — relato do paciente</span></label>
+            <textarea class="soap-textarea tall" id="soapS" oninput="soapDirty()"></textarea>
+          </div>
+          <div class="soap-field">
+            <label class="soap-field-label">O <span class="soap-field-hint">Objetivo — observações do exame/atendimento</span></label>
+            <textarea class="soap-textarea" id="soapO" oninput="soapDirty()"></textarea>
+          </div>
+          <div class="soap-field">
+            <label class="soap-field-label">A <span class="soap-field-hint">Avaliação — hipótese diagnóstica</span></label>
+            <textarea class="soap-textarea" id="soapA" oninput="soapDirty()"></textarea>
+          </div>
+          <div class="soap-field">
+            <label class="soap-field-label">P <span class="soap-field-hint">Plano — conduta clínica (narrativo)</span></label>
+            <textarea class="soap-textarea tall" id="soapP" oninput="soapDirty()"></textarea>
+          </div>
+        </div>
+
+        <!-- Atestado section -->
+        <div class="soap-section" data-section="atestado">
+          <div class="soap-checkbox-row" onclick="event.target.tagName!=='INPUT' && document.getElementById('soapAtestadoNaoGerar').click()">
+            <input type="checkbox" id="soapAtestadoNaoGerar" onchange="soapToggleAtestado(); soapDirty()">
+            <label for="soapAtestadoNaoGerar">Não gerar atestado para esta consulta</label>
+          </div>
+
+          <div id="soapAtestadoCampos">
+            <div class="soap-row-3">
+              <div class="soap-field">
+                <label class="soap-field-label">CID-10</label>
+                <input class="soap-input" id="soapCid" placeholder="Ex: J02" oninput="soapDirty()">
+              </div>
+              <div class="soap-field">
+                <label class="soap-field-label">Descrição do CID</label>
+                <input class="soap-input" id="soapCidDesc" placeholder="Ex: Faringite aguda" oninput="soapDirty()">
+              </div>
+              <div class="soap-field">
+                <label class="soap-field-label">Dias de afastamento</label>
+                <input class="soap-input" id="soapDias" type="number" min="0" max="60" oninput="soapDirty()">
+              </div>
+            </div>
+            <div class="soap-field">
+              <label class="soap-field-label">Observações no atestado <span class="soap-field-hint">(opcional)</span></label>
+              <textarea class="soap-textarea" id="soapAtestadoObs" placeholder="Ex: repouso domiciliar" oninput="soapDirty()"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Receituário section -->
+        <div class="soap-section" data-section="receita">
+          <div class="soap-field">
+            <label class="soap-field-label">Medicamentos prescritos</label>
+            <div id="soapMedsList"></div>
+            <button type="button" class="soap-btn-add" onclick="soapAddMed()">+ Adicionar medicamento</button>
+          </div>
+          <div class="soap-field">
+            <label class="soap-field-label">Orientações adicionais <span class="soap-field-hint">(opcional)</span></label>
+            <textarea class="soap-textarea" id="soapReceitaObs" placeholder="Ex: retornar se não melhorar em 48h" oninput="soapDirty()"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="soap-footer">
+        <div class="soap-save-status saved" id="soapSaveStatus">
+          <div class="soap-save-dot"></div>
+          <span id="soapSaveText">Rascunho salvo</span>
+        </div>
+        <button class="soap-btn-primary" id="soapBtnAprovar" onclick="soapAprovarEEnviar()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5 6.5-6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Aprovar e enviar
+        </button>
+      </div>
+    </div>
+    <!-- ═══════════════ FIM DO PAINEL SOAP ═══════════════ -->
+  </div>
+
+</div>
+
+<script>
+// ═══════════════ SUPABASE CONFIG ═══════════════
+const SUPABASE_URL = 'https://dqpfuucelvbgouysbhtu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_u9gfvdnu_Hnf2h8iH19Fcw_7k_qS2S5';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ═══════════════ STATE ═══════════════
+let currentMedico = null;
+let currentConsulta = null;
+let currentFilter = 'todos';
+let consultas = [];
+
+// ═══════════════ LOGIN ═══════════════
+async function doLogin() {
+  const crm = document.getElementById('loginCrm').value.trim();
+  const senha = document.getElementById('loginSenha').value;
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginError');
+
+  if (!crm || !senha) { err.textContent = 'Preencha CRM e senha'; err.classList.add('show'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Entrando...';
+  err.classList.remove('show');
+
+  try {
+    const { data, error } = await sb
+      .from('medicos')
+      .select('*')
+      .eq('crm', crm)
+      .eq('senha_hash', senha)
+      .single();
+
+    if (error || !data) {
+      err.textContent = 'CRM ou senha incorretos';
+      err.classList.add('show');
+      return;
+    }
+
+    currentMedico = data;
+
+    // Set online
+    await sb.from('medicos').update({ status: 'online' }).eq('id', data.id);
+
+    // Update UI
+    const initials = data.nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    document.getElementById('topbarAvatar').textContent = initials;
+    document.getElementById('topbarName').textContent = data.nome;
+
+    // Show dashboard
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('dashboard').classList.add('active');
+
+    // Load data
+    await loadConsultas();
+    subscribeRealtime();
+    checkVidaasStatus();
+  } catch (e) {
+    console.error('[doLogin]', e);
+    err.textContent = 'Erro inesperado. Tente novamente.';
+    err.classList.add('show');
+  } finally {
+    // Reseta botão SEMPRE (sucesso, erro de credencial, ou exceção).
+    // No sucesso, o botão fica escondido junto com a login screen — mas precisa
+    // estar resetado pra quando o médico fizer logout e voltar pra tela.
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+  }
+}
+
+function doLogout() {
+  if (currentMedico) {
+    sb.from('medicos').update({ status: 'offline' }).eq('id', currentMedico.id);
+  }
+  currentMedico = null;
+  currentConsulta = null;
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('dashboard').classList.remove('active');
+  document.getElementById('loginSenha').value = '';
+  // Salvaguarda: garante que botão de login esteja pronto pra novo uso
+  const loginBtn = document.getElementById('loginBtn');
+  if (loginBtn) {
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Entrar';
+  }
+}
+
+// ═══════════════ LOAD CONSULTAS ═══════════════
+async function loadConsultas() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const { data, error } = await sb
+    .from('consultas')
+    .select('*')
+    .or(`status.eq.aguardando_medico,status.eq.em_atendimento,status.eq.soap_gerado,and(status.eq.concluida,updated_at.gte.${today.toISOString()})`)
+    .order('created_at', { ascending: true });
+
+  if (!error && data) {
+    consultas = data;
+    renderPatientList();
+    updateStats();
+  }
+}
+
+// ═══════════════ RENDER PATIENT LIST ═══════════════
+function renderPatientList() {
+  const list = document.getElementById('patientList');
+  let filtered = consultas;
+
+  if (currentFilter !== 'todos') {
+    filtered = consultas.filter(c => c.status === currentFilter);
+  }
+
+  list.innerHTML = filtered.map(c => {
+    const initials = c.paciente_nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    const time = timeAgo(c.created_at);
+    const isActive = currentConsulta && currentConsulta.id === c.id;
+    const statusLabel = {
+      'aguardando_medico': 'aguardando',
+      'em_atendimento': 'em atendimento',
+      'soap_gerado': 'SOAP pronto',
+      'concluida': 'concluído',
+      'cancelada': 'cancelado'
+    }[c.status] || c.status;
+
+    return `
+      <div class="patient-card ${isActive ? 'active' : ''} ${c.status === 'aguardando_medico' ? 'unread' : ''}"
+           onclick="selectConsulta('${c.id}')">
+        <div class="patient-name">
+          ${c.paciente_nome}
+          <span class="patient-time">${time}</span>
+        </div>
+        <div class="patient-queixa">${c.queixa || 'Sem queixa registrada'}</div>
+        <span class="patient-status st-${c.status}">${statusLabel}</span>
+      </div>
+    `;
+  }).join('');
+
+  // Update count
+  const aguardando = consultas.filter(c => c.status === 'aguardando_medico').length;
+  document.getElementById('queueCount').textContent = aguardando;
+}
+
+function updateStats() {
+  const aguardando = consultas.filter(c => c.status === 'aguardando_medico').length;
+  const atendendo = consultas.filter(c => c.status === 'em_atendimento' || c.status === 'soap_gerado').length;
+  document.getElementById('statAguardando').textContent = aguardando;
+  document.getElementById('statAtendendo').textContent = atendendo;
+  document.getElementById('statHoje').textContent = consultas.length;
+}
+
+function filterTab(el, filter) {
+  document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentFilter = filter;
+  renderPatientList();
+}
+
+// ═══════════════ SELECT CONSULTA ═══════════════
+async function selectConsulta(id) {
+  const consulta = consultas.find(c => c.id === id);
+  if (!consulta) return;
+
+  // Fecha o painel SOAP se estava aberto pra outro paciente
+  soapFechar();
+
+  currentConsulta = consulta;
+
+  // Update sidebar highlight
+  renderPatientList();
+
+  // Show chat area
+  document.getElementById('emptyState').style.display = 'none';
+  const chatArea = document.getElementById('chatArea');
+  chatArea.style.display = 'flex';
+
+  // Update header
+  const initials = consulta.paciente_nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+  document.getElementById('chatAvatar').textContent = initials;
+  document.getElementById('chatPatientName').textContent = consulta.paciente_nome;
+  document.getElementById('chatPatientDetail').textContent =
+    `${consulta.queixa || ''} · ${consulta.consulta_id_legivel || ''}`;
+
+  // Render action buttons based on status
+  renderActions(consulta);
+
+  // Load messages
+  await loadMessages(consulta.id);
+
+  // Se SOAP já foi gerado, abre o painel automaticamente
+  if (consulta.status === 'soap_gerado' && (consulta.soap || consulta.soap_aprovado)) {
+    soapAbrir();
+  }
+}
+
+function renderActions(consulta) {
+  const container = document.getElementById('chatActions');
+  let html = '';
+
+  // Estado de ação pendente pra esta consulta (evita vazar botão travado entre pacientes)
+  const pendente = acaoPendente[consulta.id]?.tipo;
+
+  // Toggle IA — aparece durante atendimento ativo
+  const showToggle = consulta.status === 'em_atendimento' || consulta.status === 'soap_gerado';
+  if (showToggle) {
+    const ativa = !!consulta.ia_ativa;
+    html += `
+      <div class="ia-toggle ${ativa ? 'active' : ''}" id="iaToggle">
+        <span class="ia-toggle-label">IA</span>
+        <label class="ia-switch">
+          <input type="checkbox" ${ativa ? 'checked' : ''} onchange="toggleIA(this.checked)">
+          <span class="ia-slider"></span>
+        </label>
+        <span class="ia-toggle-state" id="iaToggleState">${ativa ? 'ativa' : 'desativada'}</span>
+      </div>
+    `;
+  }
+
+  if (consulta.status === 'aguardando_medico') {
+    html += `<button class="chat-action-btn btn-atender" onclick="atenderPaciente()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5 6.5-6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Atender
+    </button>`;
+  } else if (consulta.status === 'em_atendimento') {
+    if (pendente === 'gerando') {
+      html += `<button class="chat-action-btn btn-gerar" disabled style="opacity:.6;cursor:not-allowed;">Gerando SOAP…</button>`;
+    } else if (pendente === 'aprovando') {
+      html += `<button class="chat-action-btn btn-aprovar" disabled style="opacity:.6;cursor:not-allowed;">Enviando…</button>`;
+    } else {
+      html += `
+        <button class="chat-action-btn btn-gerar" onclick="gerarSoap()">#gerar SOAP</button>
+        <button class="chat-action-btn btn-aprovar" onclick="aprovarConsulta()">#aprovar</button>
+      `;
+    }
+  } else if (consulta.status === 'soap_gerado') {
+    html += `
+      <button class="chat-action-btn btn-revisar-soap" onclick="soapAbrir()">Revisar SOAP</button>
+    `;
+  } else if (consulta.status === 'concluida') {
+    html += `<span style="font-size:12px;color:var(--success);font-weight:600;">✓ Consulta concluída</span>`;
+  }
+
+  container.innerHTML = html;
+}
+
+// ═══════════════ MESSAGES ═══════════════
+async function loadMessages(consultaId) {
+  const { data, error } = await sb
+    .from('mensagens')
+    .select('*')
+    .eq('consulta_id', consultaId)
+    .order('created_at', { ascending: true });
+
+  const container = document.getElementById('chatMessages');
+  if (!error && data) {
+    container.innerHTML = data.map(m => renderMsg(m)).join('');
+    container.scrollTop = container.scrollHeight;
+  }
+}
+
+function renderMsg(m) {
+  const time = new Date(m.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  return `
+    <div class="chat-msg ${m.remetente}">
+      ${m.conteudo}
+      <div class="chat-msg-time">${time}</div>
+    </div>
+  `;
+}
+
+// ═══════════════ Z-API CONFIG ═══════════════
+const ZAPI_INSTANCE = '3F0AC26C91A9B1041B529E8469198590';
+const ZAPI_TOKEN = '87332EFD6AB3A5A23F2334E7';
+const ZAPI_CLIENT = 'Fb1711fd53ae14c568d65610729d95caeS';
+const ZAPI_BASE = `https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}`;
+
+// Webhook do n8n para comandos disparados pelo dashboard (botões #atender, #gerar, #aprovar).
+// Substitui o fluxo antigo de "digitar comando no chat" que vazava mensagens
+// internas para o WhatsApp do paciente e causava duplicatas.
+const DASHBOARD_WEBHOOK_URL = 'https://n8nconsultaja.duckdns.org/webhook/0db2858c-743e-4853-aa1f-a39f2c42c3fd';
+
+// Dispara um comando (#atender, #gerar, #aprovar, #editar) direto no workflow do n8n,
+// sem passar pelo Z-API e sem poluir o chat do paciente.
+async function enviarComandoDashboard(acao) {
+  if (!currentConsulta || !currentMedico) return { ok: false, error: 'Sem consulta ou médico ativo' };
+  try {
+    const res = await fetch(DASHBOARD_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        acao,
+        consulta_id: currentConsulta.id,
+        consulta_id_legivel: currentConsulta.consulta_id_legivel || '',
+        paciente_telefone: currentConsulta.paciente_telefone || '',
+        medico_crm: currentMedico.crm || '',
+        medico_id: currentMedico.id || ''
+      })
+    });
+    if (!res.ok) {
+      console.error('Erro no webhook dashboard:', res.status, await res.text().catch(() => ''));
+      return { ok: false, error: `HTTP ${res.status}` };
+    }
+    return { ok: true };
+  } catch(e) {
+    console.error('Falha ao chamar webhook dashboard:', e);
+    return { ok: false, error: e.message };
+  }
+}
+
+// ═══════════════ VIDAAS CONFIG ═══════════════
+const VIDAAS_CLIENT_ID = '99ecdbad-0025-49c8-a7e3-8dcb6388ce4e';
+const VIDAAS_REDIRECT = 'https://consultaja.netlify.app/confirmacao.html';
+
+async function checkVidaasStatus() {
+  if (!currentMedico) return;
+  const btn = document.getElementById('btnVidaas');
+  const label = document.getElementById('vidaasLabel');
+  const expiresAt = currentMedico.vidaas_expires_at;
+
+  if (expiresAt && new Date(expiresAt) > new Date()) {
+    const hoursLeft = Math.round((new Date(expiresAt) - new Date()) / 3600000);
+    btn.classList.add('active-sig');
+    label.textContent = `Assinatura ativa (${hoursLeft}h)`;
+  } else {
+    btn.classList.remove('active-sig');
+    label.textContent = 'Ativar assinatura';
+  }
+}
+
+async function ativarVidaas() {
+  if (!currentMedico) return;
+  const btn = document.getElementById('btnVidaas');
+  if (btn.classList.contains('active-sig')) return;
+
+  const cpf = currentMedico.cpf;
+  if (!cpf) {
+    alert('CPF não cadastrado. Peça ao admin para cadastrar seu CPF.');
+    return;
+  }
+
+  try {
+    // Gerar PKCE no browser
+    const verifierBytes = new Uint8Array(32);
+    crypto.getRandomValues(verifierBytes);
+    const verifier = btoa(String.fromCharCode(...verifierBytes))
+      .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+
+    const encoder = new TextEncoder();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(verifier));
+    const challenge = btoa(String.fromCharCode(...new Uint8Array(hashBuffer)))
+      .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+
+    const lifetime = 43200; // 12h
+
+    const params = new URLSearchParams({
+      client_id: VIDAAS_CLIENT_ID,
+      code_challenge: challenge,
+      code_challenge_method: 'S256',
+      response_type: 'code',
+      scope: 'signature_session',
+      login_hint: cpf,
+      lifetime: lifetime.toString(),
+      redirect_uri: VIDAAS_REDIRECT
+    });
+
+    const authUrl = `https://certificado.vidaas.com.br/v0/oauth/authorize?${params.toString()}`;
+
+    // Salvar pra callback usar
+    sessionStorage.setItem('vidaas_code_verifier', verifier);
+    sessionStorage.setItem('vidaas_medico_id', currentMedico.id);
+    sessionStorage.setItem('vidaas_lifetime', lifetime.toString());
+
+    // Abrir VIDaaS
+    window.open(authUrl, '_blank');
+  } catch(e) {
+    alert('Erro ao iniciar autenticação: ' + e.message);
+  }
+}
+
+// Verificar status VIDaaS periodicamente
+setInterval(async () => {
+  if (currentMedico) {
+    const { data } = await sb.from('medicos').select('vidaas_expires_at').eq('id', currentMedico.id).single();
+    if (data) {
+      currentMedico.vidaas_expires_at = data.vidaas_expires_at;
+      checkVidaasStatus();
+    }
+  }
+}, 30000);
+
+async function sendWhatsApp(phone, message) {
+  try {
+    await fetch(`${ZAPI_BASE}/send-text`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Client-Token': ZAPI_CLIENT
+      },
+      body: JSON.stringify({ phone, message })
+    });
+  } catch(e) { console.error('Z-API erro:', e); }
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || !currentConsulta || !currentMedico) return;
+
+  // Bloqueia comandos digitados no chat — eles devem ser acionados pelos botões,
+  // senão vazam para o WhatsApp do paciente e geram duplicata no banco.
+  if (/^#(atender|gerar|aprovar|editar)\b/i.test(text)) {
+    alert('Use os botões do painel para #atender, #gerar e #aprovar. Digitar no chat envia a mensagem para o paciente.');
+    return;
+  }
+
+  input.value = '';
+
+  const msg = {
+    consulta_id: currentConsulta.id,
+    remetente: 'medico',
+    conteudo: text
+  };
+
+  // Optimistic render
+  const container = document.getElementById('chatMessages');
+  const now = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  container.innerHTML += `
+    <div class="chat-msg medico">
+      ${text}
+      <div class="chat-msg-time">${now}</div>
+    </div>
+  `;
+  container.scrollTop = container.scrollHeight;
+
+  // Salvar no Supabase
+  await sb.from('mensagens').insert(msg);
+
+  // Enviar pelo WhatsApp via Z-API
+  if (currentConsulta.paciente_telefone) {
+    sendWhatsApp(currentConsulta.paciente_telefone, text);
+  }
+}
+
+// ═══════════════ ACTIONS ═══════════════
+async function atenderPaciente() {
+  if (!currentConsulta || !currentMedico) return;
+
+  // Atualiza medico_id localmente (o webhook do n8n cuida de status e mensagem de sistema).
+  // Isso garante que o dashboard saiba que ESSA instância do médico tomou a consulta.
+  await sb.from('consultas').update({
+    medico_id: currentMedico.id,
+    updated_at: new Date().toISOString()
+  }).eq('id', currentConsulta.id);
+
+  const r = await enviarComandoDashboard('atender');
+  if (!r.ok) {
+    alert('Erro ao iniciar atendimento: ' + (r.error || 'desconhecido'));
+    return;
+  }
+
+  currentConsulta.medico_id = currentMedico.id;
+  // Não mexe em status/mensagem aqui — o realtime do Supabase vai atualizar
+  // quando o workflow do n8n terminar de processar.
+}
+
+async function toggleIA(ativa) {
+  if (!currentConsulta) return;
+
+  const wrapper = document.getElementById('iaToggle');
+  const stateLabel = document.getElementById('iaToggleState');
+
+  // Optimistic update na UI
+  if (wrapper) wrapper.classList.toggle('active', ativa);
+  if (stateLabel) stateLabel.textContent = ativa ? 'ativa' : 'desativada';
+
+  const { error } = await sb.from('consultas').update({
+    ia_ativa: ativa,
+    updated_at: new Date().toISOString()
+  }).eq('id', currentConsulta.id);
+
+  if (error) {
+    // Reverte em caso de falha
+    console.error('Erro ao atualizar IA:', error);
+    if (wrapper) wrapper.classList.toggle('active', !ativa);
+    if (stateLabel) stateLabel.textContent = !ativa ? 'ativa' : 'desativada';
+    const input = wrapper?.querySelector('.ia-switch input');
+    if (input) input.checked = !ativa;
+    alert('Erro ao atualizar IA. Tenta de novo.');
+    return;
+  }
+
+  currentConsulta.ia_ativa = ativa;
+}
+
+async function gerarSoap() {
+  if (!currentConsulta) return;
+  const consultaId = currentConsulta.id;
+  if (acaoPendente[consultaId]) return; // guard duplo-clique
+
+  setAcaoPendente(consultaId, 'gerando');
+  renderActions(currentConsulta);
+
+  const r = await enviarComandoDashboard('gerar');
+  if (!r.ok) {
+    limparAcaoPendente(consultaId);
+    renderActions(currentConsulta);
+    alert('Erro ao gerar SOAP: ' + (r.error || 'desconhecido'));
+    return;
+  }
+  // Realtime limpa a pendência quando status virar 'soap_gerado'.
+}
+
+async function aprovarConsulta() {
+  if (!currentConsulta) return;
+  const consultaId = currentConsulta.id;
+  if (acaoPendente[consultaId]) return;
+
+  setAcaoPendente(consultaId, 'aprovando');
+  renderActions(currentConsulta);
+
+  const r = await enviarComandoDashboard('aprovar');
+  if (!r.ok) {
+    limparAcaoPendente(consultaId);
+    renderActions(currentConsulta);
+    alert('Erro ao aprovar consulta: ' + (r.error || 'desconhecido'));
+    return;
+  }
+  // Realtime limpa a pendência quando status virar 'concluida'.
+}
+
+// ═══════════════ SOAP PANEL ═══════════════
+let soapState = {
+  open: false,
+  dirty: false,
+  saving: false,
+  saveTimer: null,
+  data: null,           // versão sendo editada
+  consultaId: null,     // pra evitar race condition se trocar de paciente
+};
+
+// ═══════════════ AÇÕES PENDENTES (estado por consulta) ═══════════════
+// Indexado por consulta_id pra evitar vazamento de loading entre pacientes.
+// Cada entrada: { tipo: 'gerando'|'aprovando', timeoutId: number }.
+const acaoPendente = {};
+
+// Timeouts de segurança (ms). Se o realtime não completar a ação nesse tempo,
+// destrava o botão e alerta o médico (fallback pra não travar pra sempre).
+const TIMEOUT_GERANDO   = 60_000;   // GPT-4o + parse + salvar Supabase
+const TIMEOUT_APROVANDO = 120_000;  // VIDaaS (até ~3min teórico) + Z-API x2
+
+function setAcaoPendente(consultaId, tipo) {
+  limparAcaoPendente(consultaId);
+  const ms = tipo === 'gerando' ? TIMEOUT_GERANDO : TIMEOUT_APROVANDO;
+  const timeoutId = setTimeout(() => {
+    console.warn(`[acaoPendente] timeout ${tipo} consulta=${consultaId}`);
+    delete acaoPendente[consultaId];
+    if (currentConsulta?.id === consultaId) {
+      renderActions(currentConsulta);
+      sincronizarBotaoSoapAprovar();
+    }
+    alert(`A ação "${tipo === 'gerando' ? 'gerar SOAP' : 'aprovar e enviar'}" demorou mais que o esperado. Verifique o workflow n8n e tente novamente.`);
+  }, ms);
+  acaoPendente[consultaId] = { tipo, timeoutId };
+}
+
+function limparAcaoPendente(consultaId) {
+  const p = acaoPendente[consultaId];
+  if (p) {
+    clearTimeout(p.timeoutId);
+    delete acaoPendente[consultaId];
+  }
+}
+
+// Sincroniza o botão "Aprovar e enviar" do painel SOAP com o estado atual.
+// Chamada em: abertura do painel, início/fim de aprovação, expiração de timeout,
+// mudança de status via realtime.
+function sincronizarBotaoSoapAprovar() {
+  const btn = document.getElementById('soapBtnAprovar');
+  if (!btn) return;
+  const cid = soapState.consultaId;
+  const pendente = cid ? acaoPendente[cid]?.tipo : null;
+  if (pendente === 'aprovando') {
+    btn.disabled = true;
+    btn.textContent = 'Enviando…';
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5 6.5-6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Aprovar e enviar
+    `;
+  }
+}
+
+
+// Constrói objeto SOAP a partir dos dados da consulta.
+// Prioridade: soap_aprovado (se já editado antes) > soap (versão original da IA)
+function soapBuildFromConsulta(consulta) {
+  const fonte = consulta.soap_aprovado || consulta.soap || {};
+  const soapInner = fonte.soap || {};
+  return {
+    soap: {
+      S: soapInner.S || '',
+      O: soapInner.O || '',
+      A: soapInner.A || '',
+      P: soapInner.P || ''
+    },
+    cid: fonte.cid || '',
+    cid_descricao: fonte.cid_descricao || '',
+    dias_afastamento: fonte.dias_afastamento ?? '',
+    atestado_observacoes: fonte.atestado_observacoes || '',
+    atestado_nao_gerar: fonte.atestado_nao_gerar === true,
+    medicamentos: Array.isArray(fonte.medicamentos) ? [...fonte.medicamentos] : [],
+    receita_observacoes: fonte.receita_observacoes || fonte.observacoes || ''
+  };
+}
+
+// Lê o que está nos campos do formulário e devolve objeto pra salvar
+function soapReadForm() {
+  return {
+    soap: {
+      S: document.getElementById('soapS').value.trim(),
+      O: document.getElementById('soapO').value.trim(),
+      A: document.getElementById('soapA').value.trim(),
+      P: document.getElementById('soapP').value.trim()
+    },
+    cid: document.getElementById('soapCid').value.trim(),
+    cid_descricao: document.getElementById('soapCidDesc').value.trim(),
+    dias_afastamento: parseInt(document.getElementById('soapDias').value, 10) || 0,
+    atestado_observacoes: document.getElementById('soapAtestadoObs').value.trim(),
+    atestado_nao_gerar: document.getElementById('soapAtestadoNaoGerar').checked,
+    medicamentos: Array.from(document.querySelectorAll('#soapMedsList textarea'))
+      .map(t => t.value.trim())
+      .filter(t => t.length > 0),
+    receita_observacoes: document.getElementById('soapReceitaObs').value.trim()
+  };
+}
+
+// Renderiza dados nos campos do formulário
+function soapRenderForm(data) {
+  document.getElementById('soapS').value = data.soap.S;
+  document.getElementById('soapO').value = data.soap.O;
+  document.getElementById('soapA').value = data.soap.A;
+  document.getElementById('soapP').value = data.soap.P;
+  document.getElementById('soapCid').value = data.cid;
+  document.getElementById('soapCidDesc').value = data.cid_descricao;
+  document.getElementById('soapDias').value = data.dias_afastamento;
+  document.getElementById('soapAtestadoObs').value = data.atestado_observacoes;
+  document.getElementById('soapAtestadoNaoGerar').checked = data.atestado_nao_gerar;
+  document.getElementById('soapReceitaObs').value = data.receita_observacoes;
+
+  // Renderiza medicamentos
+  const list = document.getElementById('soapMedsList');
+  list.innerHTML = '';
+  if (data.medicamentos.length === 0) {
+    soapAddMedRow(''); // sempre tem pelo menos 1 linha vazia
+  } else {
+    data.medicamentos.forEach(m => soapAddMedRow(m));
+  }
+
+  soapToggleAtestado();
+}
+
+function soapAddMedRow(valor = '') {
+  const list = document.getElementById('soapMedsList');
+  const idx = list.children.length;
+  const div = document.createElement('div');
+  div.className = 'soap-med-item';
+  div.innerHTML = `
+    <textarea class="soap-textarea" rows="1" placeholder="Ex: Ibuprofeno 400mg — 1 cp 8/8h por 3 dias" oninput="soapDirty()"></textarea>
+    <button type="button" class="soap-med-remove" onclick="soapRemoveMed(this)" title="Remover">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+  `;
+  div.querySelector('textarea').value = valor;
+  list.appendChild(div);
+}
+
+function soapAddMed() {
+  soapAddMedRow('');
+  soapDirty();
+  // foca o novo campo
+  const list = document.getElementById('soapMedsList');
+  const last = list.lastElementChild?.querySelector('textarea');
+  if (last) last.focus();
+}
+
+function soapRemoveMed(btn) {
+  const item = btn.closest('.soap-med-item');
+  if (!item) return;
+  const list = document.getElementById('soapMedsList');
+  if (list.children.length === 1) {
+    // não deixa vazio total — só limpa
+    item.querySelector('textarea').value = '';
+  } else {
+    item.remove();
+  }
+  soapDirty();
+}
+
+function soapToggleAtestado() {
+  const naoGerar = document.getElementById('soapAtestadoNaoGerar').checked;
+  document.getElementById('soapAtestadoCampos').classList.toggle('soap-atestado-disabled', naoGerar);
+}
+
+function soapTab(name) {
+  document.querySelectorAll('.soap-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === name);
+  });
+  document.querySelectorAll('.soap-section').forEach(s => {
+    s.classList.toggle('active', s.dataset.section === name);
+  });
+}
+
+function soapAbrir() {
+  if (!currentConsulta) return;
+  const fonteOk = currentConsulta.soap || currentConsulta.soap_aprovado;
+  if (!fonteOk) {
+    alert('SOAP ainda não foi gerado para esta consulta.');
+    return;
+  }
+
+  soapState.consultaId = currentConsulta.id;
+  soapState.data = soapBuildFromConsulta(currentConsulta);
+  soapState.dirty = false;
+
+  // Preenche header
+  const initials = currentConsulta.paciente_nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+  document.getElementById('soapAvatar').textContent = initials;
+  document.getElementById('soapTitle').textContent = currentConsulta.paciente_nome;
+  document.getElementById('soapSubtitle').textContent =
+    `${currentConsulta.queixa || currentConsulta.motivo || ''} · ${currentConsulta.consulta_id_legivel || ''}`;
+
+  soapRenderForm(soapState.data);
+  soapTab('soap'); // sempre começa na aba SOAP
+  soapSetSaveStatus(currentConsulta.soap_aprovado ? 'saved' : 'idle',
+                    currentConsulta.soap_aprovado ? 'Rascunho salvo' : 'Versão original da IA');
+
+  document.getElementById('soapPanel').classList.add('active');
+  soapState.open = true;
+  sincronizarBotaoSoapAprovar(); // garante estado correto do botão ao abrir painel
+}
+
+function soapVerChat() {
+  // Esconde temporariamente o painel sem perder o estado.
+  // Médico pode reabrir clicando "Revisar SOAP" de novo.
+  document.getElementById('soapPanel').classList.remove('active');
+  soapState.open = false;
+}
+
+function soapFechar() {
+  document.getElementById('soapPanel').classList.remove('active');
+  soapState.open = false;
+  if (soapState.saveTimer) {
+    clearTimeout(soapState.saveTimer);
+    soapState.saveTimer = null;
+  }
+  // Se tinha alteração pendente, salva síncrono antes de sair
+  if (soapState.dirty && soapState.consultaId) {
+    soapSalvar(true);
+  }
+}
+
+function soapDirty() {
+  soapState.dirty = true;
+  soapSetSaveStatus('saving', 'Salvando…');
+  if (soapState.saveTimer) clearTimeout(soapState.saveTimer);
+  // Debounce: salva 1.5s após parar de digitar
+  soapState.saveTimer = setTimeout(() => soapSalvar(false), 1500);
+}
+
+function soapSetSaveStatus(state, text) {
+  const el = document.getElementById('soapSaveStatus');
+  const txt = document.getElementById('soapSaveText');
+  el.classList.remove('saved', 'saving');
+  if (state === 'saved') el.classList.add('saved');
+  if (state === 'saving') el.classList.add('saving');
+  txt.textContent = text;
+}
+
+async function soapSalvar(silent = false) {
+  if (!soapState.consultaId) return;
+
+  // Verifica que ainda estamos editando o mesmo paciente
+  if (currentConsulta?.id !== soapState.consultaId) return;
+
+  const payload = soapReadForm();
+  soapState.data = payload;
+
+  const { error } = await sb.from('consultas')
+    .update({
+      soap_aprovado: payload,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', soapState.consultaId);
+
+  if (error) {
+    console.error('Erro ao salvar rascunho SOAP:', error);
+    if (!silent) soapSetSaveStatus('idle', 'Erro ao salvar — tente de novo');
+    return;
+  }
+
+  soapState.dirty = false;
+  if (!silent) soapSetSaveStatus('saved', 'Rascunho salvo');
+}
+
+async function soapAprovarEEnviar() {
+  if (!soapState.consultaId || !currentConsulta) return;
+  const consultaId = soapState.consultaId;
+  if (acaoPendente[consultaId]) return; // guard duplo-clique
+
+  setAcaoPendente(consultaId, 'aprovando');
+  sincronizarBotaoSoapAprovar();
+
+  try {
+    // 1. Garantir que a versão final está salva no banco antes de chamar o workflow
+    if (soapState.saveTimer) {
+      clearTimeout(soapState.saveTimer);
+      soapState.saveTimer = null;
+    }
+    await soapSalvar(true);
+
+    // 2. Disparar #aprovar via webhook (workflow lê soap_aprovado e gera PDFs)
+    const r = await enviarComandoDashboard('aprovar');
+    if (!r.ok) {
+      alert('Erro ao aprovar consulta: ' + (r.error || 'desconhecido'));
+      limparAcaoPendente(consultaId);
+      sincronizarBotaoSoapAprovar();
+      return;
+    }
+
+    soapSetSaveStatus('saved', 'Aprovado! Enviando ao paciente…');
+    // Painel fecha sozinho — realtime vai mudar status pra concluida e limpar a pendência
+    setTimeout(() => soapFechar(), 1000);
+  } catch(e) {
+    console.error(e);
+    alert('Erro inesperado: ' + e.message);
+    limparAcaoPendente(consultaId);
+    sincronizarBotaoSoapAprovar();
+  }
+}
+
+// ESC fecha o painel SOAP
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && soapState.open) {
+    soapFechar();
+  }
+});
+
+
+function subscribeRealtime() {
+  // Listen for new/updated consultas
+  sb.channel('consultas-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'consultas' }, async (payload) => {
+      // Limpa pendência quando status avança pra estado terminal esperado
+      const novo = payload.new;
+      if (novo && (novo.status === 'soap_gerado' || novo.status === 'concluida')) {
+        limparAcaoPendente(novo.id);
+      }
+
+      const statusAntes = currentConsulta?.status;
+      await loadConsultas();
+      if (currentConsulta) {
+        const updated = consultas.find(c => c.id === currentConsulta.id);
+        if (updated) {
+          currentConsulta = updated;
+          renderActions(updated);
+          sincronizarBotaoSoapAprovar();
+
+          // Auto-abre painel SOAP quando status muda pra soap_gerado em tempo real
+          // (ex: médico clicou #gerar e workflow terminou de processar)
+          const acabouDeGerarSoap = statusAntes !== 'soap_gerado'
+                                  && updated.status === 'soap_gerado'
+                                  && (updated.soap || updated.soap_aprovado);
+          if (acabouDeGerarSoap) {
+            soapAbrir();
+          }
+        }
+      }
+    })
+    .subscribe();
+
+  // Listen for new messages
+  sb.channel('mensagens-changes')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensagens' }, (payload) => {
+      const msg = payload.new;
+      if (currentConsulta && msg.consulta_id === currentConsulta.id && msg.remetente !== 'medico') {
+        const container = document.getElementById('chatMessages');
+        container.innerHTML += renderMsg(msg);
+        container.scrollTop = container.scrollHeight;
+      }
+    })
+    .subscribe();
+}
+
+// ═══════════════ HELPERS ═══════════════
+function timeAgo(dateStr) {
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
+  if (diff < 1) return 'agora';
+  if (diff < 60) return `${diff} min`;
+  if (diff < 1440) return `${Math.floor(diff / 60)}h`;
+  return `${Math.floor(diff / 1440)}d`;
+}
+
+// Enter key on login
+document.getElementById('loginSenha').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+document.getElementById('loginCrm').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('loginSenha').focus();
+});
+</script>
+</body>
+</html>

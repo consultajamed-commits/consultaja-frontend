@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iniciar consulta — ConsultaJá!</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0C110E;
+  --ink2:#2A332C;
+  --muted:#6B7870;
+  --green:#0A6640;
+  --green2:#0D8A55;
+  --green3:#12B870;
+  --pale:#EBF7F1;
+  --pale2:#D4EFE2;
+  --white:#F7FAF8;
+  --border:#D8E8DF;
+  --surface:#fff;
+  --err:#DC2626;
+  --err-pale:#FEF2F2;
+}
+html,body{height:100%}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--white);
+  color:var(--ink);
+  min-height:100vh;
+  display:flex;flex-direction:column;
+}
+
+/* ── NAV ── */
+nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 48px;
+  border-bottom:1px solid var(--border);
+  background:var(--white);
+}
+.logo{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:18px;font-weight:800;color:var(--ink);
+  text-decoration:none;letter-spacing:-.5px;
+  display:flex;align-items:center;gap:8px;
+}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green3)}
+
+/* steps indicator */
+.steps-bar{display:flex;align-items:center;gap:8px}
+.step-pip{
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:500;
+}
+.step-pip .num{
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;
+}
+.step-pip.done .num{background:var(--green);color:#fff}
+.step-pip.active .num{background:var(--ink);color:#fff}
+.step-pip.pending .num{background:var(--border);color:var(--muted)}
+.step-pip.done .label,.step-pip.active .label{color:var(--ink);font-weight:500}
+.step-pip.pending .label{color:var(--muted)}
+.step-pip .label{font-size:12px}
+.step-divider{width:24px;height:1px;background:var(--border)}
+
+/* ── LAYOUT ── */
+main{
+  flex:1;
+  display:grid;
+  grid-template-columns:1fr 400px;
+  max-width:960px;
+  width:100%;
+  margin:0 auto;
+  padding:48px 24px;
+  gap:48px;
+  align-items:start;
+}
+
+/* ── FORMULÁRIO ── */
+.form-col{
+  opacity:0;animation:fadeUp .5s .1s forwards;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.form-title{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:28px;font-weight:800;letter-spacing:-1px;
+  color:var(--ink);margin-bottom:6px;
+}
+.form-sub{font-size:15px;color:var(--muted);margin-bottom:32px}
+
+/* Grupos */
+.field-group{margin-bottom:20px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+
+label{
+  display:block;
+  font-size:12px;font-weight:600;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--muted);
+  margin-bottom:7px;
+}
+input:not([type=checkbox]):not([type=radio]),select,textarea{
+  width:100%;padding:13px 16px;
+  border:1.5px solid var(--border);border-radius:12px;
+  font-family:'DM Sans',sans-serif;font-size:15px;color:var(--ink);
+  background:var(--surface);outline:none;
+  transition:border-color .2s,box-shadow .2s;
+  -webkit-appearance:none;appearance:none;
+}
+input:not([type=checkbox]):not([type=radio]):focus,select:focus,textarea:focus{
+  border-color:var(--green);
+  box-shadow:0 0 0 3px rgba(10,102,64,.08);
+}
+input.err,select.err,textarea.err{
+  border-color:var(--err);
+  box-shadow:0 0 0 3px rgba(220,38,38,.06);
+}
+input.ok,select.ok,textarea.ok{
+  border-color:var(--green3);
+  box-shadow:0 0 0 3px rgba(18,184,112,.10);
+}
+.field-err{font-size:12px;color:var(--err);margin-top:5px;display:none}
+.field-err.show{display:block}
+textarea{resize:vertical;min-height:100px;line-height:1.6}
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7870' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 16px center;
+  padding-right:40px;cursor:pointer;
+}
+
+/* Separador de seção */
+.section-sep{
+  display:flex;align-items:center;gap:12px;
+  margin:28px 0 24px;
+}
+.section-sep span{
+  font-size:11px;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;color:var(--muted);white-space:nowrap;
+}
+.section-sep::before,.section-sep::after{
+  content:'';flex:1;height:1px;background:var(--border);
+}
+
+/* Métodos de pagamento */
+.pay-methods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.pay-method{
+  border:1.5px solid var(--border);border-radius:12px;
+  padding:14px 16px;cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+  transition:border-color .2s,background .2s;
+  position:relative;
+}
+.pay-method input[type=radio]{
+  position:absolute;opacity:0;width:0;height:0;
+}
+.pay-method.selected{
+  border-color:var(--green);
+  background:var(--pale);
+}
+.pay-icon{
+  width:36px;height:24px;border-radius:5px;
+  background:var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:var(--muted);
+  flex-shrink:0;
+}
+.pay-icon.pix{background:#32BCAD;color:#fff}
+.pay-icon.card{background:var(--ink);color:#fff}
+.pay-label{font-size:14px;font-weight:500;color:var(--ink)}
+.pay-sublabel{font-size:11px;color:var(--muted)}
+.pay-check{
+  margin-left:auto;
+  width:18px;height:18px;border-radius:50%;
+  border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .2s;
+}
+.pay-method.selected .pay-check{
+  background:var(--green);border-color:var(--green);
+}
+.pay-method.selected .pay-check::after{
+  content:'';width:6px;height:6px;border-radius:50%;background:#fff;
+}
+
+/* Card fields */
+.card-fields{
+  display:none;
+  flex-direction:column;gap:16px;
+  animation:fadeUp .3s forwards;
+}
+.card-fields.show{display:flex}
+
+/* PIX fields */
+.pix-info{
+  display:none;
+  background:var(--pale);border:1px solid var(--pale2);
+  border-radius:12px;padding:16px 18px;
+  font-size:13px;color:var(--ink2);line-height:1.6;
+  animation:fadeUp .3s forwards;
+}
+.pix-info.show{display:block}
+.pix-info strong{color:var(--green)}
+
+/* TCLE */
+.tcle-box{
+  background:var(--pale);border:1px solid var(--pale2);
+  border-radius:12px;padding:16px 18px;margin-bottom:24px;
+}
+.tcle-label{
+  display:flex;align-items:flex-start;gap:12px;
+  font-size:13px;color:var(--ink2);line-height:1.6;
+  cursor:pointer;
+  text-transform:none;letter-spacing:0;font-weight:400;
+}
+.tcle-label input[type=checkbox]{
+  width:18px;height:18px;min-width:18px;
+  border:1.5px solid var(--border);border-radius:5px;
+  background:var(--surface);
+  margin-top:1px;cursor:pointer;padding:0;
+  accent-color:var(--green);
+  -webkit-appearance:auto;appearance:auto;
+}
+.tcle-label *{letter-spacing:0;text-transform:none}
+.tcle-label a{color:var(--green);text-decoration:none;font-weight:500}
+.tcle-label a:hover{text-decoration:underline}
+
+/* Botão submit */
+.btn-submit{
+  width:100%;padding:17px;
+  background:var(--green);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;
+  border:none;border-radius:100px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  box-shadow:0 6px 24px rgba(10,102,64,.28);
+  transition:background .2s,transform .15s,box-shadow .2s;
+}
+.btn-submit:hover:not(:disabled){
+  background:var(--green2);
+  transform:translateY(-1px);
+  box-shadow:0 10px 32px rgba(10,102,64,.35);
+}
+.btn-submit:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-submit.loading{pointer-events:none}
+.spinner{
+  width:18px;height:18px;border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;
+  animation:spin .7s linear infinite;display:none;
+}
+.btn-submit.loading .spinner{display:block}
+.btn-submit.loading .btn-text{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.submit-note{
+  text-align:center;font-size:12px;color:var(--muted);
+  margin-top:14px;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+
+/* ── RESUMO ── */
+.summary-col{
+  position:sticky;top:24px;
+  opacity:0;animation:fadeUp .5s .25s forwards;
+}
+
+.summary-card{
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:20px;
+  overflow:hidden;
+}
+.summary-header{
+  background:var(--green);
+  padding:20px 24px;
+}
+.summary-product{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:18px;font-weight:800;color:#fff;
+  letter-spacing:-.3px;
+}
+.summary-desc{font-size:13px;color:rgba(255,255,255,.7);margin-top:3px}
+
+.summary-body{padding:24px}
+
+.summary-items{list-style:none;margin-bottom:20px}
+.summary-item{
+  display:flex;align-items:center;gap:10px;
+  font-size:14px;color:var(--ink2);
+  padding:8px 0;border-bottom:1px solid var(--border);
+}
+.summary-item:last-child{border:none}
+.summary-item svg{color:var(--green);flex-shrink:0}
+
+.summary-price-row{
+  display:flex;align-items:baseline;justify-content:space-between;
+  padding:16px 0 0;
+  border-top:2px solid var(--border);
+}
+.price-label{font-size:13px;color:var(--muted);font-weight:500}
+.price-val{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:36px;font-weight:800;color:var(--ink);
+  letter-spacing:-1.5px;
+}
+.price-val sup{font-size:16px;letter-spacing:0;vertical-align:super}
+
+.summary-trust{
+  margin-top:20px;padding-top:20px;
+  border-top:1px solid var(--border);
+  display:flex;flex-direction:column;gap:10px;
+}
+.trust-row{
+  display:flex;align-items:center;gap:9px;
+  font-size:12px;color:var(--muted);
+}
+.trust-row svg{color:var(--green);flex-shrink:0}
+
+/* Médico info */
+.medico-card{
+  margin-top:16px;
+  background:var(--pale);border:1px solid var(--pale2);
+  border-radius:12px;padding:14px 16px;
+  display:flex;align-items:center;gap:12px;
+}
+.medico-avatar{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--green);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;flex-shrink:0;
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:14px;font-weight:700;
+}
+.medico-name{font-size:13px;font-weight:600;color:var(--ink)}
+.medico-crm{font-size:11px;color:var(--muted)}
+.medico-status{
+  margin-left:auto;
+  display:flex;align-items:center;gap:5px;
+  font-size:11px;color:var(--green);font-weight:500;
+}
+.online-dot{width:7px;height:7px;border-radius:50%;background:var(--green3);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:780px){
+  nav{padding:14px 20px}
+  .steps-bar .step-pip .label{display:none}
+  main{grid-template-columns:1fr;padding:24px 16px;gap:32px}
+  .summary-col{position:static;order:-1}
+  .field-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-dot"></div>
+    ConsultaJá!
+  </a>
+  <div class="steps-bar">
+    <div class="step-pip done">
+      <div class="num">✓</div>
+      <div class="label">Escolha</div>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step-pip active">
+      <div class="num">2</div>
+      <div class="label">Dados & Pagamento</div>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step-pip pending">
+      <div class="num">3</div>
+      <div class="label">Consulta</div>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+  <!-- FORMULÁRIO -->
+  <div class="form-col">
+    <div class="form-title">Seus dados</div>
+    <div class="form-sub">Preencha para liberar o acesso à consulta.</div>
+
+    <form id="checkout-form" novalidate>
+
+      <!-- Dados pessoais -->
+      <div class="field-row">
+        <div class="field-group">
+          <label for="nome">Nome completo</label>
+          <input type="text" id="nome" placeholder="João Silva Santos" autocomplete="name">
+          <div class="field-err" id="err-nome">Por favor, insira seu nome completo.</div>
+        </div>
+        <div class="field-group">
+          <label for="cpf">CPF</label>
+          <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" autocomplete="off">
+          <div class="field-err" id="err-cpf">CPF inválido.</div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" placeholder="joao@email.com" autocomplete="email">
+          <div class="field-err" id="err-email">E-mail inválido.</div>
+        </div>
+        <div class="field-group">
+          <label for="telefone">WhatsApp</label>
+          <input type="tel" id="telefone" placeholder="(11) 99999-9999" maxlength="15" autocomplete="tel">
+          <div class="field-err" id="err-telefone">Número inválido.</div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label for="data_nascimento">Data de nascimento</label>
+          <input type="text" id="data_nascimento" placeholder="DD/MM/AAAA" maxlength="10" autocomplete="bday" inputmode="numeric">
+          <div class="field-err" id="err-data_nascimento">Data de nascimento inválida.</div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label for="motivo">Motivo da consulta</label>
+        <select id="motivo">
+          <option value="" disabled selected>Selecione o principal motivo</option>
+          <option value="atestado">Atestado médico (afastamento do trabalho)</option>
+          <option value="atestado-escola">Atestado médico (falta escolar)</option>
+          <option value="receita">Receituário (renovação de receita)</option>
+          <option value="orientacao">Orientação médica / dúvida de saúde</option>
+          <option value="outro">Outro</option>
+        </select>
+        <div class="field-err" id="err-motivo">Selecione o motivo da consulta.</div>
+      </div>
+
+      <div class="field-group">
+        <label for="queixa">Descreva brevemente sua queixa</label>
+        <textarea id="queixa" placeholder="Ex: Estou com febre de 38.5°C, dor de cabeça e cansaço desde ontem. Preciso de atestado para o trabalho..."></textarea>
+      </div>
+
+      <!-- Pagamento -->
+      <div class="section-sep"><span>Forma de pagamento</span></div>
+
+      <div class="pay-methods">
+        <div class="pay-method selected" onclick="selectPay(this,'pix')">
+          <input type="radio" name="pay" value="pix" checked>
+          <div class="pay-icon pix">PIX</div>
+          <div>
+            <div class="pay-label">Pix</div>
+            <div class="pay-sublabel">Aprovação imediata</div>
+          </div>
+          <div class="pay-check"></div>
+        </div>
+        <div class="pay-method" onclick="selectPay(this,'cartao')">
+          <input type="radio" name="pay" value="cartao">
+          <div class="pay-icon card">
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><rect x="1" y="1" width="14" height="10" rx="2" stroke="white" stroke-width="1.2"/><path d="M1 4h14" stroke="white" stroke-width="1.2"/></svg>
+          </div>
+          <div>
+            <div class="pay-label">Cartão</div>
+            <div class="pay-sublabel">Crédito ou débito</div>
+          </div>
+          <div class="pay-check"></div>
+        </div>
+      </div>
+
+      <!-- PIX info -->
+      <div class="pix-info show" id="pix-info">
+        Após clicar em <strong>Pagar e iniciar consulta</strong>, você receberá o QR Code Pix. A consulta é liberada automaticamente assim que o pagamento for confirmado — geralmente em <strong>menos de 30 segundos</strong>.
+      </div>
+
+      <!-- Card fields -->
+      <div class="card-fields" id="card-fields">
+        <div class="field-group" style="margin:0">
+          <label for="card-num">Número do cartão</label>
+          <input type="text" id="card-num" placeholder="0000 0000 0000 0000" maxlength="19" autocomplete="cc-number">
+        </div>
+        <div class="field-row" style="margin:0">
+          <div class="field-group" style="margin:0">
+            <label for="card-exp">Validade</label>
+            <input type="text" id="card-exp" placeholder="MM/AA" maxlength="5" autocomplete="cc-exp">
+          </div>
+          <div class="field-group" style="margin:0">
+            <label for="card-cvv">CVV</label>
+            <input type="text" id="card-cvv" placeholder="000" maxlength="4" autocomplete="cc-csc">
+          </div>
+        </div>
+        <div class="field-group" style="margin:0">
+          <label for="card-name">Nome no cartão</label>
+          <input type="text" id="card-name" placeholder="JOÃO S SANTOS" autocomplete="cc-name" style="text-transform:uppercase">
+        </div>
+      </div>
+
+      <!-- TCLE -->
+      <div class="section-sep"><span>Consentimento</span></div>
+
+      <div class="tcle-box">
+        <label class="tcle-label">
+          <input type="checkbox" id="tcle">
+          Autorizo o atendimento por telemedicina e a utilização dos meus dados de saúde para fins de consulta, conforme a <a href="#" target="_blank">Política de Privacidade</a> e o <a href="#" target="_blank">Termo de Consentimento Livre e Esclarecido (TCLE)</a>. Estou ciente de que a conduta médica fica a critério exclusivo do profissional.
+        </label>
+        <div class="field-err" id="err-tcle" style="margin-top:8px">Você precisa aceitar o TCLE para continuar.</div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btn-submit">
+        <div class="spinner"></div>
+        <span class="btn-text">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="1.5" stroke="white" stroke-width="1.3"/><path d="M2 7.5h12M5.5 4V3a2.5 2.5 0 015 0v1" stroke="white" stroke-width="1.3"/></svg>
+          Pagar e iniciar consulta — R$&nbsp;59,90
+        </span>
+      </button>
+
+      <div class="submit-note">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="3.5" width="10" height="7.5" rx="1.5" stroke="currentColor" stroke-width="1"/><path d="M3.5 3.5V3a2.5 2.5 0 015 0v.5" stroke="currentColor" stroke-width="1"/></svg>
+        Ambiente seguro · Seus dados nunca são compartilhados
+      </div>
+
+    </form>
+  </div>
+
+  <!-- RESUMO -->
+  <div class="summary-col">
+    <div class="summary-card">
+      <div class="summary-header">
+        <div class="summary-product">Consulta médica online</div>
+        <div class="summary-desc">Via chat · Sem câmera · Sem agendamento</div>
+      </div>
+      <div class="summary-body">
+        <ul class="summary-items">
+          <li class="summary-item">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 7.5l3.5 3.5 6.5-6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Consulta com médico CRM ativo
+          </li>
+          <li class="summary-item">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 7.5l3.5 3.5 6.5-6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Atestado + receituário + orientações
+          </li>
+          <li class="summary-item">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 7.5l3.5 3.5 6.5-6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Documentos assinados ICP-Brasil
+          </li>
+          <li class="summary-item">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 7.5l3.5 3.5 6.5-6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Entregue por e-mail e WhatsApp
+          </li>
+          <li class="summary-item">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 7.5l3.5 3.5 6.5-6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Válido em todo o Brasil
+          </li>
+        </ul>
+
+        <div class="summary-price-row">
+          <span class="price-label">Total</span>
+          <span class="price-val"><sup>R$</sup>59<span style="font-size:45%;vertical-align:baseline;position:relative;top:-0.2em">,90</span></span>
+        </div>
+
+        <div class="medico-card">
+          <div class="medico-avatar" style="font-size:10px">👨‍⚕️</div>
+          <div>
+            <div class="medico-name">Equipe ConsultaJá</div>
+            <div class="medico-crm">Médicos com CRM ativo · Clínica Geral</div>
+          </div>
+          <div class="medico-status">
+            <div class="online-dot"></div>
+            online
+          </div>
+        </div>
+
+        <div class="summary-trust">
+          <div class="trust-row">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1.5" y="3.5" width="10" height="8" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M4 3.5V3a2.5 2.5 0 015 0v.5" stroke="currentColor" stroke-width="1.1"/></svg>
+            Pagamento 100% seguro
+          </div>
+          <div class="trust-row">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1l1.3 2.6 2.9.4-2.1 2 .5 2.9L6.5 7.4 4.4 8.9l.5-2.9-2.1-2 2.9-.4z" stroke="currentColor" stroke-width="1"/></svg>
+            Atendimento em minutos
+          </div>
+          <div class="trust-row">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3 3 6-6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Conduta médica a critério do profissional
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── Método de pagamento
+function selectPay(el, type) {
+  document.querySelectorAll('.pay-method').forEach(m => m.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input[type=radio]').checked = true;
+
+  document.getElementById('pix-info').classList.toggle('show', type === 'pix');
+  document.getElementById('card-fields').classList.toggle('show', type === 'cartao');
+}
+
+// ── Máscaras
+document.getElementById('cpf').addEventListener('input', function(){
+  let v = this.value.replace(/\D/g,'').slice(0,11);
+  if(v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,'$1.$2.$3-$4');
+  else if(v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{0,3})/,'$1.$2.$3');
+  else if(v.length > 3) v = v.replace(/(\d{3})(\d{0,3})/,'$1.$2');
+  this.value = v;
+});
+
+document.getElementById('telefone').addEventListener('input', function(){
+  let v = this.value.replace(/\D/g,'').slice(0,11);
+  if(v.length > 6) v = v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');
+  else if(v.length > 2) v = v.replace(/(\d{2})(\d{0,5})/,'($1) $2');
+  this.value = v;
+});
+
+document.getElementById('data_nascimento').addEventListener('input', function(){
+  let v = this.value.replace(/\D/g,'').slice(0,8);
+  if(v.length > 4) v = v.replace(/(\d{2})(\d{2})(\d{0,4})/,'$1/$2/$3');
+  else if(v.length > 2) v = v.replace(/(\d{2})(\d{0,2})/,'$1/$2');
+  this.value = v;
+});
+
+document.getElementById('card-num')?.addEventListener('input', function(){
+  let v = this.value.replace(/\D/g,'').slice(0,16);
+  v = v.replace(/(.{4})/g,'$1 ').trim();
+  this.value = v;
+});
+
+document.getElementById('card-exp')?.addEventListener('input', function(){
+  let v = this.value.replace(/\D/g,'').slice(0,4);
+  if(v.length > 2) v = v.slice(0,2)+'/'+v.slice(2);
+  this.value = v;
+});
+
+// ── Validação
+//
+// UX: feedback verde aparece enquanto digita corretamente; erro só aparece
+// quando o usuário sai do campo (blur), pra não ficar vermelho enquanto digita.
+//
+// Estados possíveis:
+//   'ok'      → borda verde, sem mensagem
+//   'err'     → borda vermelha + mensagem de erro
+//   'neutral' → sem borda colorida, sem mensagem (estado inicial)
+
+function setFieldState(id, state, customMsg) {
+  const inp = document.getElementById(id);
+  const err = document.getElementById('err-'+id);
+  if(!inp) return;
+  inp.classList.toggle('err', state === 'err');
+  inp.classList.toggle('ok',  state === 'ok');
+  if(err) {
+    err.classList.toggle('show', state === 'err');
+    if(state === 'err' && customMsg) err.textContent = customMsg;
+  }
+}
+
+// ── Validadores individuais. Cada um retorna { ok: bool, msg: string }.
+
+function validaNome(nome) {
+  const n = (nome || '').trim();
+  if(!n) return { ok: false, msg: 'Por favor, insira seu nome completo.' };
+  const partes = n.split(/\s+/).filter(p => p.length >= 2);
+  if(partes.length < 2) return { ok: false, msg: 'Digite nome e sobrenome (mínimo 2 palavras).' };
+  return { ok: true };
+}
+
+function validaCPF(cpf) {
+  cpf = (cpf || '').replace(/\D/g,'');
+  if(cpf.length !== 11) return { ok: false, msg: 'CPF deve ter 11 dígitos.' };
+  if(/^(\d)\1+$/.test(cpf)) return { ok: false, msg: 'CPF inválido.' };
+  let s = 0;
+  for(let i=0;i<9;i++) s += +cpf[i]*(10-i);
+  let r = (s*10)%11; if(r===10||r===11) r=0;
+  if(r !== +cpf[9]) return { ok: false, msg: 'CPF inválido.' };
+  s=0; for(let i=0;i<10;i++) s += +cpf[i]*(11-i);
+  r=(s*10)%11; if(r===10||r===11) r=0;
+  if(r !== +cpf[10]) return { ok: false, msg: 'CPF inválido.' };
+  return { ok: true };
+}
+
+function validaEmail(email) {
+  const e = (email || '').trim();
+  if(!e) return { ok: false, msg: 'E-mail obrigatório.' };
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return { ok: false, msg: 'E-mail inválido.' };
+  return { ok: true };
+}
+
+// Telefone: exige 11 dígitos exatos (DDD + 9 + 8). Rejeita fixo.
+// Bate o formato canônico que o Z-API usa pra o número 5511XXXXXXXXX.
+function validaTelefone(tel) {
+  const d = (tel || '').replace(/\D/g,'');
+  if(d.length === 0) return { ok: false, msg: 'Telefone obrigatório.' };
+  if(d.length < 11) return { ok: false, msg: 'Número incompleto. Use (11) 9XXXX-XXXX.' };
+  const ddd = parseInt(d.slice(0,2), 10);
+  if(ddd < 11 || ddd > 99) return { ok: false, msg: 'DDD inválido.' };
+  if(d[2] !== '9') return { ok: false, msg: 'Informe um celular (deve começar com 9 após o DDD).' };
+  return { ok: true };
+}
+
+/**
+ * Valida data de nascimento no formato DD/MM/AAAA.
+ * Retorna { ok: true } ou { ok: false, msg: 'motivo específico' }.
+ * Checa: formato, dia/mês/ano dentro de faixa, data existente (29/02 em ano não bissexto), idade entre 18 e 70 anos, não pode ser futuro.
+ */
+function validaDataNascimento(str) {
+  if(!str || !/^\d{2}\/\d{2}\/\d{4}$/.test(str)) {
+    return { ok: false, msg: 'Use o formato DD/MM/AAAA.' };
+  }
+  const [ds, ms, ys] = str.split('/');
+  const dia = +ds, mes = +ms, ano = +ys;
+
+  if(mes < 1 || mes > 12) return { ok: false, msg: 'Mês inválido.' };
+  if(dia < 1 || dia > 31) return { ok: false, msg: 'Dia inválido.' };
+
+  // Checa dia válido para o mês (inclui bissexto)
+  const d = new Date(ano, mes - 1, dia);
+  if(d.getFullYear() !== ano || d.getMonth() !== mes - 1 || d.getDate() !== dia) {
+    return { ok: false, msg: 'Essa data não existe.' };
+  }
+
+  // Não pode ser no futuro
+  const hoje = new Date();
+  hoje.setHours(0,0,0,0);
+  if(d > hoje) return { ok: false, msg: 'Data não pode ser futura.' };
+
+  // Calcula idade
+  let idade = hoje.getFullYear() - ano;
+  const m = hoje.getMonth() - (mes - 1);
+  if(m < 0 || (m === 0 && hoje.getDate() < dia)) idade--;
+
+  if(idade < 18) return { ok: false, msg: 'Atendimento disponível apenas para maiores de 18 anos.' };
+  if(idade > 70) return { ok: false, msg: 'Atendimento online indisponível para maiores de 70 anos.' };
+
+  return { ok: true };
+}
+
+function validaMotivo(motivo) {
+  if(!motivo) return { ok: false, msg: 'Selecione o motivo da consulta.' };
+  return { ok: true };
+}
+
+// Mapa: id do campo → função validadora que pega o valor do DOM e retorna { ok, msg }
+const VALIDADORES = {
+  'nome':             () => validaNome(document.getElementById('nome').value),
+  'cpf':              () => validaCPF(document.getElementById('cpf').value),
+  'email':            () => validaEmail(document.getElementById('email').value),
+  'telefone':         () => validaTelefone(document.getElementById('telefone').value),
+  'data_nascimento':  () => validaDataNascimento(document.getElementById('data_nascimento').value.trim()),
+  'motivo':           () => validaMotivo(document.getElementById('motivo').value),
+};
+
+/**
+ * Valida um campo e atualiza seu estado visual.
+ * mode='show'   → mostra erro se inválido (usado no blur e no submit)
+ * mode='silent' → não mostra erro vermelho, só atualiza pra ok ou neutral (usado no input)
+ */
+function validateField(id, mode) {
+  const validador = VALIDADORES[id];
+  if(!validador) return true;
+  const inp = document.getElementById(id);
+  const valor = inp ? (inp.value || '').trim() : '';
+  // Campo totalmente vazio em modo silent → fica neutro (não pinta nem verde nem vermelho)
+  if(mode === 'silent' && !valor) {
+    setFieldState(id, 'neutral');
+    return false;
+  }
+  const r = validador();
+  if(r.ok) {
+    setFieldState(id, 'ok');
+    return true;
+  }
+  if(mode === 'show') {
+    setFieldState(id, 'err', r.msg);
+  } else {
+    setFieldState(id, 'neutral');
+  }
+  return false;
+}
+
+// Anexa listeners de blur (mostra erro) e input (re-valida silenciosamente)
+// em todos os campos do mapa de validadores.
+Object.keys(VALIDADORES).forEach(id => {
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.addEventListener('blur',  () => validateField(id, 'show'));
+  el.addEventListener('input', () => validateField(id, 'silent'));
+  // Select dispara 'change' em vez de 'input' pra mudança de opção
+  el.addEventListener('change', () => validateField(id, 'show'));
+});
+
+// ── Submit
+document.getElementById('checkout-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  let ok = true;
+
+  // Valida cada campo no modo 'show' — todos os erros visíveis de uma vez
+  Object.keys(VALIDADORES).forEach(id => {
+    if(!validateField(id, 'show')) ok = false;
+  });
+
+  // TCLE: checkbox tem tratamento próprio (sem borda), só toggle do erro
+  const tcle = document.getElementById('tcle').checked;
+  const errTcle = document.getElementById('err-tcle');
+  errTcle.classList.toggle('show', !tcle);
+  if(!tcle) ok = false;
+
+  if(!ok) {
+    // Scroll para primeiro erro
+    const firstErr = document.querySelector('.err, .field-err.show');
+    if(firstErr) firstErr.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+
+  const btn = document.getElementById('btn-submit');
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  const payType = document.querySelector('input[name=pay]:checked').value;
+
+  if(payType === 'pix') {
+    const nome = document.getElementById('nome').value.trim();
+    const cpf = document.getElementById('cpf').value.replace(/\D/g,'');
+    const email = document.getElementById('email').value;
+    const telefone = document.getElementById('telefone').value.replace(/\D/g,'');
+    const dataNasc = document.getElementById('data_nascimento').value.trim();
+    const motivo = document.getElementById('motivo').value;
+    const queixa = document.getElementById('queixa').value.trim();
+
+    const payload = {
+      transaction_amount: 59.9,
+      description: "Consulta medica online - ConsultaJa!",
+      payment_method_id: "pix",
+      payer: {
+        email: email,
+        first_name: nome.split(' ')[0],
+        last_name: nome.split(' ').slice(1).join(' ') || nome.split(' ')[0],
+        identification: { type: "CPF", number: cpf }
+      },
+      metadata: {
+        paciente_nome: nome,
+        paciente_cpf: cpf,
+        paciente_telefone: telefone,
+        paciente_email: email,
+        paciente_data_nascimento: dataNasc,
+        motivo: motivo,
+        queixa: queixa,
+        consulta_id: 'CJ-' + Date.now()
+      }
+    };
+
+    fetch('https://n8nconsultaja.duckdns.org/webhook/bf7a0da0-3c82-432e-a984-00c8ed121893', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+      if(data.success && data.qr_code) {
+        // Salva dados do Pix no sessionStorage para usar na próxima página
+        sessionStorage.setItem('pix_qr_code', data.qr_code);
+        sessionStorage.setItem('pix_qr_base64', data.qr_code_base64 || '');
+        sessionStorage.setItem('pix_payment_id', data.payment_id);
+        sessionStorage.setItem('pix_expiracao', data.expiracao || '');
+        window.location.href = 'pix.html';
+      } else {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        alert('Erro ao criar pagamento. Tente novamente.');
+      }
+    })
+    .catch(() => {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+      alert('Erro de conexão. Verifique sua internet e tente novamente.');
+    });
+  } else {
+    // Cartão — fluxo futuro
+    setTimeout(() => { window.location.href = 'confirmacao.html'; }, 2000);
+  }
+});
+</script>
+</body>
+</html>

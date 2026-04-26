@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consulta Confirmada — ConsultaJá!</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#0A6640;
+  --green2:#0D8A55;
+  --green3:#12B870;
+  --pale:#EBF7F1;
+  --pale2:#D4EFE2;
+  --white:#F7FAF8;
+  --border:#D8E8DF;
+  --ink:#0C110E;
+  --ink2:#2A332C;
+  --muted:#6B7870;
+}
+html,body{height:100%;margin:0}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--white);
+  color:var(--ink);
+  min-height:100vh;
+  display:flex;flex-direction:column;
+}
+
+nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 48px;
+  border-bottom:1px solid var(--border);
+  background:var(--white);
+}
+.logo{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:18px;font-weight:800;color:var(--ink);
+  text-decoration:none;letter-spacing:-.5px;
+  display:flex;align-items:center;gap:8px;
+}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green3)}
+
+main{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  padding:48px 24px;
+}
+
+.card{
+  background:#fff;
+  border:1.5px solid var(--border);
+  border-radius:24px;
+  padding:52px 48px;
+  max-width:520px;width:100%;
+  text-align:center;
+  box-shadow:0 8px 40px rgba(10,102,64,.08);
+  opacity:0;
+  animation:cardIn .6s .1s forwards;
+}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(24px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.check-circle{
+  width:80px;height:80px;border-radius:50%;
+  background:var(--pale);
+  border:2px solid var(--pale2);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 28px;
+  animation:popIn .5s .4s both;
+}
+@keyframes popIn{
+  from{transform:scale(0)}
+  to{transform:scale(1)}
+}
+.check-circle svg{color:var(--green)}
+
+.card-title{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:28px;font-weight:800;
+  color:var(--ink);letter-spacing:-1px;
+  margin-bottom:10px;
+}
+.card-sub{
+  font-size:16px;color:var(--muted);
+  line-height:1.6;margin-bottom:36px;
+  max-width:380px;margin-left:auto;margin-right:auto;
+}
+
+/* WhatsApp info */
+.wpp-box{
+  background:var(--pale);
+  border:1.5px solid var(--pale2);
+  border-radius:16px;
+  padding:24px;
+  margin-bottom:32px;
+  text-align:left;
+}
+.wpp-header{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:16px;
+}
+.wpp-icon{
+  width:44px;height:44px;border-radius:12px;
+  background:var(--green);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;flex-shrink:0;
+}
+.wpp-title{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:16px;font-weight:700;color:var(--ink);
+}
+.wpp-sub{font-size:13px;color:var(--muted)}
+.wpp-steps{list-style:none;display:flex;flex-direction:column;gap:10px}
+.wpp-step{
+  display:flex;align-items:flex-start;gap:10px;
+  font-size:14px;color:var(--ink2);line-height:1.5;
+}
+.wpp-num{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--green);color:#fff;
+  font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:1px;
+}
+
+/* ID consulta */
+.consulta-id{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:28px;
+  font-size:13px;
+}
+.id-label{color:var(--muted);font-weight:500}
+.id-value{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-weight:700;color:var(--green);
+  letter-spacing:.5px;
+}
+
+.btn-home{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--green);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;
+  padding:14px 32px;border-radius:100px;
+  text-decoration:none;
+  transition:background .2s,transform .15s;
+  box-shadow:0 4px 20px rgba(10,102,64,.2);
+}
+.btn-home:hover{background:var(--green2);transform:translateY(-1px)}
+
+.trust-row{
+  margin-top:24px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:12px;color:var(--muted);
+}
+.trust-row svg{color:var(--green)}
+
+footer{
+  padding:20px 48px;
+  border-top:1px solid var(--border);
+  text-align:center;
+  font-size:12px;color:var(--muted);
+}
+
+@media(max-width:600px){
+  nav{padding:14px 20px}
+  main{padding:24px 16px;align-items:flex-start}
+  .card{padding:36px 24px}
+  footer{padding:16px 20px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-dot"></div>
+    ConsultaJá!
+  </a>
+</nav>
+
+<main>
+  <div class="card">
+    <div class="check-circle">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <path d="M7 18l7.5 7.5L29 11" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="card-title">Pagamento confirmado!</div>
+    <p class="card-sub">
+      Sua consulta está liberada. Um médico da nossa equipe entrará em contato pelo WhatsApp em instantes.
+    </p>
+
+    <div class="wpp-box">
+      <div class="wpp-header">
+        <div class="wpp-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M11 2C6.03 2 2 6.03 2 11c0 1.77.49 3.42 1.34 4.83L2 20l4.3-1.31A8.96 8.96 0 0011 20c4.97 0 9-4.03 9-9s-4.03-9-9-9z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M8 10.5c0-.28.22-.5.5-.5h5c.28 0 .5.22.5.5v1c0 .28-.22.5-.5.5h-5a.5.5 0 01-.5-.5v-1zM8 13.5c0-.28.22-.5.5-.5h3c.28 0 .5.22.5.5v.5H8v-.5z" fill="white"/>
+          </svg>
+        </div>
+        <div>
+          <div class="wpp-title">Próximos passos</div>
+          <div class="wpp-sub">Acompanhe pelo WhatsApp</div>
+        </div>
+      </div>
+      <ul class="wpp-steps">
+        <li class="wpp-step">
+          <div class="wpp-num">1</div>
+          Você receberá uma mensagem no WhatsApp com as perguntas de triagem
+        </li>
+        <li class="wpp-step">
+          <div class="wpp-num">2</div>
+          Responda as perguntas para agilizar o atendimento
+        </li>
+        <li class="wpp-step">
+          <div class="wpp-num">3</div>
+          O médico avaliará e emitirá os documentos necessários
+        </li>
+        <li class="wpp-step">
+          <div class="wpp-num">4</div>
+          Receberá o PDF assinado digitalmente no WhatsApp e por e-mail
+        </li>
+      </ul>
+    </div>
+
+    <div class="consulta-id">
+      <span class="id-label">ID da consulta</span>
+      <span class="id-value" id="consulta-id-display">—</span>
+    </div>
+
+    <a href="index.html" class="btn-home">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2L2 8h2v6h4v-4h4v4h4V8h2L8 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      Voltar ao início
+    </a>
+
+    <div class="trust-row">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1.5" y="3.5" width="10" height="8" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M4 3.5V3a2.5 2.5 0 015 0v.5" stroke="currentColor" stroke-width="1.1"/></svg>
+      Documentos assinados com certificado digital ICP-Brasil · Equipe médica CRM ativo
+    </div>
+  </div>
+</main>
+
+<footer>
+  ConsultaJá! · Telemedicina regulamentada · Lei 14.510/2022 · LGPD
+</footer>
+
+<script>
+// ── Detectar callback VIDaaS ──
+const urlParams = new URLSearchParams(window.location.search);
+const vidaasCode = urlParams.get('code');
+
+if (vidaasCode) {
+  // Veio do VIDaaS — processar token
+  const codeVerifier = sessionStorage.getItem('vidaas_code_verifier');
+  const medicoId = sessionStorage.getItem('vidaas_medico_id');
+  const lifetime = sessionStorage.getItem('vidaas_lifetime') || '43200';
+
+  const card = document.querySelector('.card');
+  card.innerHTML = `
+    <div style="text-align:center">
+      <div style="width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px"></div>
+      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+      <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:700;color:var(--ink);margin-bottom:8px">Ativando assinatura digital...</div>
+      <div style="font-size:13px;color:var(--muted)">Aguarde, processando autorização</div>
+    </div>
+  `;
+
+  if (!codeVerifier) {
+    card.innerHTML = `
+      <div style="text-align:center">
+        <div style="font-size:20px;font-weight:700;color:#DC2626;margin-bottom:8px">Sessão expirada</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Inicie novamente pelo dashboard</div>
+        <a href="dashboard.html" style="color:var(--green);font-weight:600;text-decoration:none">Voltar ao dashboard</a>
+      </div>
+    `;
+  } else {
+    fetch('https://n8nconsultaja.duckdns.org/webhook/consultaja-vidaas-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: vidaasCode,
+        code_verifier: codeVerifier,
+        medico_id: medicoId,
+        lifetime: parseInt(lifetime)
+      })
+    })
+    .then(r => r.json())
+    .then(data => {
+      sessionStorage.removeItem('vidaas_code_verifier');
+      sessionStorage.removeItem('vidaas_medico_id');
+      sessionStorage.removeItem('vidaas_lifetime');
+
+      if (data.success) {
+        const hours = Math.round(parseInt(lifetime) / 3600);
+        card.innerHTML = `
+          <div style="text-align:center">
+            <div style="width:64px;height:64px;border-radius:50%;background:var(--pale);display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M6 14l6 6 10-10" stroke="#0A6640" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:700;color:var(--ink);margin-bottom:8px">Assinatura ativada!</div>
+            <div style="font-size:14px;color:var(--green);font-weight:600;margin-bottom:4px">Válida por ${hours} horas</div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:24px">Você já pode aprovar consultas e assinar documentos.</div>
+            <a href="dashboard.html" style="display:inline-block;padding:12px 28px;background:var(--green);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;border-radius:100px;text-decoration:none">Voltar ao dashboard</a>
+          </div>
+        `;
+      } else {
+        card.innerHTML = `
+          <div style="text-align:center">
+            <div style="font-size:20px;font-weight:700;color:#DC2626;margin-bottom:8px">Erro na ativação</div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:20px">${data.error || 'Tente novamente pelo dashboard'}</div>
+            <a href="dashboard.html" style="color:var(--green);font-weight:600;text-decoration:none">Voltar ao dashboard</a>
+          </div>
+        `;
+      }
+    })
+    .catch(() => {
+      card.innerHTML = `
+        <div style="text-align:center">
+          <div style="font-size:20px;font-weight:700;color:#DC2626;margin-bottom:8px">Erro de conexão</div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Verifique sua internet e tente novamente</div>
+          <a href="dashboard.html" style="color:var(--green);font-weight:600;text-decoration:none">Voltar ao dashboard</a>
+        </div>
+      `;
+    });
+  }
+} else {
+  // Fluxo normal — confirmação de pagamento
+  const consultaId = sessionStorage.getItem('pix_payment_id') || '—';
+  document.getElementById('consulta-id-display').textContent = consultaId;
+}
+</script>
+</body>
+</html>

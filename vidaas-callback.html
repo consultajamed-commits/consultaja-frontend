@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ativando assinatura — ConsultaJá!</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--green:#0A6640;--green3:#12B870;--ink:#0C110E;--muted:#6B7870;--white:#F7FAF8;--border:#D8E8DF;--pale:#EBF7F1;--danger:#DC2626}
+body{font-family:'DM Sans',sans-serif;background:var(--white);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{max-width:440px;width:100%;background:#fff;border:1px solid var(--border);border-radius:24px;padding:48px 40px;text-align:center;box-shadow:0 16px 48px rgba(10,102,64,.08)}
+.logo{font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;color:var(--ink);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+.logo .dot{width:10px;height:10px;border-radius:50%;background:var(--green3);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.subtitle{font-size:14px;color:var(--muted);margin-bottom:32px}
+
+.spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.status-text{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:8px}
+.status-sub{font-size:13px;color:var(--muted)}
+
+.success-icon{width:64px;height:64px;border-radius:50%;background:var(--pale);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.error-icon{width:64px;height:64px;border-radius:50%;background:#FEF2F2;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+
+.state{display:none}
+.state.active{display:block}
+
+.btn-back{
+  display:inline-block;margin-top:24px;
+  padding:12px 28px;background:var(--green);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+  border:none;border-radius:100px;cursor:pointer;text-decoration:none;
+  transition:background .2s;
+}
+.btn-back:hover{background:#0D8A55}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo"><span class="dot"></span> ConsultaJá!</div>
+  <div class="subtitle">Assinatura digital</div>
+
+  <!-- Loading -->
+  <div class="state active" id="state-loading">
+    <div class="spinner"></div>
+    <div class="status-text">Ativando assinatura digital...</div>
+    <div class="status-sub">Aguarde, estamos processando sua autorização</div>
+  </div>
+
+  <!-- Success -->
+  <div class="state" id="state-success">
+    <div class="success-icon">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M6 14l6 6 10-10" stroke="#0A6640" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="status-text">Assinatura ativada!</div>
+    <div class="status-sub" id="expires-text">Válida por 12 horas</div>
+    <div class="status-sub" style="margin-top:8px;color:var(--green)">Você já pode aprovar consultas e assinar documentos.</div>
+    <button class="btn-back" onclick="window.close()">Fechar e voltar ao dashboard</button>
+  </div>
+
+  <!-- Error -->
+  <div class="state" id="state-error">
+    <div class="error-icon">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M8 8l12 12M20 8l-12 12" stroke="#DC2626" stroke-width="3" stroke-linecap="round"/></svg>
+    </div>
+    <div class="status-text" style="color:var(--danger)">Erro na ativação</div>
+    <div class="status-sub" id="error-text">Tente novamente pelo dashboard</div>
+    <button class="btn-back" onclick="window.close()">Fechar</button>
+  </div>
+</div>
+
+<script>
+const N8N_VIDAAS_TOKEN = 'https://n8nconsultaja.duckdns.org/webhook/consultaja-vidaas-token';
+
+function showState(id) {
+  document.querySelectorAll('.state').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+async function processCallback() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+
+  if (!code) {
+    document.getElementById('error-text').textContent = 'Nenhum código de autorização recebido';
+    showState('state-error');
+    return;
+  }
+
+  // Recuperar dados salvos pelo dashboard
+  const codeVerifier = sessionStorage.getItem('vidaas_code_verifier');
+  const medicoId = sessionStorage.getItem('vidaas_medico_id');
+  const lifetime = sessionStorage.getItem('vidaas_lifetime') || '43200';
+
+  if (!codeVerifier) {
+    document.getElementById('error-text').textContent = 'Sessão expirada. Inicie novamente pelo dashboard.';
+    showState('state-error');
+    return;
+  }
+
+  try {
+    const resp = await fetch(N8N_VIDAAS_TOKEN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code,
+        code_verifier: codeVerifier,
+        medico_id: medicoId,
+        lifetime: parseInt(lifetime)
+      })
+    });
+
+    const data = await resp.json();
+
+    if (data.success) {
+      const hours = Math.round(parseInt(lifetime) / 3600);
+      document.getElementById('expires-text').textContent = `Válida por ${hours} horas`;
+      showState('state-success');
+
+      // Limpar sessionStorage
+      sessionStorage.removeItem('vidaas_code_verifier');
+      sessionStorage.removeItem('vidaas_medico_id');
+      sessionStorage.removeItem('vidaas_lifetime');
+    } else {
+      document.getElementById('error-text').textContent = data.error || 'Erro desconhecido';
+      showState('state-error');
+    }
+  } catch(e) {
+    document.getElementById('error-text').textContent = 'Erro de conexão. Tente novamente.';
+    showState('state-error');
+  }
+}
+
+processCallback();
+</script>
+</body>
+</html>

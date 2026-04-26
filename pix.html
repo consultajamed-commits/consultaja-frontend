@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pagar com Pix — ConsultaJá!</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0C110E;
+  --ink2:#2A332C;
+  --muted:#6B7870;
+  --green:#0A6640;
+  --green2:#0D8A55;
+  --green3:#12B870;
+  --pale:#EBF7F1;
+  --pale2:#D4EFE2;
+  --white:#F7FAF8;
+  --border:#D8E8DF;
+  --pix:#32BCAD;
+  --pix-dark:#1A9E90;
+  --amber:#D97706;
+  --amber-pale:#FFFBEB;
+}
+html,body{height:100%}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--white);
+  color:var(--ink);
+  min-height:100vh;
+  display:flex;flex-direction:column;
+}
+
+/* ── NAV ── */
+nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 48px;
+  border-bottom:1px solid var(--border);
+  background:var(--white);
+}
+.logo{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:18px;font-weight:800;color:var(--ink);
+  text-decoration:none;letter-spacing:-.5px;
+  display:flex;align-items:center;gap:8px;
+}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green3)}
+.steps-bar{display:flex;align-items:center;gap:8px}
+.step-pip{display:flex;align-items:center;gap:6px}
+.step-pip .num{
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;
+}
+.step-pip.done .num{background:var(--green);color:#fff}
+.step-pip.active .num{background:var(--ink);color:#fff}
+.step-pip.pending .num{background:var(--border);color:var(--muted)}
+.step-pip .label{font-size:12px;font-weight:500}
+.step-pip.done .label,.step-pip.active .label{color:var(--ink)}
+.step-pip.pending .label{color:var(--muted)}
+.step-divider{width:24px;height:1px;background:var(--border)}
+
+/* ── MAIN ── */
+main{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  padding:48px 24px;
+}
+
+.pix-container{
+  width:100%;max-width:520px;
+  display:flex;flex-direction:column;gap:20px;
+  opacity:0;animation:fadeUp .5s .1s forwards;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── HEADER CARD ── */
+.header-card{
+  background:var(--pix);
+  border-radius:20px;
+  padding:22px 28px;
+  display:flex;align-items:center;gap:16px;
+}
+.pix-logo-box{
+  width:48px;height:48px;border-radius:14px;
+  background:rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.header-text{}
+.header-title{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:20px;font-weight:800;color:#fff;
+  letter-spacing:-.3px;
+}
+.header-sub{font-size:13px;color:rgba(255,255,255,.8);margin-top:2px}
+.header-price{
+  margin-left:auto;
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:28px;font-weight:800;color:#fff;
+  letter-spacing:-1px;flex-shrink:0;
+}
+.header-price sup{font-size:14px;letter-spacing:0;vertical-align:super}
+
+/* ── QR CARD ── */
+.qr-card{
+  background:#fff;
+  border:1.5px solid var(--border);
+  border-radius:20px;
+  overflow:hidden;
+}
+
+.qr-body{
+  padding:32px;
+  display:flex;flex-direction:column;align-items:center;
+  gap:24px;
+}
+
+/* Timer */
+.timer-ring-wrap{
+  position:relative;
+  display:flex;align-items:center;justify-content:center;
+}
+.timer-ring{
+  width:64px;height:64px;
+  transform:rotate(-90deg);
+}
+.timer-bg{fill:none;stroke:var(--border);stroke-width:3}
+.timer-arc{
+  fill:none;stroke:var(--pix);stroke-width:3;
+  stroke-linecap:round;
+  stroke-dasharray:163;
+  stroke-dashoffset:0;
+  transition:stroke-dashoffset 1s linear, stroke .5s;
+}
+.timer-arc.urgent{stroke:var(--amber)}
+.timer-text{
+  position:absolute;
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:14px;font-weight:800;color:var(--ink);
+  letter-spacing:-.5px;
+}
+.timer-label{
+  font-size:11px;color:var(--muted);text-align:center;margin-top:-16px;
+}
+
+/* QR Code */
+.qr-frame{
+  position:relative;
+  padding:12px;
+  border:1.5px solid var(--border);
+  border-radius:16px;
+  background:#fff;
+}
+.qr-frame::before,.qr-frame::after{
+  content:'';position:absolute;
+  width:16px;height:16px;
+  border-color:var(--pix);border-style:solid;
+}
+.qr-frame::before{top:-2px;left:-2px;border-width:3px 0 0 3px;border-radius:4px 0 0 0}
+.qr-frame::after{bottom:-2px;right:-2px;border-width:0 3px 3px 0;border-radius:0 0 4px 0}
+
+/* QR SVG gerado inline */
+.qr-svg{
+  width:180px;height:180px;
+  display:block;
+}
+
+.qr-expired-overlay{
+  display:none;position:absolute;inset:0;
+  background:rgba(255,255,255,.95);border-radius:14px;
+  align-items:center;justify-content:center;flex-direction:column;gap:8px;
+}
+.qr-expired-overlay.show{display:flex}
+.qr-expired-overlay span{font-size:13px;color:var(--muted);text-align:center}
+
+/* Valor */
+.valor-row{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+}
+.valor-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.valor-num{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:32px;font-weight:800;color:var(--ink);
+  letter-spacing:-1px;
+}
+.valor-num sup{font-size:16px;letter-spacing:0;vertical-align:super}
+
+/* Beneficiário */
+.benef-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--pale);border:1px solid var(--pale2);
+  border-radius:10px;padding:10px 14px;width:100%;
+}
+.benef-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:var(--green);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:11px;font-weight:800;
+  font-family:'Bricolage Grotesque',sans-serif;
+  flex-shrink:0;
+}
+.benef-name{font-size:13px;font-weight:600;color:var(--ink)}
+.benef-cpf{font-size:11px;color:var(--muted)}
+
+/* Copia e cola */
+.copy-section{
+  width:100%;padding:0 0 4px;
+}
+.copy-label{
+  font-size:11px;font-weight:600;letter-spacing:.4px;
+  text-transform:uppercase;color:var(--muted);margin-bottom:8px;
+}
+.copy-box{
+  display:flex;gap:8px;
+}
+.copy-input{
+  flex:1;padding:11px 14px;
+  border:1.5px solid var(--border);border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);
+  background:var(--white);outline:none;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  cursor:default;
+}
+.copy-btn{
+  background:var(--ink);color:#fff;
+  border:none;border-radius:10px;
+  padding:11px 18px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
+  display:flex;align-items:center;gap:6px;white-space:nowrap;
+  transition:background .2s,transform .15s;
+  flex-shrink:0;
+}
+.copy-btn:hover{background:var(--ink2);transform:translateY(-1px)}
+.copy-btn.copied{background:var(--green)}
+
+/* Steps */
+.steps-mini{
+  width:100%;display:flex;flex-direction:column;gap:10px;
+  padding:0 4px;
+}
+.step-mini{
+  display:flex;align-items:flex-start;gap:12px;
+  font-size:13px;color:var(--ink2);line-height:1.5;
+}
+.step-mini-num{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--pale);border:1px solid var(--pale2);
+  color:var(--green);font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:1px;
+}
+
+/* ── POLLING INDICATOR ── */
+.polling-bar{
+  background:var(--pale);border:1px solid var(--pale2);
+  border-radius:12px;padding:14px 18px;
+  display:flex;align-items:center;gap:12px;
+}
+.polling-dots{display:flex;gap:4px}
+.polling-dots span{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--green3);
+  animation:bounce .8s infinite;
+}
+.polling-dots span:nth-child(2){animation-delay:.15s}
+.polling-dots span:nth-child(3){animation-delay:.30s}
+@keyframes bounce{0%,100%{transform:translateY(0);opacity:.6}50%{transform:translateY(-4px);opacity:1}}
+.polling-text{font-size:13px;color:var(--ink2)}
+.polling-text strong{color:var(--green)}
+
+/* ── CONFIRMADO STATE ── */
+.confirmed-overlay{
+  display:none;
+  position:fixed;inset:0;z-index:200;
+  background:rgba(10,102,64,.97);
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:20px;text-align:center;padding:40px;
+}
+.confirmed-overlay.show{display:flex}
+.confirmed-check{
+  width:80px;height:80px;border-radius:50%;
+  background:rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;
+  animation:popIn .4s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes popIn{from{transform:scale(0)}to{transform:scale(1)}}
+.confirmed-title{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:32px;font-weight:800;color:#fff;
+  letter-spacing:-1px;
+}
+.confirmed-sub{font-size:16px;color:rgba(255,255,255,.75);max-width:320px;line-height:1.6}
+.confirmed-redirect{
+  font-size:13px;color:rgba(255,255,255,.5);
+  display:flex;align-items:center;gap:6px;
+}
+.redirect-dots{display:flex;gap:3px}
+.redirect-dots span{
+  width:5px;height:5px;border-radius:50%;
+  background:rgba(255,255,255,.4);
+  animation:bounce .8s infinite;
+}
+.redirect-dots span:nth-child(2){animation-delay:.2s}
+.redirect-dots span:nth-child(3){animation-delay:.4s}
+
+/* ── FOOTER ── */
+footer{
+  padding:18px 48px;
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+}
+.footer-left{font-size:12px;color:var(--muted)}
+.footer-right{
+  display:flex;align-items:center;gap:16px;
+}
+.trust-chip{
+  display:flex;align-items:center;gap:5px;
+  font-size:11px;color:var(--muted);
+}
+.trust-chip svg{color:var(--green)}
+
+@media(max-width:600px){
+  nav{padding:14px 20px}
+  .steps-bar .step-pip .label{display:none}
+  main{padding:24px 16px;align-items:flex-start}
+  .header-price{display:none}
+  footer{padding:14px 20px;flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-dot"></div>
+    ConsultaJá!
+  </a>
+  <div class="steps-bar">
+    <div class="step-pip done">
+      <div class="num">✓</div>
+      <div class="label">Escolha</div>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step-pip done">
+      <div class="num">✓</div>
+      <div class="label">Dados & Pagamento</div>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step-pip active">
+      <div class="num">3</div>
+      <div class="label">Pagar</div>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="pix-container">
+
+    <!-- Header -->
+    <div class="header-card">
+      <div class="pix-logo-box">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <path d="M14 4L20 10L14 16L8 10L14 4Z" fill="white" opacity=".9"/>
+          <path d="M14 12L20 18L14 24L8 18L14 12Z" fill="white" opacity=".6"/>
+        </svg>
+      </div>
+      <div class="header-text">
+        <div class="header-title">Pagar com Pix</div>
+        <div class="header-sub">Consulta médica online · ConsultaJá!</div>
+      </div>
+      <div class="header-price"><sup>R$</sup>59<span style="font-size:50%;vertical-align:baseline;position:relative;top:-0.2em">,90</span></div>
+    </div>
+
+    <!-- QR Card -->
+    <div class="qr-card">
+      <div class="qr-body">
+
+        <!-- Timer -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div class="timer-ring-wrap">
+            <svg class="timer-ring" viewBox="0 0 64 64">
+              <circle class="timer-bg" cx="32" cy="32" r="26"/>
+              <circle class="timer-arc" id="timer-arc" cx="32" cy="32" r="26"/>
+            </svg>
+            <div class="timer-text" id="timer-text">15:00</div>
+          </div>
+          <div class="timer-label">QR Code expira em</div>
+        </div>
+
+        <!-- QR Code SVG (padrão visual — em produção vem do Mercado Pago) -->
+        <div class="qr-frame">
+          <svg class="qr-svg" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+            <!-- Gerado como padrão representativo -->
+            <rect width="180" height="180" fill="white"/>
+            <!-- Finder patterns -->
+            <rect x="10" y="10" width="50" height="50" fill="#0C110E" rx="3"/>
+            <rect x="16" y="16" width="38" height="38" fill="white" rx="1"/>
+            <rect x="22" y="22" width="26" height="26" fill="#0C110E" rx="1"/>
+            <rect x="120" y="10" width="50" height="50" fill="#0C110E" rx="3"/>
+            <rect x="126" y="16" width="38" height="38" fill="white" rx="1"/>
+            <rect x="132" y="22" width="26" height="26" fill="#0C110E" rx="1"/>
+            <rect x="10" y="120" width="50" height="50" fill="#0C110E" rx="3"/>
+            <rect x="16" y="126" width="38" height="38" fill="white" rx="1"/>
+            <rect x="22" y="132" width="26" height="26" fill="#0C110E" rx="1"/>
+            <!-- Data modules (padrão visual) -->
+            <rect x="70" y="10" width="6" height="6" fill="#0C110E"/>
+            <rect x="82" y="10" width="6" height="6" fill="#0C110E"/>
+            <rect x="94" y="10" width="6" height="6" fill="#0C110E"/>
+            <rect x="106" y="10" width="6" height="6" fill="#0C110E"/>
+            <rect x="70" y="22" width="6" height="6" fill="#0C110E"/>
+            <rect x="94" y="22" width="6" height="6" fill="#0C110E"/>
+            <rect x="106" y="22" width="6" height="6" fill="#0C110E"/>
+            <rect x="70" y="34" width="6" height="6" fill="#0C110E"/>
+            <rect x="82" y="34" width="6" height="6" fill="#0C110E"/>
+            <rect x="106" y="34" width="6" height="6" fill="#0C110E"/>
+            <rect x="70" y="46" width="6" height="6" fill="#0C110E"/>
+            <rect x="94" y="46" width="6" height="6" fill="#0C110E"/>
+            <rect x="10" y="70" width="6" height="6" fill="#0C110E"/>
+            <rect x="22" y="70" width="6" height="6" fill="#0C110E"/>
+            <rect x="46" y="70" width="6" height="6" fill="#0C110E"/>
+            <rect x="70" y="70" width="6" height="6" fill="#0C110E"/>
+            <rect x="82" y="70" width="6" height="6" fill="#0C110E"/>
+            <rect x="106" y="70" width="6" height="6" fill="#0C110E"/>
+            <rect x="118" y="70" width="6" height="6" fill="#0C110E"/>
+            <rect x="142" y="70" width="6" height="6" fill="#0C110E"/>
+            <rect x="154" y="70" width="6" height="6" fill="#0C110E"/>
+            <rect x="166" y="70" width="6" height="6" fill="#0C110E"/>
+            <rect x="10" y="82" width="6" height="6" fill="#0C110E"/>
+            <rect x="34" y="82" width="6" height="6" fill="#0C110E"/>
+            <rect x="58" y="82" width="6" height="6" fill="#0C110E"/>
+            <rect x="70" y="82" width="6" height="6" fill="#0C110E"/>
+            <rect x="94" y="82" width="6" height="6" fill="#0C110E"/>
+            <rect x="118" y="82" width="6" height="6" fill="#0C110E"/>
+            <rect x="130" y="82" width="6" height="6" fill="#0C110E"/>
+            <rect x="154" y="82" width="6" height="6" fill="#0C110E"/>
+            <rect x="10" y="94" width="6" height="6" fill="#0C110E"/>
+            <rect x="22" y="94" width="6" height="6" fill="#0C110E"/>
+            <rect x="46" y="94" width="6" height="6" fill="#0C110E"/>
+            <rect x="82" y="94" width="6" height="6" fill="#0C110E"/>
+            <rect x="106" y="94" width="6" height="6" fill="#0C110E"/>
+            <rect x="130" y="94" width="6" height="6" fill="#0C110E"/>
+            <rect x="142" y="94" width="6" height="6" fill="#0C110E"/>
+            <rect x="166" y="94" width="6" height="6" fill="#0C110E"/>
+            <rect x="10" y="106" width="6" height="6" fill="#0C110E"/>
+            <rect x="34" y="106" width="6" height="6" fill="#0C110E"/>
+            <rect x="58" y="106" width="6" height="6" fill="#0C110E"/>
+            <rect x="70" y="106" width="6" height="6" fill="#0C110E"/>
+            <rect x="94" y="106" width="6" height="6" fill="#0C110E"/>
+            <rect x="118" y="106" width="6" height="6" fill="#0C110E"/>
+            <rect x="154" y="106" width="6" height="6" fill="#0C110E"/>
+            <rect x="70" y="118" width="6" height="6" fill="#0C110E"/>
+            <rect x="82" y="118" width="6" height="6" fill="#0C110E"/>
+            <rect x="106" y="118" width="6" height="6" fill="#0C110E"/>
+            <rect x="118" y="118" width="6" height="6" fill="#0C110E"/>
+            <rect x="142" y="118" width="6" height="6" fill="#0C110E"/>
+            <rect x="166" y="118" width="6" height="6" fill="#0C110E"/>
+            <rect x="70" y="130" width="6" height="6" fill="#0C110E"/>
+            <rect x="94" y="130" width="6" height="6" fill="#0C110E"/>
+            <rect x="130" y="130" width="6" height="6" fill="#0C110E"/>
+            <rect x="154" y="130" width="6" height="6" fill="#0C110E"/>
+            <rect x="70" y="142" width="6" height="6" fill="#0C110E"/>
+            <rect x="82" y="142" width="6" height="6" fill="#0C110E"/>
+            <rect x="106" y="142" width="6" height="6" fill="#0C110E"/>
+            <rect x="118" y="142" width="6" height="6" fill="#0C110E"/>
+            <rect x="142" y="142" width="6" height="6" fill="#0C110E"/>
+            <rect x="70" y="154" width="6" height="6" fill="#0C110E"/>
+            <rect x="94" y="154" width="6" height="6" fill="#0C110E"/>
+            <rect x="118" y="154" width="6" height="6" fill="#0C110E"/>
+            <rect x="130" y="154" width="6" height="6" fill="#0C110E"/>
+            <rect x="154" y="154" width="6" height="6" fill="#0C110E"/>
+            <rect x="166" y="154" width="6" height="6" fill="#0C110E"/>
+            <rect x="70" y="166" width="6" height="6" fill="#0C110E"/>
+            <rect x="82" y="166" width="6" height="6" fill="#0C110E"/>
+            <rect x="106" y="166" width="6" height="6" fill="#0C110E"/>
+            <rect x="142" y="166" width="6" height="6" fill="#0C110E"/>
+            <rect x="166" y="166" width="6" height="6" fill="#0C110E"/>
+            <!-- Timing patterns -->
+            <rect x="58" y="10" width="6" height="6" fill="#0C110E"/>
+            <rect x="58" y="22" width="6" height="6" fill="#0C110E"/>
+            <rect x="58" y="34" width="6" height="6" fill="#0C110E"/>
+            <rect x="58" y="46" width="6" height="6" fill="#0C110E"/>
+            <rect x="58" y="58" width="6" height="6" fill="#0C110E"/>
+            <rect x="10" y="58" width="6" height="6" fill="#0C110E"/>
+            <rect x="22" y="58" width="6" height="6" fill="#0C110E"/>
+            <rect x="34" y="58" width="6" height="6" fill="#0C110E"/>
+            <rect x="46" y="58" width="6" height="6" fill="#0C110E"/>
+            <!-- Logo no centro -->
+            <rect x="76" y="76" width="28" height="28" rx="6" fill="#0A6640"/>
+            <text x="90" y="95" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="bold" fill="white">MJ</text>
+          </svg>
+          <div class="qr-expired-overlay" id="expired-overlay">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="14" stroke="#D97706" stroke-width="2"/>
+              <path d="M16 9v8M16 20v2" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span>QR Code expirado<br>Gere um novo abaixo</span>
+          </div>
+        </div>
+
+        <!-- Valor -->
+        <div class="valor-row">
+          <div class="valor-label">Valor a pagar</div>
+          <div class="valor-num"><sup>R$</sup>59<span style="font-size:45%;vertical-align:baseline;position:relative;top:-0.2em;font-weight:700">,90</span></div>
+        </div>
+
+        <!-- Beneficiário -->
+        <div class="benef-row">
+          <div class="benef-icon">MC</div>
+          <div>
+            <div class="benef-name">ConsultaJá! Serviços Médicos</div>
+            <div class="benef-cpf">CPF/CNPJ: •••.•••.•••-••</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-left:auto;color:var(--green)">
+            <path d="M3 8l3.5 3.5 6.5-6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <!-- Copia e cola -->
+        <div class="copy-section">
+          <div class="copy-label">Pix copia e cola</div>
+          <div class="copy-box">
+            <input class="copy-input" id="pix-code" readonly
+              value="00020126580014br.gov.bcb.pix0136a629532e-7693-4846-b028-f142a8ef4b445204000053039865802BR5915MedicoJa Saude6009SAO PAULO62070503***6304B14F">
+            <button class="copy-btn" id="copy-btn" onclick="copiarPix()">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <rect x="4" y="1" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M1 4v8a1 1 0 001 1h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+              Copiar
+            </button>
+          </div>
+        </div>
+
+        <!-- Passos -->
+        <div class="steps-mini">
+          <div class="step-mini">
+            <div class="step-mini-num">1</div>
+            Abra o app do seu banco e escolha pagar com <strong>Pix</strong>
+          </div>
+          <div class="step-mini">
+            <div class="step-mini-num">2</div>
+            Escaneie o QR Code ou cole o código acima
+          </div>
+          <div class="step-mini">
+            <div class="step-mini-num">3</div>
+            Confirme o pagamento — a consulta é liberada em instantes
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Polling indicator -->
+    <div class="polling-bar">
+      <div class="polling-dots">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="polling-text">
+        Aguardando confirmação do pagamento — <strong>não feche esta página</strong>
+      </div>
+    </div>
+
+    <!-- Botão renovar (aparece após expirar) -->
+    <button id="renovar-btn" onclick="renovarQR()"
+      style="display:none;width:100%;padding:15px;background:var(--amber);color:#fff;
+             font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;
+             border:none;border-radius:100px;cursor:pointer;
+             transition:background .2s;display:none">
+      Gerar novo QR Code
+    </button>
+
+    <!-- Demo: botão para simular pagamento confirmado -->
+    <button onclick="simularPagamento()"
+      style="width:100%;padding:14px;background:transparent;
+             border:1.5px dashed var(--border);border-radius:100px;
+             font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);
+             cursor:pointer;transition:border-color .2s,color .2s"
+      onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+      ↗ Simular pagamento confirmado (demo)
+    </button>
+
+  </div>
+</main>
+
+<!-- Overlay de confirmação -->
+<div class="confirmed-overlay" id="confirmed-overlay">
+  <div class="confirmed-check">
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+      <path d="M8 20l8 8 16-16" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <div class="confirmed-title">Pagamento confirmado!</div>
+  <div class="confirmed-sub">Seu pagamento foi recebido. Redirecionando para o chat com o médico...</div>
+  <div class="confirmed-redirect">
+    <div class="redirect-dots">
+      <span></span><span></span><span></span>
+    </div>
+    Abrindo consulta
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">Ambiente seguro · Dados criptografados · LGPD</div>
+  <div class="footer-right">
+    <div class="trust-chip">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="3.5" width="10" height="7.5" rx="1.5" stroke="currentColor" stroke-width="1"/><path d="M3.5 3.5V3a2.5 2.5 0 015 0v.5" stroke="currentColor" stroke-width="1"/></svg>
+      Pagamento seguro
+    </div>
+    <div class="trust-chip">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1"/><path d="M4 6l1.5 1.5 3-3" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Banco Central do Brasil
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── Timer 15 minutos
+const TOTAL = 15 * 60;
+let remaining = TOTAL;
+let expired = false;
+
+const arc = document.getElementById('timer-arc');
+const timerText = document.getElementById('timer-text');
+const circumference = 2 * Math.PI * 26; // r=26
+
+function updateTimer() {
+  if (expired) return;
+  remaining--;
+
+  // Texto
+  const m = Math.floor(remaining / 60);
+  const s = remaining % 60;
+  timerText.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+
+  // Arco
+  const pct = remaining / TOTAL;
+  arc.style.strokeDashoffset = circumference * (1 - pct);
+
+  // Urgência < 2 min
+  if (remaining <= 120) arc.classList.add('urgent');
+
+  // Expirou
+  if (remaining <= 0) {
+    expired = true;
+    document.getElementById('expired-overlay').classList.add('show');
+    document.getElementById('renovar-btn').style.display = 'block';
+    timerText.textContent = '00:00';
+    return;
+  }
+
+  setTimeout(updateTimer, 1000);
+}
+
+// Inicia
+arc.style.strokeDasharray = circumference;
+arc.style.strokeDashoffset = 0;
+setTimeout(updateTimer, 1000);
+
+// ── Copiar Pix
+function copiarPix() {
+  const code = document.getElementById('pix-code').value;
+  navigator.clipboard.writeText(code).catch(() => {
+    // fallback para browsers mais antigos
+    const el = document.getElementById('pix-code');
+    el.select();
+    document.execCommand('copy');
+  });
+  const btn = document.getElementById('copy-btn');
+  btn.textContent = '✓ Copiado!';
+  btn.classList.add('copied');
+  setTimeout(() => {
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4" y="1" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 4v8a1 1 0 001 1h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Copiar`;
+    btn.classList.remove('copied');
+  }, 2500);
+}
+
+// ── Renovar QR
+function renovarQR() {
+  expired = false;
+  remaining = TOTAL;
+  document.getElementById('expired-overlay').classList.remove('show');
+  document.getElementById('renovar-btn').style.display = 'none';
+  arc.classList.remove('urgent');
+  updateTimer();
+}
+
+// ── Simular pagamento confirmado
+function simularPagamento() {
+  document.getElementById('confirmed-overlay').classList.add('show');
+  setTimeout(() => {
+    window.location.href = 'confirmacao.html';
+  }, 3500);
+}
+
+// ── Carrega dados reais do sessionStorage
+const pixQrCode = sessionStorage.getItem('pix_qr_code');
+const pixQrBase64 = sessionStorage.getItem('pix_qr_base64');
+const pixPaymentId = sessionStorage.getItem('pix_payment_id');
+
+if (pixQrCode) {
+  // Atualiza campo copia-e-cola com código real
+  document.getElementById('pix-code').value = pixQrCode;
+
+  // Se tiver QR Code em base64, exibe a imagem real
+  if (pixQrBase64) {
+    const qrFrame = document.querySelector('.qr-frame');
+    qrFrame.innerHTML = `
+      <img src="data:image/png;base64,${pixQrBase64}"
+           style="width:180px;height:180px;display:block;border-radius:8px;"
+           alt="QR Code Pix">
+      <div class="qr-expired-overlay" id="expired-overlay">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="14" stroke="#D97706" stroke-width="2"/>
+          <path d="M16 9v8M16 20v2" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>QR Code expirado<br>Gere um novo abaixo</span>
+      </div>`;
+  }
+}
+
+// ── Polling real — verifica pagamento a cada 4 segundos
+let pollingInterval;
+if (pixPaymentId) {
+  pollingInterval = setInterval(async () => {
+    try {
+      const res = await fetch(
+        `https://n8nconsultaja.duckdns.org/webhook/18655eec-04af-4662-879b-d5b34b54d0f2?id=${pixPaymentId}`
+      );
+      const data = await res.json();
+      if (data.status === 'approved') {
+        clearInterval(pollingInterval);
+        simularPagamento();
+      }
+    } catch(e) { /* continua tentando */ }
+  }, 4000);
+}
+</script>
+</body>
+</html>

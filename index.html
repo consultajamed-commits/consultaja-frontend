@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConsultaJá! — Consulta médica em minutos, pelo celular</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root,[data-theme="light"]{
+  --ink:#0C110E;
+  --ink2:#2A332C;
+  --muted:#6B7870;
+  --green:#0A6640;
+  --green2:#0D8A55;
+  --green3:#12B870;
+  --pale:#EBF7F1;
+  --pale2:#D4EFE2;
+  --white:#F7FAF8;
+  --border:#D8E8DF;
+  --chat-bg:#F0F9F4;
+  /* surfaces that flip in dark */
+  --surface:#FFFFFF;         /* cards, phone frame, chat msg-in */
+  --surface-2:#F7FAF8;       /* subtle secondary surface */
+  --nav-bg:rgba(247,250,248,0.9);
+  --overlay:rgba(12,17,14,.4);
+  --dark-section:#0C110E;    /* diff & app-hook & footer bg */
+  --dark-section-text:#F7FAF8;
+  --dark-on-dark:rgba(255,255,255,.55);
+  --dark-on-dark-faint:rgba(255,255,255,.08);
+  --hero-grad-1:rgba(247,250,248,.97);
+  --hero-grad-2:rgba(247,250,248,.94);
+  --hero-grad-3:rgba(247,250,248,.75);
+  --hero-grad-4:rgba(247,250,248,.35);
+  --hero-grad-5:rgba(247,250,248,.15);
+  --shadow-soft:0 32px 80px rgba(10,102,64,.12), 0 4px 16px rgba(0,0,0,.06);
+  --shadow-card:0 16px 48px rgba(10,102,64,.1);
+  --shadow-btn:0 6px 24px rgba(10,102,64,.28);
+  --shadow-btn-hover:0 10px 32px rgba(10,102,64,.38);
+  --shadow-preco:0 24px 60px rgba(10,102,64,.12);
+  --ring-dot:rgba(10,102,64,.06);
+}
+[data-theme="dark"]{
+  --ink:#F7FAF8;
+  --ink2:#CEDDD3;
+  --muted:#9AB0A3;
+  --green:#12B870;
+  --green2:#18D184;
+  --green3:#4BE4A6;
+  --pale:#0F2419;
+  --pale2:#163A27;
+  --white:#03100B;
+  --border:#1A3527;
+  --chat-bg:#0A1C14;
+  --surface:#081710;
+  --surface-2:#0A1C14;
+  --nav-bg:rgba(3,16,11,0.82);
+  --overlay:rgba(0,0,0,.6);
+  --dark-section:#010806;
+  --dark-section-text:#F7FAF8;
+  --dark-on-dark:rgba(255,255,255,.6);
+  --dark-on-dark-faint:rgba(255,255,255,.06);
+  --hero-grad-1:rgba(3,16,11,.97);
+  --hero-grad-2:rgba(3,16,11,.94);
+  --hero-grad-3:rgba(3,16,11,.78);
+  --hero-grad-4:rgba(3,16,11,.42);
+  --hero-grad-5:rgba(3,16,11,.18);
+  --shadow-soft:0 32px 80px rgba(0,0,0,.6), 0 4px 16px rgba(0,0,0,.3);
+  --shadow-card:0 16px 48px rgba(0,0,0,.45);
+  --shadow-btn:0 6px 24px rgba(18,184,112,.25);
+  --shadow-btn-hover:0 10px 32px rgba(18,184,112,.35);
+  --shadow-preco:0 24px 60px rgba(0,0,0,.5);
+  --ring-dot:rgba(75,228,166,.08);
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--ink);line-height:1.6;overflow-x:hidden;transition:background .2s ease, color .2s ease}
+body *{transition:background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, fill .2s ease, stroke .2s ease}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 48px;
+  background:var(--nav-bg);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.theme-toggle{
+  width:42px;height:42px;border-radius:12px;
+  border:1.5px solid var(--border);background:transparent;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--ink);
+  transition:border-color .2s,background .2s,color .2s,transform .2s;
+}
+.theme-toggle:hover{border-color:var(--green);background:var(--pale);color:var(--green);transform:translateY(-1px)}
+.theme-toggle svg{width:18px;height:18px}
+.theme-toggle .icon-sun{display:none}
+.theme-toggle .icon-moon{display:block}
+[data-theme="dark"] .theme-toggle .icon-sun{display:block}
+[data-theme="dark"] .theme-toggle .icon-moon{display:none}
+.logo{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:20px;font-weight:800;
+  color:var(--ink);letter-spacing:-0.5px;
+  display:flex;align-items:center;gap:8px;
+  text-decoration:none;
+}
+.logo-dot{
+  width:10px;height:10px;border-radius:50%;
+  background:var(--green3);
+  animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.nav-right{display:flex;align-items:center;gap:16px}
+.nav-btn{
+  background:var(--green);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;
+  padding:10px 24px;border-radius:100px;border:none;
+  cursor:pointer;text-decoration:none;
+  transition:background .2s,transform .15s;
+}
+.nav-btn:hover{background:var(--green2);transform:translateY(-1px)}
+
+/* Hamburger */
+.menu-toggle{
+  width:42px;height:42px;border-radius:12px;
+  border:1.5px solid var(--border);background:transparent;
+  cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:5px;
+  transition:border-color .2s,background .2s;
+  position:relative;z-index:200;
+}
+.menu-toggle:hover{border-color:var(--green);background:var(--pale)}
+.menu-toggle span{
+  display:block;width:18px;height:2px;
+  background:var(--ink);border-radius:2px;
+  transition:transform .3s,opacity .3s;
+}
+.menu-toggle.active span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.menu-toggle.active span:nth-child(2){opacity:0}
+.menu-toggle.active span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* Side Panel */
+.side-panel{
+  position:fixed;top:0;right:-380px;
+  width:360px;max-width:85vw;height:100vh;
+  background:var(--white);
+  border-left:1px solid var(--border);
+  box-shadow:-16px 0 60px rgba(0,0,0,.18);
+  z-index:150;
+  padding:96px 40px 40px;
+  display:flex;flex-direction:column;gap:8px;
+  transition:right .35s cubic-bezier(.4,0,.2,1);
+}
+.side-panel.open{right:0}
+.side-overlay{
+  position:fixed;inset:0;
+  background:var(--overlay);
+  backdrop-filter:blur(4px);
+  z-index:140;
+  opacity:0;pointer-events:none;
+  transition:opacity .3s;
+}
+.side-overlay.show{opacity:1;pointer-events:auto}
+
+.side-panel a{
+  font-family:'DM Sans',sans-serif;
+  font-size:16px;color:var(--ink2);
+  text-decoration:none;
+  padding:14px 16px;border-radius:12px;
+  display:flex;align-items:center;gap:12px;
+  transition:background .2s,color .2s;
+}
+.side-panel a:hover{background:var(--pale);color:var(--green)}
+.side-panel a svg{color:var(--green);flex-shrink:0}
+.side-divider{height:1px;background:var(--border);margin:8px 0}
+.side-panel .side-cta{
+  margin-top:auto;
+  background:var(--green);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;
+  padding:16px 28px;border-radius:100px;border:none;
+  cursor:pointer;text-decoration:none;text-align:center;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .2s;
+}
+.side-panel .side-cta:hover{background:var(--green2);color:#fff}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;
+  display:grid;grid-template-columns:1fr 1fr;
+  padding-top:72px;
+  position:relative;overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;pointer-events:none;
+}
+.hero-bg-slide{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center;
+  opacity:0;
+  transition:opacity 1.5s ease-in-out;
+}
+.hero-bg-slide.active{opacity:1}
+.hero-bg-slide:nth-child(1){background-image:url('https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=1920&q=80&auto=format&fit=crop')}
+.hero-bg-slide:nth-child(2){background-image:url('https://plus.unsplash.com/premium_photo-1661628958443-a200c93ae3e6?q=80&w=1740&auto=format&fit=crop')}
+.hero-bg-slide:nth-child(3){background-image:url('https://images.unsplash.com/photo-1651008376811-b90baee60c1f?w=1920&q=80&auto=format&fit=crop')}
+.hero-bg::before{
+  content:'';position:absolute;inset:0;z-index:1;
+  background:linear-gradient(
+    90deg,
+    var(--hero-grad-1) 0%,
+    var(--hero-grad-2) 40%,
+    var(--hero-grad-3) 65%,
+    var(--hero-grad-4) 85%,
+    var(--hero-grad-5) 100%
+  );
+}
+.hero-bg::after{
+  content:'';position:absolute;inset:0;z-index:2;
+  background-image:radial-gradient(circle, var(--ring-dot) 1px, transparent 1px);
+  background-size:32px 32px;
+  mask-image:radial-gradient(ellipse 60% 60% at 30% 50%, black 0%, transparent 80%);
+}
+
+.hero-left{
+  display:flex;flex-direction:column;justify-content:center;
+  padding:80px 48px 80px 64px;
+  position:relative;z-index:1;
+}
+
+.pill{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--pale);border:1px solid var(--pale2);
+  color:var(--green);font-size:12px;font-weight:500;
+  padding:6px 14px;border-radius:100px;
+  margin-bottom:24px;width:fit-content;
+  opacity:0;animation:fadeUp .5s .1s forwards;
+}
+.pill-pulse{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--green3);
+  animation:blink 1.5s infinite;
+}
+
+h1{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:clamp(40px,5.5vw,68px);
+  font-weight:800;line-height:1.0;
+  letter-spacing:-2.5px;color:var(--ink);
+  margin-bottom:20px;
+  opacity:0;animation:fadeUp .6s .2s forwards;
+}
+h1 .accent{color:var(--green)}
+h1 .line2{display:block;font-weight:400;font-style:italic;color:var(--ink2)}
+
+.hero-sub{
+  font-size:18px;color:var(--muted);font-weight:300;
+  max-width:440px;line-height:1.65;margin-bottom:36px;
+  opacity:0;animation:fadeUp .6s .35s forwards;
+}
+
+.hero-actions{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  opacity:0;animation:fadeUp .6s .5s forwards;
+}
+.btn-main{
+  background:var(--green);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;
+  padding:16px 32px;border-radius:100px;border:none;cursor:pointer;
+  text-decoration:none;
+  display:inline-flex;align-items:center;gap:10px;
+  box-shadow:var(--shadow-btn);
+  transition:background .2s,transform .15s,box-shadow .2s;
+}
+.btn-main:hover{background:var(--green2);transform:translateY(-2px);box-shadow:var(--shadow-btn-hover)}
+.btn-ghost{
+  font-size:14px;color:var(--muted);
+  display:flex;align-items:center;gap:6px;
+  text-decoration:none;transition:color .2s;
+}
+.btn-ghost:hover{color:var(--ink)}
+
+.hero-trust{
+  margin-top:40px;
+  display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+  opacity:0;animation:fadeUp .6s .65s forwards;
+}
+.trust-chip{
+  display:flex;align-items:center;gap:7px;
+  font-size:13px;color:var(--muted);
+}
+.trust-chip svg{color:var(--green)}
+.trust-sep{width:1px;height:16px;background:var(--border)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── HERO STATS BAR ── */
+.hero-stats{
+  display:flex;align-items:center;gap:28px;
+  margin-top:32px;padding:16px 0;
+  border-top:1px solid var(--border);
+  opacity:0;animation:fadeUp .6s .8s forwards;
+}
+.hero-stat{display:flex;flex-direction:column;gap:2px}
+.hero-stat-val{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:22px;font-weight:800;color:var(--ink);
+  letter-spacing:-0.5px;
+  display:flex;align-items:center;gap:6px;
+}
+.hero-stat-val .live-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--green3);animation:blink 1.5s infinite;
+}
+.hero-stat-label{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.3px}
+
+/* ── DOCTORS MINI ROW (hero) ── */
+.doctors-mini{
+  display:flex;align-items:center;gap:10px;
+  margin-top:20px;
+  opacity:0;animation:fadeUp .6s .9s forwards;
+}
+.doctors-avatars{display:flex}
+.doctors-avatars .doc-av{
+  width:36px;height:36px;border-radius:50%;
+  border:2.5px solid var(--white);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:12px;font-weight:700;color:#fff;
+  margin-left:-10px;
+  position:relative;
+  overflow:hidden;
+}
+.doctors-avatars .doc-av img{
+  width:100%;height:100%;object-fit:cover;border-radius:50%;
+}
+.doctors-avatars .doc-av:first-child{margin-left:0}
+.doc-av-1{background:#0A6640}
+.doc-av-2{background:#0D8A55}
+.doc-av-3{background:#12B870}
+.doc-av-4{background:var(--ink2)}
+.doctors-mini-text{font-size:12px;color:var(--muted);line-height:1.4}
+.doctors-mini-text strong{color:var(--ink);font-weight:600}
+.doc-av-img{
+  width:36px;height:36px;border-radius:50%;
+  border:2.5px solid var(--white);
+  margin-left:-10px;
+  object-fit:cover;
+}
+.doc-av-img:first-child{margin-left:0}
+
+/* ── CHAT MOCKUP ── */
+.hero-right{
+  display:flex;align-items:center;justify-content:center;
+  padding:80px 64px 80px 24px;
+  position:relative;z-index:1;
+}
+
+.phone-frame{
+  width:280px;
+  background:var(--surface);
+  border-radius:36px;
+  border:1.5px solid var(--border);
+  box-shadow:var(--shadow-soft);
+  overflow:hidden;
+  position:relative;
+  opacity:0;animation:fadeUp .7s .4s forwards;
+}
+.phone-notch{
+  height:28px;background:var(--ink);
+  display:flex;align-items:center;justify-content:center;
+}
+.phone-notch-pill{
+  width:60px;height:6px;
+  background:rgba(255,255,255,.15);border-radius:100px;
+}
+.phone-header{
+  background:var(--green);
+  padding:14px 16px 12px;
+  display:flex;align-items:center;gap:10px;
+}
+.phone-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:16px;
+}
+.phone-header-info{flex:1}
+.phone-name{font-size:13px;font-weight:600;color:#fff;font-family:'Bricolage Grotesque',sans-serif}
+.phone-status{font-size:11px;color:rgba(255,255,255,.75);display:flex;align-items:center;gap:4px}
+.status-dot{width:6px;height:6px;border-radius:50%;background:#4ade80}
+
+.chat-body{
+  padding:14px 12px;
+  background:var(--chat-bg);
+  min-height:380px;
+  display:flex;flex-direction:column;gap:10px;
+  font-size:13px;
+}
+.msg{max-width:82%;padding:9px 12px;border-radius:16px;line-height:1.5;font-size:12.5px}
+.msg-in{
+  background:var(--surface);color:var(--ink);
+  border-radius:4px 16px 16px 16px;
+  border:1px solid var(--border);
+  align-self:flex-start;
+  opacity:0;animation:msgIn .4s forwards;
+}
+.msg-out{
+  background:var(--green);color:#fff;
+  border-radius:16px 4px 16px 16px;
+  align-self:flex-end;
+  opacity:0;animation:msgIn .4s forwards;
+}
+.msg-time{font-size:10px;color:var(--muted);margin-top:2px}
+.msg-time-out{text-align:right;color:rgba(255,255,255,.6);font-size:10px;margin-top:2px}
+
+.msg-in:nth-child(1){animation-delay:.8s}
+.msg-out:nth-child(2){animation-delay:1.3s}
+.msg-in:nth-child(3){animation-delay:1.8s}
+.msg-out:nth-child(4){animation-delay:2.3s}
+.msg-in:nth-child(5){animation-delay:2.8s}
+.doc-msg{animation-delay:3.3s!important}
+
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes docSlideUp{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+.chat-body{scroll-behavior:smooth;overflow-y:auto;max-height:420px}
+.chat-body::-webkit-scrollbar{width:3px}
+.chat-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* JS-driven chat — override static animation-delays */
+.chat-body .msg, .chat-body .typing, .chat-body .doc-card{animation:none !important;opacity:0}
+.chat-body .docs-batch{animation:none !important}
+.chat-body .msg.show, .chat-body .typing.show{opacity:1;animation:msgIn .35s forwards !important;animation-delay:0s !important}
+.chat-body .docs-batch{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.chat-body .doc-card.show{opacity:1;animation:docSlideUp .45s cubic-bezier(.4,1.4,.6,1) forwards !important;animation-delay:0s !important}
+.doc-card .doc-signed{font-size:10px;color:var(--green);font-weight:500;margin-top:4px;display:flex;align-items:center;gap:3px}
+
+.doc-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:10px 12px;
+  display:flex;align-items:center;gap:10px;
+  align-self:flex-start;
+  opacity:0;animation:msgIn .4s 3.3s forwards;
+  max-width:90%;
+}
+.doc-icon{
+  width:36px;height:36px;background:var(--pale);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--green);flex-shrink:0;
+}
+.doc-title{font-size:12px;font-weight:600;color:var(--ink)}
+.doc-sub{font-size:10.5px;color:var(--muted)}
+.doc-dl{
+  font-size:11px;color:var(--green);font-weight:500;margin-top:3px;
+  display:flex;align-items:center;gap:4px;cursor:pointer;
+}
+
+.typing{
+  display:flex;align-items:center;gap:4px;
+  align-self:flex-start;
+  background:var(--surface);border:1px solid var(--border);
+  padding:10px 14px;border-radius:4px 16px 16px 16px;
+  opacity:0;animation:msgIn .4s 2.6s forwards;
+}
+.typing span{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--muted);
+  animation:bounce .8s infinite;
+}
+.typing span:nth-child(2){animation-delay:.15s}
+.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* ── COMO FUNCIONA ── */
+.section{padding:96px 64px}
+.label{
+  font-size:11px;font-weight:600;letter-spacing:2px;
+  text-transform:uppercase;color:var(--green);
+  margin-bottom:14px;
+}
+.sec-title{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:clamp(28px,3.5vw,44px);
+  font-weight:800;letter-spacing:-1.5px;
+  color:var(--ink);line-height:1.05;
+  max-width:560px;margin-bottom:12px;
+}
+.sec-sub{font-size:17px;color:var(--muted);font-weight:300;max-width:480px;margin-bottom:64px}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:48px;position:relative}
+.steps::before{
+  content:'';position:absolute;
+  top:28px;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--border),var(--border),transparent);
+}
+.step{position:relative;z-index:1}
+.step-num{
+  width:56px;height:56px;border-radius:50%;
+  border:1.5px solid var(--border);background:var(--white);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:20px;
+  color:var(--green);
+  transition:border-color .3s,box-shadow .3s;
+}
+.step:hover .step-num{border-color:var(--green);box-shadow:0 0 0 8px var(--pale)}
+.step-n{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:11px;font-weight:700;letter-spacing:1px;
+  color:var(--muted);margin-bottom:8px;
+}
+.step-title{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:20px;font-weight:700;color:var(--ink);
+  letter-spacing:-.5px;margin-bottom:8px;
+}
+.step-text{font-size:14px;color:var(--muted);line-height:1.65}
+
+/* ── CORPO CLÍNICO ── */
+.equipe{padding:96px 64px;background:var(--pale);position:relative;overflow:hidden}
+.equipe::before{
+  content:'';position:absolute;top:-60px;right:-60px;
+  width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle,var(--ring-dot),transparent 70%);
+  pointer-events:none;
+}
+.equipe-header{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  gap:24px;margin-bottom:56px;flex-wrap:wrap;
+}
+.equipe-header-right{font-size:14px;color:var(--muted);max-width:380px;text-align:right}
+.equipe-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:20px;
+}
+.doc-card-team{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:28px 24px;
+  text-align:center;
+  transition:transform .25s,box-shadow .25s;
+}
+.doc-card-team:hover{
+  transform:translateY(-4px);
+  box-shadow:var(--shadow-card);
+}
+.doc-photo{
+  width:80px;height:80px;border-radius:50%;
+  margin:0 auto 16px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:24px;font-weight:800;color:#fff;
+  position:relative;
+  overflow:hidden;
+}
+.doc-photo img{
+  width:100%;height:100%;object-fit:cover;
+  border-radius:50%;
+}
+.doc-photo::after{
+  content:'';position:absolute;bottom:2px;right:2px;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--green3);border:2.5px solid var(--surface);
+}
+.doc-photo.offline::after{background:var(--muted)}
+.doc-photo-img{
+  width:80px;height:80px;border-radius:50%;
+  object-fit:cover;
+  margin:0 auto 16px;
+  display:block;
+  border:3px solid var(--pale2);
+  position:relative;
+}
+.doc-name{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:17px;font-weight:700;color:var(--ink);
+  letter-spacing:-.3px;margin-bottom:2px;
+}
+.doc-crm{font-size:12px;color:var(--muted);margin-bottom:8px}
+.doc-espec{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:500;color:var(--green);
+  background:var(--pale);border:1px solid var(--pale2);
+  padding:4px 12px;border-radius:100px;
+}
+.doc-status-online{
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  font-size:11px;color:var(--green);font-weight:500;
+  margin-top:12px;
+}
+.doc-status-online .live-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--green3);animation:blink 1.5s infinite;
+}
+
+/* ── DIFERENCIAIS ── */
+.diff{background:var(--dark-section);padding:96px 64px}
+.diff .label{color:var(--green3)}
+.diff .sec-title{color:var(--dark-section-text);max-width:680px}
+
+.diff-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--dark-on-dark-faint);border-radius:20px;overflow:hidden;margin-top:56px}
+.diff-card{
+  background:rgba(255,255,255,.03);
+  padding:32px 28px;
+  transition:background .3s;
+  cursor:default;
+}
+.diff-card:hover{background:rgba(10,102,64,.18)}
+.diff-icon{
+  width:44px;height:44px;border-radius:12px;
+  background:rgba(18,184,112,.1);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--green3);margin-bottom:18px;
+}
+.diff-title{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:17px;font-weight:700;color:var(--dark-section-text);
+  margin-bottom:8px;letter-spacing:-.3px;
+}
+.diff-text{font-size:13.5px;color:var(--dark-on-dark);line-height:1.65}
+
+/* ── DEPOIMENTOS ── */
+.depo{padding:96px 64px}
+.depo-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:24px;margin-top:56px;
+}
+.depo-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:28px 24px;
+  display:flex;flex-direction:column;gap:16px;
+  transition:transform .25s,box-shadow .25s;
+}
+.depo-card:hover{
+  transform:translateY(-3px);
+  box-shadow:var(--shadow-card);
+}
+.depo-stars{display:flex;gap:2px;color:var(--green3)}
+.depo-text{
+  font-size:14px;color:var(--ink2);line-height:1.7;
+  flex:1;
+}
+.depo-author{
+  display:flex;align-items:center;gap:10px;
+  padding-top:16px;border-top:1px solid var(--border);
+}
+.depo-avatar{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:13px;font-weight:700;color:#fff;
+}
+.depo-name{font-size:13px;font-weight:600;color:var(--ink)}
+.depo-loc{font-size:11px;color:var(--muted)}
+
+/* ── PREÇO ── */
+.preco{background:var(--pale);padding:96px 64px;text-align:center}
+.preco-card{
+  display:inline-block;
+  background:var(--surface);
+  border:2px solid var(--green);
+  border-radius:28px;padding:52px 72px;
+  box-shadow:var(--shadow-preco);
+  position:relative;max-width:440px;width:100%;
+}
+.preco-badge{
+  position:absolute;top:-15px;left:50%;transform:translateX(-50%);
+  background:var(--green);color:#fff;
+  font-size:12px;font-weight:600;padding:5px 22px;border-radius:100px;
+  white-space:nowrap;letter-spacing:.3px;
+}
+.preco-val{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:80px;font-weight:800;color:var(--ink);
+  letter-spacing:-4px;line-height:1;
+}
+.preco-val sup{font-size:30px;letter-spacing:0;vertical-align:super}
+.preco-per{color:var(--muted);font-size:14px;margin-bottom:32px}
+.preco-list{list-style:none;text-align:left;margin-bottom:36px}
+.preco-list li{
+  display:flex;align-items:center;gap:10px;
+  font-size:15px;color:var(--ink2);
+  padding:10px 0;border-bottom:1px solid var(--border);
+}
+.preco-list li:last-child{border:none}
+.ck{color:var(--green);font-weight:700;font-size:16px}
+.preco-note{font-size:12px;color:var(--muted);margin-top:16px}
+
+/* ── APP HOOK ── */
+.app-hook{
+  background:var(--dark-section);padding:96px 64px;
+  display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:64px;
+}
+.app-hook-text .label{color:var(--green3)}
+.app-hook-text h2{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:clamp(28px,3.5vw,44px);font-weight:800;
+  letter-spacing:-1.5px;color:var(--dark-section-text);line-height:1.05;margin-bottom:16px;
+}
+.app-hook-text p{font-size:16px;color:var(--dark-on-dark);margin-bottom:32px;max-width:420px}
+.app-btns{display:flex;gap:12px;flex-wrap:wrap}
+.app-btn-coming{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.5);padding:12px 22px;border-radius:12px;
+  font-size:14px;font-weight:500;cursor:default;
+}
+.app-hook-visual{
+  display:flex;align-items:center;justify-content:center;
+}
+.store-visual{text-align:center}
+.qr-placeholder{
+  width:140px;height:140px;border-radius:16px;
+  background:rgba(255,255,255,.05);border:1px dashed rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.3);font-size:13px;
+  margin:0 auto 14px;
+}
+.store-note{font-size:12px;color:rgba(255,255,255,.35)}
+
+/* ── FAQ ── */
+.faq{padding:96px 64px}
+.faq-list{max-width:680px;margin-top:40px}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-q{
+  width:100%;background:none;border:none;cursor:pointer;
+  padding:20px 0;
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:17px;font-weight:600;color:var(--ink);
+  text-align:left;letter-spacing:-.3px;
+}
+.faq-icon{font-size:20px;color:var(--muted);transition:transform .3s}
+.faq-a{
+  max-height:0;overflow:hidden;
+  font-size:14px;color:var(--muted);line-height:1.7;
+  transition:max-height .3s,padding .3s;
+  padding:0 0 0;
+}
+.faq-item.open .faq-a{max-height:200px;padding:0 0 20px}
+.faq-item.open .faq-icon{transform:rotate(45deg)}
+
+/* ── FINAL CTA ── */
+.final{
+  background:var(--green);
+  padding:96px 64px;text-align:center;
+}
+[data-theme="dark"] .final{background:linear-gradient(135deg,#0A6640,var(--green))}
+.final-inner{max-width:600px;margin:0 auto}
+.final h2{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:clamp(32px,4.5vw,56px);font-weight:800;
+  color:#fff;letter-spacing:-2px;line-height:1.05;margin-bottom:16px;
+}
+.final p{font-size:18px;color:rgba(255,255,255,.7);margin-bottom:40px}
+.btn-white{
+  background:#fff;color:var(--green);
+  font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;
+  padding:18px 44px;border-radius:100px;border:none;cursor:pointer;
+  text-decoration:none;display:inline-flex;align-items:center;gap:10px;
+  box-shadow:0 6px 32px rgba(0,0,0,.2);
+  transition:transform .2s,box-shadow .2s;
+}
+.btn-white:hover{transform:translateY(-2px);box-shadow:0 10px 40px rgba(0,0,0,.3)}
+
+/* ── FOOTER ── */
+footer{
+  background:var(--dark-section);padding:28px 64px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+}
+.footer-logo{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:17px;font-weight:800;color:var(--dark-section-text);
+}
+.footer-info{font-size:12px;color:rgba(255,255,255,.4)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  nav{padding:14px 20px}
+  .nav-btn{display:none}
+  .hero{grid-template-columns:1fr}
+  .hero-left{padding:60px 24px 32px}
+  .hero-right{padding:0 24px 60px}
+  .phone-frame{width:240px}
+  .hero-stats{gap:20px;flex-wrap:wrap}
+  .section,.diff,.preco,.faq,.final,.equipe,.depo{padding:64px 24px}
+  .steps{grid-template-columns:1fr}
+  .steps::before{display:none}
+  .diff-grid{grid-template-columns:1fr}
+  .depo-grid{grid-template-columns:1fr}
+  .equipe-grid{grid-template-columns:1fr}
+  .equipe-header{flex-direction:column;align-items:flex-start}
+  .equipe-header-right{text-align:left}
+  .app-hook{grid-template-columns:1fr;padding:64px 24px}
+  footer{padding:24px 20px;flex-direction:column;align-items:flex-start}
+  .preco-card{padding:40px 28px}
+  .side-panel{padding:80px 28px 28px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-dot"></div>
+    ConsultaJá!
+  </a>
+  <div class="nav-right">
+    <a href="pagamento.html" class="nav-btn">Quero minha consulta</a>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Alternar tema" title="Alternar tema">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <button class="menu-toggle" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- SIDE PANEL -->
+<div class="side-overlay" onclick="toggleMenu()"></div>
+<div class="side-panel" id="sidePanel">
+  <a href="#como-funciona" onclick="toggleMenu()">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M9 6v4M9 12.5v.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+    Como funciona
+  </a>
+  <a href="#equipe" onclick="toggleMenu()">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="7" cy="7" r="3" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 16a6 6 0 0112 0" stroke="currentColor" stroke-width="1.3"/></svg>
+    Equipe médica
+  </a>
+  <a href="#depoimentos" onclick="toggleMenu()">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M15 12a1.5 1.5 0 01-1.5 1.5H5.5L2 17V4.5A1.5 1.5 0 013.5 3h10A1.5 1.5 0 0115 4.5z" stroke="currentColor" stroke-width="1.3"/></svg>
+    Depoimentos
+  </a>
+  <a href="#preco" onclick="toggleMenu()">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2v14M5 5.5c0-1.38 1.79-2.5 4-2.5s4 1.12 4 2.5-1.79 2.5-4 2.5-4 1.12-4 2.5 1.79 2.5 4 2.5 4-1.12 4-2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    Preço
+  </a>
+  <a href="#faq" onclick="toggleMenu()">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.3"/><path d="M7 7a2 2 0 013.5 1.5c0 1.5-2 1.5-2 3M9 13.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    Dúvidas frequentes
+  </a>
+  <div class="side-divider"></div>
+  <a href="verificar.html">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7.5 3a4.5 4.5 0 100 9 4.5 4.5 0 000-9zM15 15l-3.5-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    Verificar atestado
+  </a>
+  <a href="#" onclick="toggleMenu()">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3.5" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 16a6.5 6.5 0 0113 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    Entrar (médicos)
+  </a>
+  <a href="pagamento.html" class="side-cta">
+    Iniciar consulta
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg">
+    <div class="hero-bg-slide active"></div>
+    <div class="hero-bg-slide"></div>
+    <div class="hero-bg-slide"></div>
+  </div>
+  <div class="hero-left">
+    <div class="pill">
+      <span class="pill-pulse"></span>
+      Médicos disponíveis agora
+    </div>
+    <h1>
+      Consulta médica<br>
+      <span class="accent">em minutos,</span><br>
+      <span class="line2">pelo celular.</span>
+    </h1>
+    <p class="hero-sub">
+      Descreva sua queixa no chat, converse com um médico da nossa equipe e receba seu receituário, orientações e atestado assinado digitalmente — sem câmera, sem fila, sem sair de casa.<a href="#faq-camera" style="color:var(--green);text-decoration:none;font-size:11px;vertical-align:super;margin-left:1px">*</a>
+    </p>
+    <div class="hero-actions">
+      <a href="pagamento.html" class="btn-main">
+        Começar agora
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="#como-funciona" class="btn-ghost">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 7l1.5 1.5 2-2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Ver como funciona
+      </a>
+    </div>
+    <div class="hero-trust">
+      <div class="trust-chip">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 3 3.5.5-2.5 2.5.6 3.5L7 9l-3.1 1.5.6-3.5L2 4.5 5.5 4z" stroke="currentColor" stroke-width="1.1"/></svg>
+        Médicos CRM ativo
+      </div>
+      <div class="trust-sep"></div>
+      <div class="trust-chip">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="4" width="10" height="7.5" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M4.5 4V3a2.5 2.5 0 015 0v1" stroke="currentColor" stroke-width="1.1"/></svg>
+        Assinatura ICP-Brasil
+      </div>
+      <div class="trust-sep"></div>
+      <div class="trust-chip">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5 6.5-6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Válido em todo o Brasil
+      </div>
+    </div>
+
+    <!-- STATS BAR -->
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-val"><span class="live-dot"></span> 3</div>
+        <div class="hero-stat-label">Médicos online</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">Imediato</div>
+        <div class="hero-stat-label">Início da consulta</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">1.200+</div>
+        <div class="hero-stat-label">Consultas realizadas</div>
+      </div>
+    </div>
+
+    <!-- DOCTORS MINI -->
+    <div class="doctors-mini">
+      <div class="doctors-avatars">
+        <img class="doc-av-img" src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=80&h=80&fit=crop&crop=face" alt="Médico">
+        <img class="doc-av-img" src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=80&h=80&fit=crop&crop=face" alt="Médica">
+        <img class="doc-av-img" src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=80&h=80&fit=crop&crop=face" alt="Médico">
+      </div>
+      <div class="doctors-mini-text">
+        <strong>Parte da nossa equipe</strong><br>
+        Médicos verificados CRM
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="phone-frame">
+      <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+      <div class="phone-header">
+        <div class="phone-avatar">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="7" r="3" stroke="white" stroke-width="1.5"/><path d="M3 15a6 6 0 0112 0" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div class="phone-header-info">
+          <div class="phone-name">Dra. Ana · ConsultaJá</div>
+          <div class="phone-status"><span class="status-dot"></span> online agora</div>
+        </div>
+      </div>
+      <div class="chat-body" id="liveChat"></div>
+    </div>
+  </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section class="section" id="como-funciona">
+  <div class="label">Processo</div>
+  <h2 class="sec-title">Três passos.<br>Sem complicação.</h2>
+  <p class="sec-sub">Da queixa à conduta, tudo resolvido no celular ou computador.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 3v4M16 3v4M3 11h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="step-n">01</div>
+      <div class="step-title">Pague e acesse</div>
+      <p class="step-text">Uma taxa única de consulta. Pix ou cartão. Confirmação imediata e acesso liberado ao chat com o médico.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="step-n">02</div>
+      <div class="step-title">Converse pelo chat</div>
+      <p class="step-text">Descreva seus sintomas por texto, áudio ou foto. Sem câmera obrigatória. O médico avalia e faz a anamnese completa.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.5"/><path d="M14 2v6h6M9 13h6M9 17h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </div>
+      <div class="step-n">03</div>
+      <div class="step-title">Receba o atestado, receituário e orientações</div>
+      <p class="step-text">PDF com assinatura digital ICP-Brasil enviado no chat e por e-mail. Válido em empresas, escolas e repartições públicas.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CORPO CLÍNICO -->
+<section class="equipe" id="equipe">
+  <div class="equipe-header">
+    <div>
+      <div class="label">Equipe médica</div>
+      <h2 class="sec-title">Nosso corpo clínico</h2>
+    </div>
+    <div class="equipe-header-right">
+      Todos os médicos possuem CRM ativo e são verificados individualmente. Cada consulta é um atendimento médico real.
+    </div>
+  </div>
+  <div class="equipe-grid">
+    <!-- Médico 1 — TROCAR src pela foto real -->
+    <div class="doc-card-team">
+      <img class="doc-photo-img" src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=160&h=160&fit=crop&crop=face" alt="Dr. Matheus Castro">
+      <div class="doc-name">Dr. Matheus Castro</div>
+      <div class="doc-crm">CRM-SP 222371</div>
+      <div class="doc-espec">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Clínica Geral
+      </div>
+      <div class="doc-status-online">
+        <span class="live-dot"></span> Disponível agora
+      </div>
+    </div>
+    <!-- Médico 2 — TROCAR src pela foto real -->
+    <div class="doc-card-team">
+      <img class="doc-photo-img" src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=160&h=160&fit=crop&crop=face" alt="Dra. Ana Luiza">
+      <div class="doc-name">Dra. Ana Luiza</div>
+      <div class="doc-crm">CRM-SP ——</div>
+      <div class="doc-espec">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Clínica Geral
+      </div>
+      <div class="doc-status-online">
+        <span class="live-dot"></span> Disponível agora
+      </div>
+    </div>
+    <!-- Médico 3 — TROCAR src pela foto real -->
+    <div class="doc-card-team">
+      <img class="doc-photo-img" src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=160&h=160&fit=crop&crop=face" alt="Dr. Rafael Santos">
+      <div class="doc-name">Dr. Rafael Santos</div>
+      <div class="doc-crm">CRM-SP ——</div>
+      <div class="doc-espec">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Clínica Geral
+      </div>
+      <div class="doc-status-online">
+        <span class="live-dot"></span> Disponível agora
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DIFERENCIAIS -->
+<section class="diff">
+  <div class="label">Por que o ConsultaJá</div>
+  <h2 class="sec-title" style="color:#fff">O jeito mais simples de ter um atendimento médico de verdade.</h2>
+  <div class="diff-grid">
+    <div class="diff-card">
+      <div class="diff-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2l2 4 4.5.7-3.2 3.2.8 4.5L10 12.4l-4 2.2.8-4.5L3.5 6.7 8 6z" stroke="currentColor" stroke-width="1.3"/></svg>
+      </div>
+      <div class="diff-title">Equipe médica verificada</div>
+      <p class="diff-text">Você conversa com um médico registrado no CRM. Não é chatbot, não é IA. É uma consulta real com médico de verdade.</p>
+    </div>
+    <div class="diff-card">
+      <div class="diff-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.3"/><path d="M10 7v4l2.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </div>
+      <div class="diff-title">Atendimento imediato</div>
+      <p class="diff-text">Pagou, já começa. Com vários médicos online, sua consulta inicia na hora — sem fila, sem agendamento, sem espera.</p>
+    </div>
+    <div class="diff-card">
+      <div class="diff-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2a6 6 0 016 6c0 4-6 10-6 10S4 12 4 8a6 6 0 016-6z" stroke="currentColor" stroke-width="1.3"/><circle cx="10" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/></svg>
+      </div>
+      <div class="diff-title">Sem agendamento</div>
+      <p class="diff-text">Entrou, pagou, já fala com o médico. Sem marcar horário, sem esperar slot disponível. O atendimento começa em minutos.</p>
+    </div>
+    <div class="diff-card">
+      <div class="diff-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="5" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M3 9l7 4 7-4" stroke="currentColor" stroke-width="1.3"/></svg>
+      </div>
+      <div class="diff-title">Assinatura ICP-Brasil</div>
+      <p class="diff-text">O receituário, orientação e atestado são assinados com certificado digital ICP-Brasil — o mesmo padrão usado por notários e órgãos públicos.</p>
+    </div>
+    <div class="diff-card">
+      <div class="diff-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2l1.5 3 3.5.5-2.5 2.5.5 3.5L10 10l-3 1.5.5-3.5L5 5.5l3.5-.5z" stroke="currentColor" stroke-width="1.3"/><path d="M4 14l2 2 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="diff-title">Funciona na empresa</div>
+      <p class="diff-text">Nenhuma empresa tem amparo legal para recusar atestado emitido por teleconsulta. Lei 14.510/2022 garante a validade.</p>
+    </div>
+    <div class="diff-card">
+      <div class="diff-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="6" width="16" height="11" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M6 6V5a4 4 0 018 0v1" stroke="currentColor" stroke-width="1.3"/></svg>
+      </div>
+      <div class="diff-title">Privacidade garantida</div>
+      <p class="diff-text">Dados protegidos pela LGPD. Prontuário sob sigilo médico. Você controla quem vê suas informações de saúde.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DEPOIMENTOS -->
+<section class="depo" id="depoimentos">
+  <div class="label">Depoimentos</div>
+  <h2 class="sec-title">O que dizem nossos pacientes</h2>
+  <p class="sec-sub">Milhares de pessoas já cuidaram da saúde com o ConsultaJá.</p>
+  <div class="depo-grid">
+    <div class="depo-card">
+      <div class="depo-stars">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.8 3.6 4 .6-2.9 2.8.7 4L7 10.2 3.4 12l.7-4L1.2 5.2l4-.6z"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.8 3.6 4 .6-2.9 2.8.7 4L7 10.2 3.4 12l.7-4L1.2 5.2l4-.6z"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.8 3.6 4 .6-2.9 2.8.7 4L7 10.2 3.4 12l.7-4L1.2 5.2l4-.6z"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.8 3.6 4 .6-2.9 2.8.7 4L7 10.2 3.4 12l.7-4L1.2 5.2l4-.6z"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.8 3.6 4 .6-2.9 2.8.7 4L7 10.2 3.4 12l.7-4L1.2 5.2l4-.6z"/></svg>
+      </div>
+      <div class="depo-text">Acordei passando mal num domingo de manhã. Em menos de 10 minutos já estava conversando com o médico pelo WhatsApp. Recebi o atestado e o receituário antes do almoço. Impressionante.</div>
+      <div class="depo-author">
+        <div class="depo-avatar" style="background:var(--green)">RM</div>
+        <div>
+          <div class="depo-name">Rodrigo M.</div>
+          <div class="depo-loc">São Paulo, SP</div>
+        </div>
+      </div>
+    </div>
+    <div class="depo-card">
+      <div class="depo-stars">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.8 3.6 4 .6-2.9 2.8.7 4L7 10.2 3.4 12l.7-4L1.2 5.2l4-.6z"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.8 3.6 4 .6-2.9 2.8.7 4L7 10.2 3.4 12l.7-4L1.2 5.2l4-.6z"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.8 3.6 4 .6-2.9 2.8.7 4L7 10.2 3.4 12l.7-4L1.2 5.2l4-.6z"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.8 3.6 4 .6-2.9 2.8.7 4L7 10.2 3.4 12l.7-4L1.2 5.2l4-.6z"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.8 3.6 4 .6-2.9 2.8.7 4L7 10.2 3.4 12l.7-4L1.2 5.2l4-.6z"/></svg>
+      </div>
+      <div class="depo-text">Precisava de atestado para o trabalho e não conseguia ir ao pronto-socorro. Fui atendida em minutos, a médica foi super atenciosa. O documento chegou assinado digitalmente, meu RH aceitou sem problema.</div>
+      <div class="depo-author">
+        <div class="depo-avatar" style="background:var(--green2)">PC</div>
+        <div>
+          <div class="depo-name">Patrícia C.</div>
+          <div class="depo-loc">Campinas, SP</div>
+        </div>
+      </div>
+    </div>
+    <div class="depo-card">
+      <div class="depo-stars">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.8 3.6 4 .6-2.9 2.8.7 4L7 10.2 3.4 12l.7-4L1.2 5.2l4-.6z"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.8 3.6 4 .6-2.9 2.8.7 4L7 10.2 3.4 12l.7-4L1.2 5.2l4-.6z"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.8 3.6 4 .6-2.9 2.8.7 4L7 10.2 3.4 12l.7-4L1.2 5.2l4-.6z"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.8 3.6 4 .6-2.9 2.8.7 4L7 10.2 3.4 12l.7-4L1.2 5.2l4-.6z"/></svg>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l1.8 3.6 4 .6-2.9 2.8.7 4L7 10.2 3.4 12l.7-4L1.2 5.2l4-.6z"/></svg>
+      </div>
+      <div class="depo-text">Meu filho estava com febre alta à noite. Consultei pelo ConsultaJá e evitei fila de pronto-socorro. O médico foi objetivo e recebi a receita na hora. Virou minha primeira opção.</div>
+      <div class="depo-author">
+        <div class="depo-avatar" style="background:var(--green3)">CM</div>
+        <div>
+          <div class="depo-name">Carlos M.</div>
+          <div class="depo-loc">Guarulhos, SP</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PREÇO -->
+<section class="preco" id="preco">
+  <div class="label">Valor</div>
+  <h2 class="sec-title" style="margin:0 auto 12px;text-align:center">Simples e direto</h2>
+  <p class="sec-sub" style="margin:0 auto 48px;text-align:center">Uma consulta, conduta rápida na palma da sua mão.</p>
+  <div class="preco-card">
+    <div class="preco-badge">✓ Valor único por consulta</div>
+    <div class="preco-val"><sup>R$</sup>59<span style="font-size:38%;letter-spacing:0;vertical-align:baseline;font-weight:600;position:relative;top:-0.3em">,90</span></div>
+    <div class="preco-per">consulta + documentos assinados e válidos</div>
+    <ul class="preco-list">
+      <li><span class="ck">✓</span> Consulta via chat com médico CRM</li>
+      <li><span class="ck">✓</span> Documentos em PDF com assinatura ICP-Brasil</li>
+      <li><span class="ck">✓</span> Entregue no chat e por e-mail</li>
+      <li><span class="ck">✓</span> Válido em todo o Brasil</li>
+      <li><span class="ck">✓</span> Sem câmera, sem agendamento</li>
+    </ul>
+    <a href="pagamento.html" class="btn-main" style="width:100%;justify-content:center;font-size:17px;padding:18px">
+      Iniciar consulta agora — R$ 59,90
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <div class="preco-note">Pix ou cartão de crédito · Confirmação imediata</div>
+  </div>
+</section>
+
+<!-- APP HOOK -->
+<section class="app-hook">
+  <div class="app-hook-text">
+    <div class="label">Em breve</div>
+    <h2>Ainda mais rápido<br>pelo aplicativo.</h2>
+    <p>Enquanto isso, tudo funciona direto no navegador — sem precisar instalar nada. O app vem logo.</p>
+    <div class="app-btns">
+      <div class="app-btn-coming">📱 App iOS — em breve</div>
+      <div class="app-btn-coming">📱 App Android — em breve</div>
+    </div>
+  </div>
+  <div class="app-hook-visual">
+    <div class="store-visual">
+      <div class="qr-placeholder">QR Code<br>em breve</div>
+      <div class="store-note">Use pelo navegador enquanto<br>o app não chega 👆</div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="label">Dúvidas</div>
+  <h2 class="sec-title">Perguntas frequentes</h2>
+  <div class="faq-list">
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        O atestado online tem validade legal?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">Sim. O atestado é emitido por médico com CRM ativo após consulta real, e assinado com certificado digital ICP-Brasil — o mesmo padrão exigido por cartórios e órgãos públicos. A Lei 14.510/2022 garante sua validade em todo o território nacional.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Minha empresa pode recusar o atestado?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">Não há amparo legal para recusa. A telemedicina é reconhecida como prática médica legítima no Brasil, e o atestado emitido por teleconsulta tem o mesmo respaldo jurídico que o presencial. Em caso de recusa, o empregador estaria descumprindo a legislação trabalhista.</div>
+    </div>
+    <div class="faq-item" id="faq-camera">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Preciso ligar a câmera?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">Opcional. O atendimento é preferencialmente 100% por chat — texto, áudio ou fotos. Você descreve seus sintomas e o médico faz a avaliação clínica pela conversa. Câmera é opcional.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Quantos dias de atestado posso pedir?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">O médico avalia cada caso individualmente com base nos sintomas relatados. A quantidade de dias é decisão clínica do médico — geralmente 1 a 3 dias para quadros agudos simples. Casos mais complexos podem exigir avaliação presencial.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        E se o médico entender que não preciso de atestado?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">O médico tem autonomia clínica plena e avalia cada caso individualmente. Se entender que o afastamento não é indicado, orientará sobre os próximos passos. A consulta realizada não é reembolsável, pois representa um serviço médico prestado.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Qual médico vai me atender?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">Você será atendido por um dos médicos da nossa equipe, todos com CRM ativo e verificado. O sistema conecta você ao médico disponível no momento para garantir o menor tempo de espera possível.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Meus dados ficam protegidos?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">Sim. Todas as informações são tratadas com sigilo médico e protegidas pela LGPD. Seus dados de saúde não são compartilhados com terceiros sem sua autorização expressa.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final">
+  <div class="final-inner">
+    <h2>Ficou doente?<br>A gente resolve agora.</h2>
+    <p>Sem fila, sem câmera, sem sair de casa.</p>
+    <a href="pagamento.html" class="btn-white">
+      Quero minha consulta
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">ConsultaJá!</div>
+  <div class="footer-info">ConsultaJá Telemedicina · Equipe médica com CRM ativo · Telemedicina regulamentada · Lei 14.510/2022 · LGPD</div>
+</footer>
+
+<script>
+// Theme toggle (dark/light)
+(function(){
+  const saved = localStorage.getItem('cj-theme');
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = saved || (prefersDark ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('cj-theme', next);
+}
+
+// Menu toggle
+function toggleMenu(){
+  document.getElementById('sidePanel').classList.toggle('open');
+  document.querySelector('.side-overlay').classList.toggle('show');
+  document.querySelector('.menu-toggle').classList.toggle('active');
+  document.body.style.overflow = document.getElementById('sidePanel').classList.contains('open') ? 'hidden' : '';
+}
+
+// Close menu on anchor click (already handled via onclick but also on hash nav)
+document.querySelectorAll('.side-panel a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',()=>{
+    setTimeout(()=>{ if(document.getElementById('sidePanel').classList.contains('open')) toggleMenu(); },50);
+  });
+});
+
+function toggleFaq(btn){
+  const item=btn.closest('.faq-item');
+  const isOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i=>i.classList.remove('open'));
+  if(!isOpen)item.classList.add('open');
+}
+
+// Abre FAQ automaticamente se vier da âncora
+if (window.location.hash === '#faq-atestado' || window.location.hash === '#faq-camera') {
+  const el = document.querySelector(window.location.hash);
+  if (el) {
+    el.classList.add('open');
+    setTimeout(() => el.scrollIntoView({behavior:'smooth', block:'center'}), 100);
+  }
+}
+
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.style.opacity='1';
+      e.target.style.transform='translateY(0)';
+    }
+  });
+},{threshold:.1});
+
+document.querySelectorAll('.step,.diff-card,.doc-card-team,.depo-card').forEach(el=>{
+  el.style.opacity='0';
+  el.style.transform='translateY(24px)';
+  el.style.transition='opacity .5s, transform .5s';
+  observer.observe(el);
+});
+
+// ══════ LIVE CHAT SIMULATION ══════
+(function(){
+  const chatEl = document.getElementById('liveChat');
+  if(!chatEl) return;
+
+  const SCRIPT = [
+    {role:'in',  text:'Olá, estou com muita dor de garganta há 2 dias e febre', time:'09:12'},
+    {role:'out', text:'Olá! Sou a Dra. Ana, vou te atender. A febre tá em quanto?', time:'09:12', typing:true},
+    {role:'in',  text:'38.5° agora. Doi muito pra engolir e tá branco no fundo da garganta', time:'09:13'},
+    {role:'out', text:'Entendi. Tá com tosse, dor no corpo, ou só na garganta mesmo?', time:'09:13', typing:true},
+    {role:'in',  text:'Só na garganta e a febre. Sem tosse', time:'09:14'},
+    {role:'out', text:'Pelos sintomas e a placa branca, parece amigdalite bacteriana. Vou prescrever antibiótico, anti-inflamatório e atestado de 2 dias pra repouso. Já te envio aqui.', time:'09:15', typing:true},
+    {role:'out', text:'Lembrando: hidrate bastante, evite ar gelado e retorne se a febre não ceder em 48h.', time:'09:15', typing:true, shortType:true},
+  ];
+
+  const DOCS = [
+    {icon:'Rx', title:'Receituário.pdf',  sub:'Amoxicilina 500mg + Ibuprofeno 600mg'},
+    {icon:'At', title:'Atestado Médico.pdf', sub:'2 dias de afastamento · CID J03.9'},
+    {icon:'Or', title:'Orientações.pdf', sub:'Repouso e hidratação'},
+  ];
+
+  const ICON_PDF = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 2h7l4 4v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.4"/><path d="M11 2v4h4M6 9h6M6 12h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
+
+  let timeouts = [], running = false, runId = 0;
+  const wait = (ms) => new Promise(r => timeouts.push(setTimeout(r, ms)));
+  const scrollBottom = () => { chatEl.scrollTop = chatEl.scrollHeight; };
+
+  function buildMsg(m){
+    const el = document.createElement('div');
+    el.className = 'msg ' + (m.role === 'in' ? 'msg-in' : 'msg-out');
+    const timeCls = m.role === 'in' ? 'msg-time' : 'msg-time-out';
+    const check = m.role === 'out' ? ' ✓✓' : '';
+    el.innerHTML = m.text + '<div class="'+timeCls+'">'+m.time+check+'</div>';
+    return el;
+  }
+
+  function buildTyping(){
+    const el = document.createElement('div');
+    el.className = 'typing';
+    el.innerHTML = '<span></span><span></span><span></span>';
+    return el;
+  }
+
+  function buildDoc(d){
+    const el = document.createElement('div');
+    el.className = 'doc-card';
+    el.innerHTML =
+      '<div class="doc-icon">'+ICON_PDF+'</div>'+
+      '<div><div class="doc-title">'+d.title+'</div>'+
+      '<div class="doc-sub">'+d.sub+'</div>'+
+      '<div class="doc-signed">🔒 Assinado digitalmente · ICP-Brasil</div></div>';
+    return el;
+  }
+
+  async function run(){
+    const myId = ++runId;
+    running = true;
+    chatEl.innerHTML = '';
+    const alive = () => myId === runId;
+
+    for(const m of SCRIPT){
+      if(!alive()) return;
+      if(m.typing){
+        const t = buildTyping();
+        chatEl.appendChild(t);
+        requestAnimationFrame(()=>t.classList.add('show'));
+        scrollBottom();
+        await wait(m.shortType ? 600 : 900);
+        if(!alive()) return;
+        t.remove();
+      }
+      const msg = buildMsg(m);
+      chatEl.appendChild(msg);
+      requestAnimationFrame(()=>msg.classList.add('show'));
+      scrollBottom();
+      await wait(m.shortType ? 700 : 1000);
+    }
+
+    if(!alive()) return;
+    await wait(400);
+    const batch = document.createElement('div');
+    batch.className = 'docs-batch';
+    chatEl.appendChild(batch);
+    for(const d of DOCS){
+      if(!alive()) return;
+      const el = buildDoc(d);
+      batch.appendChild(el);
+      requestAnimationFrame(()=>el.classList.add('show'));
+      scrollBottom();
+      await wait(600);
+    }
+
+    await wait(2500);
+    if(!alive()) return;
+    running = false;
+    run();
+  }
+
+  function stop(){
+    runId++;
+    running = false;
+    timeouts.forEach(clearTimeout);
+    timeouts = [];
+  }
+
+  let isVisible = true;
+  run();
+  // Only pause when deeply out of view (user far from hero)
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e => {
+      if(!e.isIntersecting && isVisible){
+        isVisible = false;
+        stop();
+      } else if(e.isIntersecting && !isVisible){
+        isVisible = true;
+        run();
+      }
+    });
+  }, {threshold: 0, rootMargin: '200px'});
+  io.observe(chatEl.closest('.phone-frame') || chatEl);
+})();
+
+// Hero background carousel
+const slides = document.querySelectorAll('.hero-bg-slide');
+let currentSlide = 0;
+if (slides.length > 1) {
+  setInterval(() => {
+    slides[currentSlide].classList.remove('active');
+    currentSlide = (currentSlide + 1) % slides.length;
+    slides[currentSlide].classList.add('active');
+  }, 5000);
+}
+
+// Hero background carousel
+(function(){
+  const slides = document.querySelectorAll('.hero-bg-slide');
+  let current = 0;
+  setInterval(()=>{
+    slides[current].classList.remove('active');
+    current = (current + 1) % slides.length;
+    slides[current].classList.add('active');
+  }, 5000);
+})();
+</script>
+</body>
+</html>
