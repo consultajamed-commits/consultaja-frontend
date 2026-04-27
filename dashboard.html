@@ -837,6 +837,8 @@ let currentMedico = null;
 let currentConsulta = null;
 let currentFilter = 'todos';
 let consultas = [];
+let authToken = null;            // JWT do Railway, populado em doLogin
+const AUTH_API = 'https://web-production-0c606.up.railway.app';
 
 // ═══════════════ LOGIN ═══════════════
 async function doLogin() {
@@ -852,28 +854,28 @@ async function doLogin() {
   err.classList.remove('show');
 
   try {
-    const { data, error } = await sb
-      .from('medicos')
-      .select('*')
-      .eq('crm', crm)
-      .eq('senha_hash', senha)
-      .single();
+    // Login via Railway: senha NUNCA viaja em URL (POST body), comparação bcrypt
+    // server-side, JWT volta no body. Backend cuida de marcar status='online'.
+    const resp = await fetch(`${AUTH_API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ crm, senha })
+    });
+    const data = await resp.json();
 
-    if (error || !data) {
-      err.textContent = 'CRM ou senha incorretos';
+    if (!resp.ok || !data.ok) {
+      err.textContent = data.erro || 'CRM ou senha incorretos';
       err.classList.add('show');
       return;
     }
 
-    currentMedico = data;
-
-    // Set online
-    await sb.from('medicos').update({ status: 'online' }).eq('id', data.id);
+    authToken     = data.token;
+    currentMedico = data.medico;
 
     // Update UI
-    const initials = data.nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    const initials = currentMedico.nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
     document.getElementById('topbarAvatar').textContent = initials;
-    document.getElementById('topbarName').textContent = data.nome;
+    document.getElementById('topbarName').textContent = currentMedico.nome;
 
     // Show dashboard
     document.getElementById('loginScreen').classList.add('hidden');
@@ -897,9 +899,19 @@ async function doLogin() {
 }
 
 function doLogout() {
-  if (currentMedico) {
-    sb.from('medicos').update({ status: 'offline' }).eq('id', currentMedico.id);
+  // Backend marca offline. Fire-and-forget: se a request falhar (rede, servidor
+  // fora), nada quebra — JWT expira em 12h naturalmente.
+  if (currentMedico && authToken) {
+    fetch(`${AUTH_API}/auth/logout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`,
+      },
+      body: JSON.stringify({ medico_id: currentMedico.id }),
+    }).catch(() => {});
   }
+  authToken = null;
   currentMedico = null;
   currentConsulta = null;
   document.getElementById('loginScreen').classList.remove('hidden');
@@ -1206,15 +1218,20 @@ async function ativarVidaas() {
   }
 }
 
-// Verificar status VIDaaS periodicamente
+// Verificar status VIDaaS periodicamente — via Railway, anon key não toca medicos
 setInterval(async () => {
-  if (currentMedico) {
-    const { data } = await sb.from('medicos').select('vidaas_expires_at').eq('id', currentMedico.id).single();
-    if (data) {
-      currentMedico.vidaas_expires_at = data.vidaas_expires_at;
+  if (!currentMedico || !authToken) return;
+  try {
+    const resp = await fetch(`${AUTH_API}/auth/me`, {
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    if (!resp.ok) return;
+    const body = await resp.json();
+    if (body.ok && body.medico) {
+      currentMedico = body.medico;     // re-hidrata estado completo
       checkVidaasStatus();
     }
-  }
+  } catch (e) { /* ignora — próximo tick tenta de novo */ }
 }, 30000);
 
 async function sendWhatsApp(phone, message) {
