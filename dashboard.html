@@ -1019,8 +1019,16 @@ async function selectConsulta(id) {
   const initials = consulta.paciente_nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
   document.getElementById('chatAvatar').textContent = initials;
   document.getElementById('chatPatientName').textContent = consulta.paciente_nome;
-  document.getElementById('chatPatientDetail').textContent =
-    `${consulta.queixa || ''} · ${consulta.consulta_id_legivel || ''}`;
+  // Detalhe do header: queixa · CPF formatado · data nascimento · ID legível.
+  // Cada parte só entra se tiver valor — não vai poluir com "undefined" ou "·"
+  // sobrando se algum campo faltar.
+  const detalhePartes = [
+    consulta.queixa,
+    consulta.paciente_cpf ? `CPF ${formatCpf(consulta.paciente_cpf)}` : null,
+    consulta.data_nascimento ? `Nasc. ${consulta.data_nascimento}` : null,
+    consulta.consulta_id_legivel,
+  ].filter(Boolean);
+  document.getElementById('chatPatientDetail').textContent = detalhePartes.join(' · ');
 
   // Render action buttons based on status
   renderActions(consulta);
@@ -1739,6 +1747,14 @@ function subscribeRealtime() {
 }
 
 // ═══════════════ HELPERS ═══════════════
+// Formata CPF "05423695325" → "054.236.953-25". Se não tem 11 dígitos, devolve
+// como veio (paciente cadastrou errado em algum momento — não escondemos).
+function formatCpf(cpf) {
+  const d = String(cpf || '').replace(/\D/g, '');
+  if (d.length !== 11) return cpf;
+  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`;
+}
+
 function timeAgo(dateStr) {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
   if (diff < 1) return 'agora';
