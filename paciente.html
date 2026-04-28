@@ -465,13 +465,20 @@ function render(data) {
   const c = data.consulta || {};
   const msgs = data.mensagens || [];
 
-  // Hotfix Fix 2 do n8n-fixes-batch.md (ainda não aplicado em prod): o n8n
-  // hoje grava comandos do dashboard do médico (#atender, #gerar, #aprovar)
-  // como mensagens com remetente='medico'. Não devem ser visíveis pro paciente.
-  // Filtra client-side enquanto o n8n não tiver o gating no `Salvar Mensagem1`.
-  const msgsVisiveis = msgs.filter(m => !(
-    m.remetente === 'medico' && (m.conteudo || '').trim().startsWith('#')
-  ));
+  // Filtros de mensagens internas que NÃO devem aparecer pro paciente:
+  //
+  // 1) Comandos do médico no dashboard (#atender, #gerar, #aprovar) que o n8n
+  //    grava como remetente='medico' (Fix 2 do n8n-fixes-batch.md ainda
+  //    pendente — gating no `Salvar Mensagem1`).
+  //
+  // 2) Mensagens 'sistema' geradas pelo n8n (ex: "SOAP gerado — aguardando
+  //    aprovação do médico" do nó Status SOAP1). São de auditoria interna,
+  //    não fazem sentido pro paciente.
+  const msgsVisiveis = msgs.filter(m => {
+    if (m.remetente === 'medico' && (m.conteudo || '').trim().startsWith('#')) return false;
+    if (m.remetente === 'sistema') return false;
+    return true;
+  });
 
   // Assinatura: evita re-render desnecessário (chat não pula scroll à toa).
   // Usa msgsVisiveis pra ignorar mensagens-comando filtradas.
