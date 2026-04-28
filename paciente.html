@@ -205,6 +205,55 @@ nav{
 }
 .foot-info svg{flex-shrink:0;margin-top:2px;color:var(--green)}
 
+/* ── DOCUMENTOS (Fase 3) ── aparece quando GET /paciente/documentos retorna pelo menos 1 doc */
+.docs-section{
+  background:#fff;border-top:1px solid var(--border);
+  padding:14px 16px 16px;flex-shrink:0;
+}
+.docs-titulo{
+  font-size:11px;font-weight:700;letter-spacing:.5px;
+  color:var(--muted);text-transform:uppercase;
+  margin-bottom:10px;padding:0 4px;
+}
+.docs-grid{display:flex;flex-direction:column;gap:8px}
+.doc-card{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 14px;
+  background:var(--pale);border:1px solid var(--pale2);
+  border-radius:12px;
+  text-decoration:none;color:var(--ink);
+  transition:background .15s,border-color .15s,transform .1s;
+}
+.doc-card:hover:not(.disabled){
+  background:var(--pale2);border-color:var(--green);
+  transform:translateY(-1px);
+}
+.doc-card:active:not(.disabled){transform:translateY(0)}
+.doc-card.disabled{
+  background:var(--white);border-color:var(--border);
+  opacity:.65;cursor:default;
+}
+.doc-icon{
+  width:38px;height:38px;border-radius:8px;
+  background:var(--green);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:800;flex-shrink:0;
+  font-family:'Bricolage Grotesque',sans-serif;letter-spacing:.5px;
+}
+.doc-card.disabled .doc-icon{background:var(--muted)}
+.doc-info{flex:1;min-width:0}
+.doc-tipo{font-size:14px;font-weight:600;color:var(--ink)}
+.doc-data{font-size:11px;color:var(--muted);margin-top:1px}
+.doc-action{
+  width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:#fff;border:1px solid var(--pale2);
+  color:var(--green);flex-shrink:0;
+}
+.doc-card:hover:not(.disabled) .doc-action{
+  background:var(--green);color:#fff;border-color:var(--green);
+}
+
 /* ── ESTADOS DE ERRO/LOADING ── */
 .fullstate{
   flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -315,7 +364,10 @@ nav{
   </div>
   <div class="input-erro" id="inputErro"></div>
 
-  <div class="foot-info">
+  <!-- Seção de documentos (Fase 3) — aparece quando GET /paciente/documentos retorna ≥1 -->
+  <div class="docs-section" id="docs-section" style="display:none"></div>
+
+  <div class="foot-info" id="foot-info-default"
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
       <path d="M12 2L4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
       <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
@@ -477,6 +529,9 @@ function render(data) {
     chat.scrollTop = chat.scrollHeight;
   }
 
+  // Quando status muda, refaz fetch de documentos (PDF aparece após aprovação)
+  maybeFetchDocsByStatus(c.status);
+
   showState('state-ok');
   setLive(true);
 }
@@ -485,6 +540,85 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
   ));
+}
+
+// ── Documentos (Fase 3) ──
+// fetchDocumentos é chamado:
+//   1. Quando status da consulta muda (na primeira render também — null → algo)
+//   2. Em particular: status='soap_gerado' ou 'concluida' (provável aparecer doc)
+let lastStatusForDocs = null;
+let docsCache = [];
+
+async function fetchDocumentos() {
+  if (!token) return;
+  try {
+    const r = await fetch(`${API}/paciente/documentos`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!r.ok) return;
+    const body = await r.json();
+    if (body.ok) {
+      docsCache = body.documentos || [];
+      renderDocumentos(docsCache);
+    }
+  } catch (e) {
+    // silencioso — próxima mudança de status tenta de novo
+  }
+}
+
+function maybeFetchDocsByStatus(status) {
+  if (status !== lastStatusForDocs) {
+    lastStatusForDocs = status;
+    fetchDocumentos();
+  }
+}
+
+function renderDocumentos(docs) {
+  const docsSection = document.getElementById('docs-section');
+  const footDefault = document.getElementById('foot-info-default');
+
+  if (!docs || !docs.length) {
+    docsSection.style.display = 'none';
+    footDefault.style.display = 'flex';
+    return;
+  }
+
+  footDefault.style.display = 'none';
+  docsSection.style.display = 'block';
+  docsSection.innerHTML = `
+    <div class="docs-titulo">Seus documentos</div>
+    <div class="docs-grid">${docs.map(renderDocCard).join('')}</div>
+  `;
+}
+
+function renderDocCard(d) {
+  const data = d.data_emissao ? fmtDataHoraBRT(d.data_emissao) : '';
+  const tipo = escapeHtml(d.tipo || 'Documento');
+  if (d.disponivel_download && d.url) {
+    return `
+      <a class="doc-card" href="${escapeHtml(d.url)}" target="_blank" rel="noopener">
+        <div class="doc-icon">PDF</div>
+        <div class="doc-info">
+          <div class="doc-tipo">${tipo}</div>
+          <div class="doc-data">${data}${data ? ' · ' : ''}assinado ICP-Brasil</div>
+        </div>
+        <div class="doc-action">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 2v8M3 6l4 4 4-4M2 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </a>
+    `;
+  }
+  return `
+    <div class="doc-card disabled" title="Disponível só pelo WhatsApp">
+      <div class="doc-icon">PDF</div>
+      <div class="doc-info">
+        <div class="doc-tipo">${tipo}</div>
+        <div class="doc-data">${data}${data ? ' · ' : ''}disponível só pelo WhatsApp</div>
+      </div>
+    </div>
+  `;
 }
 
 async function fetchMe() {
