@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sua consulta — ConsultaJá!</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0C110E;--ink2:#2A332C;--muted:#6B7870;
+  --green:#0A6640;--green2:#0D8A55;--green3:#12B870;
+  --pale:#EBF7F1;--pale2:#D4EFE2;
+  --white:#F7FAF8;--border:#D8E8DF;--chat-bg:#F0F9F4;
+  --warning:#D97706;--warning-bg:#FFFBEB;
+  --danger:#DC2626;--danger-bg:#FEF2F2;
+  --success:#059669;--success-bg:#ECFDF5;
+}
+html,body{height:100%;margin:0}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--white);color:var(--ink);
+  min-height:100vh;display:flex;flex-direction:column;
+}
+
+/* ── NAV ── */
+nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px;
+  border-bottom:1px solid var(--border);background:#fff;
+  flex-shrink:0;
+}
+.logo{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:17px;font-weight:800;color:var(--ink);
+  text-decoration:none;display:flex;align-items:center;gap:8px;
+}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green3);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.nav-status{font-size:12px;color:var(--muted)}
+
+/* ── HEADER ── */
+.header{
+  padding:18px 20px 16px;
+  background:#fff;border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.header-name{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:18px;font-weight:700;color:var(--ink);
+  margin-bottom:4px;
+}
+.header-queixa{
+  font-size:13px;color:var(--muted);
+  line-height:1.5;
+}
+.header-meta{
+  display:flex;align-items:center;gap:10px;
+  margin-top:10px;
+  flex-wrap:wrap;
+}
+.status-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;letter-spacing:.3px;
+  padding:4px 10px;border-radius:100px;text-transform:uppercase;
+}
+.status-badge .dot{width:6px;height:6px;border-radius:50%}
+.status-badge.aguardando_medico{background:var(--warning-bg);color:var(--warning)}
+.status-badge.aguardando_medico .dot{background:var(--warning);animation:blink 1.5s infinite}
+.status-badge.em_atendimento{background:var(--pale);color:var(--green)}
+.status-badge.em_atendimento .dot{background:var(--green3);animation:blink 1.5s infinite}
+.status-badge.soap_gerado{background:#EFF6FF;color:#1D4ED8}
+.status-badge.soap_gerado .dot{background:#1D4ED8}
+.status-badge.concluida{background:var(--success-bg);color:var(--success)}
+.status-badge.concluida .dot{background:var(--success)}
+.status-badge.cancelada{background:var(--danger-bg);color:var(--danger)}
+.status-badge.cancelada .dot{background:var(--danger)}
+.id-pill{
+  font-size:11px;color:var(--muted);
+  background:var(--white);border:1px solid var(--border);
+  padding:3px 8px;border-radius:6px;
+  font-family:'Bricolage Grotesque',sans-serif;
+}
+
+/* ── BANNER ── */
+.banner{
+  background:var(--pale);border-bottom:1px solid var(--pale2);
+  padding:10px 20px;
+  font-size:12px;color:var(--green);
+  display:flex;align-items:center;gap:8px;flex-shrink:0;
+}
+
+/* ── CHAT ── */
+.chat{
+  flex:1;overflow-y:auto;
+  padding:18px 16px 24px;
+  background:var(--chat-bg);
+  display:flex;flex-direction:column;gap:8px;
+  min-height:0;
+}
+.chat-empty{
+  text-align:center;color:var(--muted);font-size:13px;
+  margin:auto 0;padding:32px 16px;
+}
+.msg{
+  max-width:78%;padding:9px 14px;border-radius:14px;
+  font-size:14px;line-height:1.5;
+  animation:msgIn .25s forwards;
+  word-wrap:break-word;
+}
+@keyframes msgIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.msg.paciente{
+  align-self:flex-end;
+  background:var(--green);color:#fff;
+  border-radius:14px 4px 14px 14px;
+}
+.msg.medico,.msg.ia{
+  align-self:flex-start;
+  background:#fff;color:var(--ink);
+  border:1px solid var(--border);
+  border-radius:4px 14px 14px 14px;
+}
+.msg.sistema{
+  align-self:center;
+  background:var(--pale);color:var(--green);
+  font-size:12px;font-weight:500;font-style:italic;
+  padding:5px 14px;border-radius:10px;
+  max-width:88%;text-align:center;
+}
+.msg-meta{
+  font-size:10px;opacity:.6;margin-top:3px;
+}
+.msg.paciente .msg-meta{text-align:right}
+.msg-author{
+  font-size:10px;font-weight:600;letter-spacing:.3px;
+  color:var(--muted);text-transform:uppercase;
+  margin-bottom:2px;
+}
+.msg.medico .msg-author{color:var(--green)}
+.msg.ia .msg-author{color:var(--green2)}
+
+/* ── FOOTER (banner do WhatsApp) ── */
+.foot-info{
+  background:#fff;border-top:1px solid var(--border);
+  padding:14px 20px;
+  font-size:13px;color:var(--ink2);line-height:1.5;
+  display:flex;align-items:flex-start;gap:10px;
+  flex-shrink:0;
+}
+.foot-info svg{flex-shrink:0;margin-top:2px;color:var(--green)}
+
+/* ── ESTADOS DE ERRO/LOADING ── */
+.fullstate{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 24px;text-align:center;gap:14px;
+}
+.fullstate-icon{
+  width:64px;height:64px;border-radius:50%;
+  background:var(--pale);color:var(--green);
+  display:flex;align-items:center;justify-content:center;
+}
+.fullstate.error .fullstate-icon{background:var(--danger-bg);color:var(--danger)}
+.fullstate-title{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:20px;font-weight:700;color:var(--ink);
+}
+.fullstate-msg{font-size:14px;color:var(--muted);max-width:380px;line-height:1.6}
+
+/* spinner simples */
+.spinner{
+  width:32px;height:32px;border-radius:50%;
+  border:3px solid var(--border);border-top-color:var(--green);
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* live indicator (poll) */
+.live-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--green3);
+  display:inline-block;margin-right:5px;animation:blink 2s infinite;
+}
+.live-dot.stale{background:var(--muted);animation:none}
+
+@media(max-width:480px){
+  nav{padding:10px 14px}
+  .header{padding:14px 14px 12px}
+  .chat{padding:14px 10px 20px}
+  .msg{max-width:88%;font-size:13.5px}
+  .foot-info{padding:12px 14px;font-size:12.5px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <span class="logo-dot"></span>
+    ConsultaJá!
+  </a>
+  <span class="nav-status" id="navStatus">
+    <span class="live-dot" id="liveDot"></span>
+    <span id="liveText">Conectando...</span>
+  </span>
+</nav>
+
+<!-- Estado: carregando -->
+<div class="fullstate" id="state-loading" style="display:flex">
+  <div class="spinner"></div>
+  <div class="fullstate-title">Carregando sua consulta</div>
+  <div class="fullstate-msg">Estamos buscando suas informações...</div>
+</div>
+
+<!-- Estado: erro / link inválido / expirado -->
+<div class="fullstate error" id="state-error" style="display:none">
+  <div class="fullstate-icon">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+      <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="fullstate-title" id="errorTitle">Link inválido ou expirado</div>
+  <div class="fullstate-msg" id="errorMsg">
+    O link que você abriu não é válido ou já expirou (validade de 3 dias).
+    Continue a conversa pelo WhatsApp normalmente — você não perdeu nada.
+  </div>
+</div>
+
+<!-- Estado: dashboard -->
+<div id="state-ok" style="display:none;flex:1;flex-direction:column;min-height:0">
+
+  <header class="header">
+    <div class="header-name" id="pNome">—</div>
+    <div class="header-queixa" id="pQueixa">—</div>
+    <div class="header-meta">
+      <span class="status-badge" id="pStatus">—</span>
+      <span class="id-pill" id="pId">—</span>
+    </div>
+  </header>
+
+  <div class="banner">
+    <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
+      <path d="M11 2C6.03 2 2 6.03 2 11c0 1.77.49 3.42 1.34 4.83L2 20l4.3-1.31A8.96 8.96 0 0011 20c4.97 0 9-4.03 9-9s-4.03-9-9-9z"
+            stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+    </svg>
+    <span>Continue respondendo pelo WhatsApp — esta página é só para acompanhar.</span>
+  </div>
+
+  <div class="chat" id="chat"></div>
+
+  <div class="foot-info">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2L4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div>
+      Seus documentos (atestado e receituário) chegam pelo WhatsApp assim que o médico aprovar.
+      Esta página atualiza automaticamente.
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// paciente.html — dashboard readonly do paciente.
+// Lê ?t=<jwt> da URL, faz polling em /paciente/me a cada 5s.
+// JWT também vai no Authorization header — tanto faz, backend aceita ambos.
+// ══════════════════════════════════════════════════════════════════════════════
+
+const API = 'https://web-production-0c606.up.railway.app';
+const POLL_MS = 5000;
+
+const params = new URLSearchParams(window.location.search);
+const token = params.get('t') || '';
+
+let pollTimer = null;
+let lastSig = '';     // assinatura do último estado renderizado, evita flicker
+let stale = false;    // sinaliza última request falhou
+
+// Converte ISO UTC → horário de Brasília. Igual ao verificar.html (regra TZ).
+function fmtHoraBRT(s) {
+  if (!s) return '';
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleTimeString('pt-BR', {
+    hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo'
+  });
+}
+
+function fmtDataHoraBRT(s) {
+  if (!s) return '';
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleString('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    day: '2-digit', month: '2-digit',
+    hour: '2-digit', minute: '2-digit',
+  });
+}
+
+function showState(id) {
+  ['state-loading', 'state-error', 'state-ok'].forEach(s => {
+    const el = document.getElementById(s);
+    el.style.display = (s === id) ? (s === 'state-ok' ? 'flex' : 'flex') : 'none';
+  });
+}
+
+function showError(title, msg) {
+  document.getElementById('errorTitle').textContent = title;
+  document.getElementById('errorMsg').textContent = msg;
+  showState('state-error');
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+function setLive(ok) {
+  const dot = document.getElementById('liveDot');
+  const txt = document.getElementById('liveText');
+  if (ok) {
+    dot.classList.remove('stale');
+    txt.textContent = 'Atualizando em tempo real';
+    stale = false;
+  } else {
+    dot.classList.add('stale');
+    txt.textContent = 'Sem conexão — tentando reconectar';
+    stale = true;
+  }
+}
+
+const STATUS_LABEL = {
+  aguardando_medico: 'aguardando médico',
+  em_atendimento:    'em atendimento',
+  soap_gerado:       'finalizando',
+  concluida:         'concluída',
+  cancelada:         'cancelada',
+};
+
+const REMETENTE_LABEL = {
+  paciente: '',           // o próprio usuário, não rotula
+  medico:   'Dr.',
+  ia:       'Triagem',
+  sistema:  '',
+};
+
+function render(data) {
+  const c = data.consulta || {};
+  const msgs = data.mensagens || [];
+
+  // Assinatura: evita re-render desnecessário (chat não pula scroll à toa)
+  const sig = JSON.stringify({
+    s: c.status, u: c.updated_at,
+    n: msgs.length, last: msgs.length ? msgs[msgs.length - 1].created_at : null
+  });
+  if (sig === lastSig) return;
+  const eraVazio = !lastSig;
+  lastSig = sig;
+
+  // Header
+  document.getElementById('pNome').textContent = c.paciente_nome || '—';
+  document.getElementById('pQueixa').textContent = c.queixa || c.motivo || 'Consulta médica';
+  document.getElementById('pId').textContent = c.consulta_id_legivel || '';
+
+  const statusEl = document.getElementById('pStatus');
+  statusEl.className = 'status-badge ' + (c.status || '');
+  statusEl.innerHTML = `<span class="dot"></span>${STATUS_LABEL[c.status] || c.status || '—'}`;
+
+  // Mensagens
+  const chat = document.getElementById('chat');
+  if (!msgs.length) {
+    chat.innerHTML = `
+      <div class="chat-empty">
+        Nenhuma mensagem ainda. As mensagens vão aparecer aqui assim que a conversa começar.
+      </div>`;
+  } else {
+    chat.innerHTML = msgs.map(m => {
+      const cls = ['paciente', 'medico', 'ia', 'sistema'].includes(m.remetente) ? m.remetente : 'sistema';
+      const author = REMETENTE_LABEL[cls] || '';
+      const time = fmtHoraBRT(m.created_at);
+      return `
+        <div class="msg ${cls}">
+          ${author ? `<div class="msg-author">${author}</div>` : ''}
+          ${escapeHtml(m.conteudo || '')}
+          <div class="msg-meta">${time}</div>
+        </div>`;
+    }).join('');
+  }
+
+  // Auto-scroll só se chat acabou de carregar OU usuário tá no fim
+  const distanciaDoFundo = chat.scrollHeight - chat.scrollTop - chat.clientHeight;
+  if (eraVazio || distanciaDoFundo < 80) {
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  showState('state-ok');
+  setLive(true);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+async function fetchMe() {
+  if (!token) {
+    showError(
+      'Link incompleto',
+      'Esse link não tem o código de acesso. Abra o link completo enviado no WhatsApp.'
+    );
+    return;
+  }
+
+  try {
+    const r = await fetch(`${API}/paciente/me`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (r.status === 401) {
+      showError(
+        'Link inválido ou expirado',
+        'O link que você abriu não é mais válido. Continue a conversa pelo WhatsApp — você não perdeu nada.'
+      );
+      return;
+    }
+    if (r.status === 404) {
+      showError(
+        'Consulta não encontrada',
+        'Não conseguimos localizar essa consulta. Continue a conversa pelo WhatsApp.'
+      );
+      return;
+    }
+    if (!r.ok) throw new Error('http ' + r.status);
+
+    const data = await r.json();
+    if (!data.ok) throw new Error(data.erro || 'erro');
+
+    render(data);
+  } catch (e) {
+    // erro de rede — não derruba a tela, marca como stale e tenta de novo no próximo tick
+    setLive(false);
+  }
+}
+
+function startPolling() {
+  fetchMe();
+  pollTimer = setInterval(fetchMe, POLL_MS);
+}
+
+// Pausa polling se aba não está visível (economiza request quando paciente
+// minimiza ou troca de aba). Retoma ao voltar.
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  } else if (!pollTimer) {
+    startPolling();
+  }
+});
+
+startPolling();
+</script>
+</body>
+</html>
