@@ -558,9 +558,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--ink);l
   font-size:13px;color:var(--warning);font-weight:500;cursor:pointer;
 }
 
-.soap-footer{
-  padding:16px 24px;
+.soap-nota-bloco{
+  padding:14px 24px 4px;
+  background:var(--white);
   border-top:1px solid var(--border);
+}
+.soap-nota-bloco textarea{
+  min-height:46px;font-size:13px;
+  border-color:var(--border);
+}
+.soap-nota-bloco textarea::placeholder{
+  color:var(--muted);font-style:italic;
+}
+
+.soap-footer{
+  padding:14px 24px 16px;
   background:var(--white);
   display:flex;align-items:center;justify-content:space-between;gap:12px;
 }
@@ -808,6 +820,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--ink);l
             <textarea class="soap-textarea" id="soapReceitaObs" placeholder="Ex: retornar se não melhorar em 48h" oninput="soapDirty()"></textarea>
           </div>
         </div>
+      </div>
+
+      <!-- Nota de aprovação — opcional, sinal qualitativo pra fine-tune futuro -->
+      <div class="soap-nota-bloco">
+        <label class="soap-field-label" for="soapNotaAprovacao">
+          Nota da aprovação
+          <span class="soap-field-hint">opcional — anota o que ajustou pra treinar a IA</span>
+        </label>
+        <textarea class="soap-textarea" id="soapNotaAprovacao" rows="2"
+          placeholder='Ex: "IA esqueceu dipirona, adicionei" · "perfeito, só ajustei dose" · "encaminhei UPA — IA não captou sinal de gravidade"'></textarea>
       </div>
 
       <div class="soap-footer">
@@ -1496,7 +1518,15 @@ function soapReadForm() {
 }
 
 // Renderiza dados nos campos do formulário
+function soapResetNotaAprovacao() {
+  // Limpa o campo ao abrir/trocar de consulta. Cada aprovação tem nota nova;
+  // pra ler nota antiga, consulta direto no banco.
+  const el = document.getElementById('soapNotaAprovacao');
+  if (el) el.value = '';
+}
+
 function soapRenderForm(data) {
+  soapResetNotaAprovacao();
   document.getElementById('soapS').value = data.soap.S;
   document.getElementById('soapO').value = data.soap.O;
   document.getElementById('soapA').value = data.soap.A;
@@ -1678,6 +1708,17 @@ async function soapAprovarEEnviar() {
       soapState.saveTimer = null;
     }
     await soapSalvar(true);
+
+    // 1.5. Salva nota_aprovacao se preenchida (sinal qualitativo pra
+    // fine-tune futuro). Anon faz UPDATE em consultas via policy permissiva.
+    const nota = (document.getElementById('soapNotaAprovacao')?.value || '').trim();
+    if (nota) {
+      try {
+        await sb.from('consultas')
+          .update({ nota_aprovacao: nota })
+          .eq('id', consultaId);
+      } catch(e) { console.warn('[nota_aprovacao]', e); }
+    }
 
     // 2. Disparar #aprovar via webhook (workflow lê soap_aprovado e gera PDFs)
     const r = await enviarComandoDashboard('aprovar');
