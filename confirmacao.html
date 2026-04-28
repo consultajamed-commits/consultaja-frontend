@@ -236,7 +236,26 @@ footer{
       <span class="id-value" id="consulta-id-display">—</span>
     </div>
 
-    <a href="index.html" class="btn-home">
+    <button id="btn-acompanhar" type="button" style="
+      display:none;
+      width:100%;padding:14px 24px;margin-bottom:12px;
+      background:var(--green);color:#fff;
+      font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;
+      border:none;border-radius:100px;cursor:pointer;
+      box-shadow:0 4px 20px rgba(10,102,64,.2);
+      transition:background .2s,transform .15s,opacity .2s;
+      gap:8px;align-items:center;justify-content:center;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;margin-right:6px">
+        <rect x="3" y="4" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.7"/>
+        <path d="M3 9h18M8 21h8M12 18v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      </svg>
+      <span id="btn-acompanhar-label">Acompanhar consulta no navegador</span>
+    </button>
+    <div id="btn-acompanhar-msg" style="
+      display:none;font-size:12px;color:var(--muted);
+      text-align:center;margin:-6px 0 14px;line-height:1.5;"></div>
+
+    <a href="index.html" class="btn-home" style="background:transparent;color:var(--muted);border:1.5px solid var(--border);box-shadow:none">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2L2 8h2v6h4v-4h4v4h4V8h2L8 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
       Voltar ao início
     </a>
@@ -333,8 +352,67 @@ if (vidaasCode) {
   }
 } else {
   // Fluxo normal — confirmação de pagamento
-  const consultaId = sessionStorage.getItem('pix_payment_id') || '—';
-  document.getElementById('consulta-id-display').textContent = consultaId;
+  const paymentId = sessionStorage.getItem('pix_payment_id') || '';
+  document.getElementById('consulta-id-display').textContent = paymentId || '—';
+
+  // ── Botão "Acompanhar consulta no navegador" ──
+  // Chama Railway /paciente/iniciar-sessao-publica passando payment_id; backend
+  // valida no Mercado Pago, gera JWT, retorna URL com ?t=<jwt>. Se a consulta
+  // ainda não foi criada pelo n8n (race), faz retry automático.
+  const API_BASE = 'https://web-production-0c606.up.railway.app';
+  const btn = document.getElementById('btn-acompanhar');
+  const btnLabel = document.getElementById('btn-acompanhar-label');
+  const btnMsg = document.getElementById('btn-acompanhar-msg');
+
+  if (!paymentId) {
+    // Sem payment_id na sessionStorage — paciente abriu confirmacao.html
+    // direto sem passar pelo Pix. Esconde o botão.
+    btn.style.display = 'none';
+  } else {
+    btn.style.display = 'inline-flex';
+
+    async function pedirSessao(tentativa = 1) {
+      const MAX_TENTATIVAS = 4;
+      const ESPERA_RETRY_MS = 3000;
+
+      btnLabel.textContent = tentativa === 1 ? 'Abrindo sua consulta...' : `Aguardando processamento... (${tentativa}/${MAX_TENTATIVAS})`;
+      btn.disabled = true;
+      btn.style.opacity = '.7';
+      btnMsg.style.display = 'none';
+
+      try {
+        const r = await fetch(`${API_BASE}/paciente/iniciar-sessao-publica`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ payment_id: paymentId })
+        });
+        const data = await r.json();
+
+        if (r.ok && data.ok && data.url) {
+          window.location.href = data.url;
+          return;
+        }
+
+        // 409 com retry=true → consulta ainda não criada pelo n8n, espera e tenta de novo
+        if (r.status === 409 && data.retry && tentativa < MAX_TENTATIVAS) {
+          setTimeout(() => pedirSessao(tentativa + 1), ESPERA_RETRY_MS);
+          return;
+        }
+
+        // Outros erros → mostra fallback amigável e desativa
+        throw new Error(data.erro || `HTTP ${r.status}`);
+      } catch (e) {
+        btn.disabled = true;
+        btn.style.opacity = '.5';
+        btn.style.cursor = 'not-allowed';
+        btnLabel.textContent = 'Não foi possível abrir agora';
+        btnMsg.style.display = 'block';
+        btnMsg.textContent = 'Tudo certo — você vai receber as instruções pelo WhatsApp em instantes.';
+      }
+    }
+
+    btn.addEventListener('click', () => pedirSessao(1));
+  }
 }
 </script>
 </body>
