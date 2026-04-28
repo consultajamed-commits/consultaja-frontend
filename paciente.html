@@ -139,6 +139,38 @@ nav{
 .msg.medico .msg-author{color:var(--green)}
 .msg.ia .msg-author{color:var(--green2)}
 
+/* ── INPUT BAR (Fase 2) ── */
+.input-bar{
+  background:#fff;border-top:1px solid var(--border);
+  padding:10px 14px;
+  display:flex;gap:8px;align-items:center;
+  flex-shrink:0;
+}
+.input-bar input{
+  flex:1;min-width:0;padding:11px 16px;
+  border:1.5px solid var(--border);border-radius:100px;
+  font-family:'DM Sans',sans-serif;font-size:14px;
+  background:var(--white);color:var(--ink);
+  outline:none;transition:border-color .2s;
+}
+.input-bar input:focus{border-color:var(--green)}
+.input-bar input:disabled{opacity:.6;background:var(--chat-bg)}
+.input-bar button{
+  width:42px;height:42px;border-radius:50%;
+  background:var(--green);color:#fff;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  transition:background .2s,opacity .2s;
+}
+.input-bar button:hover:not(:disabled){background:var(--green2)}
+.input-bar button:disabled{opacity:.4;cursor:not-allowed}
+.input-erro{
+  font-size:12px;color:var(--danger);
+  padding:6px 18px 0;text-align:center;
+  display:none;
+}
+.input-erro.show{display:block}
+
 /* ── FOOTER (banner do WhatsApp) ── */
 .foot-info{
   background:#fff;border-top:1px solid var(--border);
@@ -242,10 +274,22 @@ nav{
       <path d="M11 2C6.03 2 2 6.03 2 11c0 1.77.49 3.42 1.34 4.83L2 20l4.3-1.31A8.96 8.96 0 0011 20c4.97 0 9-4.03 9-9s-4.03-9-9-9z"
             stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
     </svg>
-    <span>Continue respondendo pelo WhatsApp — esta página é só para acompanhar.</span>
+    <span>Você pode responder aqui ou pelo WhatsApp — escolha o que preferir.</span>
   </div>
 
   <div class="chat" id="chat"></div>
+
+  <div class="input-bar">
+    <input id="inputTexto" type="text" maxlength="2000"
+           placeholder="Digite sua mensagem..." autocomplete="off">
+    <button id="btnEnviar" type="button" aria-label="Enviar">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M16 2L8 10M16 2l-5 14-3-6-6-3z"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+  <div class="input-erro" id="inputErro"></div>
 
   <div class="foot-info">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -345,10 +389,20 @@ function render(data) {
   const c = data.consulta || {};
   const msgs = data.mensagens || [];
 
-  // Assinatura: evita re-render desnecessário (chat não pula scroll à toa)
+  // Hotfix Fix 2 do n8n-fixes-batch.md (ainda não aplicado em prod): o n8n
+  // hoje grava comandos do dashboard do médico (#atender, #gerar, #aprovar)
+  // como mensagens com remetente='medico'. Não devem ser visíveis pro paciente.
+  // Filtra client-side enquanto o n8n não tiver o gating no `Salvar Mensagem1`.
+  const msgsVisiveis = msgs.filter(m => !(
+    m.remetente === 'medico' && (m.conteudo || '').trim().startsWith('#')
+  ));
+
+  // Assinatura: evita re-render desnecessário (chat não pula scroll à toa).
+  // Usa msgsVisiveis pra ignorar mensagens-comando filtradas.
   const sig = JSON.stringify({
     s: c.status, u: c.updated_at,
-    n: msgs.length, last: msgs.length ? msgs[msgs.length - 1].created_at : null
+    n: msgsVisiveis.length,
+    last: msgsVisiveis.length ? msgsVisiveis[msgsVisiveis.length - 1].created_at : null
   });
   if (sig === lastSig) return;
   const eraVazio = !lastSig;
@@ -365,13 +419,13 @@ function render(data) {
 
   // Mensagens
   const chat = document.getElementById('chat');
-  if (!msgs.length) {
+  if (!msgsVisiveis.length) {
     chat.innerHTML = `
       <div class="chat-empty">
         Nenhuma mensagem ainda. As mensagens vão aparecer aqui assim que a conversa começar.
       </div>`;
   } else {
-    chat.innerHTML = msgs.map(m => {
+    chat.innerHTML = msgsVisiveis.map(m => {
       const cls = ['paciente', 'medico', 'ia', 'sistema'].includes(m.remetente) ? m.remetente : 'sistema';
       const author = REMETENTE_LABEL[cls] || '';
       const time = fmtHoraBRT(m.created_at);
@@ -452,6 +506,66 @@ document.addEventListener('visibilitychange', () => {
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
   } else if (!pollTimer) {
     startPolling();
+  }
+});
+
+// ── Fase 2: enviar mensagem pelo dashboard ──
+const inputTexto = document.getElementById('inputTexto');
+const btnEnviar = document.getElementById('btnEnviar');
+const inputErro = document.getElementById('inputErro');
+
+function mostrarErro(txt) {
+  inputErro.textContent = txt;
+  inputErro.classList.add('show');
+  setTimeout(() => inputErro.classList.remove('show'), 5000);
+}
+
+async function enviarMensagem() {
+  const txt = (inputTexto.value || '').trim();
+  if (!txt) return;
+
+  inputTexto.disabled = true;
+  btnEnviar.disabled = true;
+  inputErro.classList.remove('show');
+
+  try {
+    const r = await fetch(`${API}/paciente/mensagem`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ conteudo: txt }),
+    });
+
+    if (r.status === 401) {
+      mostrarErro('Sessão expirou — abra o link do WhatsApp novamente.');
+      return;
+    }
+    if (!r.ok) {
+      const data = await r.json().catch(() => ({}));
+      throw new Error(data.erro || `HTTP ${r.status}`);
+    }
+
+    inputTexto.value = '';
+    // Refetch imediato pra mostrar a mensagem sem esperar o próximo poll de 5s.
+    // Re-render via assinatura cuida pra não duplicar.
+    lastSig = '';  // força re-render mesmo se contagem coincidir (defesa)
+    await fetchMe();
+  } catch (e) {
+    mostrarErro('Não foi possível enviar agora. Tente novamente.');
+  } finally {
+    inputTexto.disabled = false;
+    btnEnviar.disabled = false;
+    if (!inputTexto.matches(':focus')) inputTexto.focus();
+  }
+}
+
+btnEnviar.addEventListener('click', enviarMensagem);
+inputTexto.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    enviarMensagem();
   }
 });
 
