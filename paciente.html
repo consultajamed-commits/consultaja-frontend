@@ -629,8 +629,9 @@ async function enviarMensagem() {
   renderOtimistaPaciente(txt);
   mostrarDigitando();
 
-  // Pausa polling automático pra não atrapalhar a animação
-  pausaPollingAteMs = Date.now() + 8000;
+  // Pausa polling automático pra não atrapalhar a animação (alvo máx ~5.5s
+  // de "digitando" + folga pra fetchMe e render)
+  pausaPollingAteMs = Date.now() + 10000;
 
   const inicio = Date.now();
 
@@ -664,11 +665,12 @@ async function enviarMensagem() {
 
     let alvoMs;
     if (iaRespondeu) {
-      // Humano digitando ~30 char/s → ~33ms/char. Aplico 25ms/char como
-      // ritmo de leitura agradável; clamp 1.2s..3.5s pra não ficar muito
-      // rápido (parece magia) nem muito lento (paciente desiste).
+      // 30ms/char com clamp 1.9s..5.5s.
+      // Curta (<=63 chars): bate o floor de 1900ms.
+      // Média (~80 chars): ~2400ms.
+      // Longa (>=184 chars): bate o teto de 5500ms.
       const len = (ultima.conteudo || '').length;
-      alvoMs = Math.min(Math.max(1200, len * 25), 3500);
+      alvoMs = Math.min(Math.max(1900, len * 30), 5500);
     } else {
       // IA não respondeu (toggle off ou status concluida) — esconde rápido,
       // não enrola o paciente.
