@@ -293,6 +293,152 @@ nav{
   .msg{max-width:88%;font-size:13.5px}
   .foot-info{padding:12px 14px;font-size:12.5px}
 }
+
+/* ── FASE 4: LOGIN / MINHAS CONSULTAS / TROCAR SENHA ── */
+.auth-wrap{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:32px 20px;
+  min-height:0;overflow-y:auto;
+}
+.auth-card{
+  background:#fff;border:1px solid var(--border);border-radius:16px;
+  padding:28px 26px 24px;
+  width:100%;max-width:420px;
+  box-shadow:0 4px 16px rgba(12,17,14,.04);
+}
+.auth-titulo{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:22px;font-weight:700;color:var(--ink);
+  margin-bottom:6px;
+}
+.auth-sub{
+  font-size:13.5px;color:var(--muted);
+  line-height:1.55;margin-bottom:20px;
+}
+.auth-field{margin-bottom:14px}
+.auth-field label{
+  display:block;
+  font-size:11.5px;font-weight:600;letter-spacing:.4px;
+  color:var(--ink2);text-transform:uppercase;
+  margin-bottom:6px;
+}
+.auth-field input{
+  width:100%;padding:12px 14px;
+  border:1.5px solid var(--border);border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:15px;
+  background:var(--white);color:var(--ink);
+  outline:none;transition:border-color .15s;
+}
+.auth-field input:focus{border-color:var(--green)}
+.auth-field input:disabled{opacity:.6}
+.auth-erro{
+  font-size:13px;color:var(--danger);
+  background:var(--danger-bg);border:1px solid #FCA5A5;
+  padding:9px 12px;border-radius:8px;
+  margin-bottom:14px;
+  display:none;
+}
+.auth-erro.show{display:block}
+.auth-ok-msg{
+  font-size:13px;color:var(--success);
+  background:var(--success-bg);border:1px solid #A7F3D0;
+  padding:9px 12px;border-radius:8px;
+  margin-bottom:14px;
+  display:none;
+}
+.auth-ok-msg.show{display:block}
+.auth-btn{
+  width:100%;padding:13px;
+  background:var(--green);color:#fff;border:none;border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;
+  cursor:pointer;transition:background .15s,opacity .15s;
+}
+.auth-btn:hover:not(:disabled){background:var(--green2)}
+.auth-btn:disabled{opacity:.5;cursor:not-allowed}
+.auth-btn.secondary{
+  background:transparent;color:var(--green);
+  border:1.5px solid var(--border);
+}
+.auth-btn.secondary:hover:not(:disabled){
+  background:var(--pale);border-color:var(--green);
+}
+.auth-link{
+  display:inline-block;margin-top:14px;
+  font-size:13px;color:var(--green);
+  text-decoration:none;cursor:pointer;
+  text-align:center;width:100%;
+}
+.auth-link:hover{text-decoration:underline}
+.auth-rodape{
+  text-align:center;
+  font-size:12px;color:var(--muted);
+  margin-top:18px;
+}
+
+/* lista de consultas */
+.consultas-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:18px;padding:0 4px;
+}
+.consultas-saudacao{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:18px;font-weight:700;color:var(--ink);
+}
+.consultas-sub{
+  font-size:13px;color:var(--muted);margin-top:2px;
+}
+.consulta-card{
+  background:#fff;border:1px solid var(--border);border-radius:12px;
+  padding:14px 16px;
+  margin-bottom:10px;
+  cursor:pointer;text-align:left;
+  width:100%;
+  transition:border-color .15s,transform .1s,box-shadow .15s;
+  font-family:'DM Sans',sans-serif;
+}
+.consulta-card:hover{
+  border-color:var(--green);
+  transform:translateY(-1px);
+  box-shadow:0 4px 12px rgba(12,17,14,.06);
+}
+.consulta-card-top{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  gap:8px;margin-bottom:6px;
+}
+.consulta-card-queixa{
+  font-size:14px;font-weight:600;color:var(--ink);
+  flex:1;line-height:1.4;
+}
+.consulta-card-data{
+  font-size:11.5px;color:var(--muted);
+  white-space:nowrap;flex-shrink:0;
+  font-family:'Bricolage Grotesque',sans-serif;
+}
+.consulta-card-bottom{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.consultas-vazio{
+  text-align:center;padding:32px 16px;
+  color:var(--muted);font-size:14px;
+  background:#fff;border:1px dashed var(--border);border-radius:12px;
+}
+
+.menu-paciente{
+  display:flex;gap:8px;align-items:center;
+}
+.icon-btn{
+  width:36px;height:36px;border-radius:50%;
+  background:#fff;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.icon-btn:hover{background:var(--pale);color:var(--green);border-color:var(--green)}
+
+@media(max-width:480px){
+  .auth-card{padding:22px 18px 20px}
+  .auth-titulo{font-size:19px}
+}
 </style>
 </head>
 <body>
@@ -327,6 +473,92 @@ nav{
   <div class="fullstate-msg" id="errorMsg">
     O link que você abriu não é válido ou já expirou (validade de 3 dias).
     Continue a conversa pelo WhatsApp normalmente — você não perdeu nada.
+  </div>
+</div>
+
+<!-- Estado: tela de login (sem ?t= na URL) -->
+<div class="auth-wrap" id="state-login" style="display:none">
+  <div class="auth-card">
+    <div class="auth-titulo">Entrar na sua conta</div>
+    <div class="auth-sub">
+      Acesse com seu CPF e a senha que enviamos no WhatsApp ao final da sua consulta.
+    </div>
+    <div class="auth-erro" id="loginErro"></div>
+    <form id="formLogin" autocomplete="on">
+      <div class="auth-field">
+        <label for="loginCpf">CPF</label>
+        <input id="loginCpf" name="cpf" type="text" inputmode="numeric"
+               placeholder="000.000.000-00" maxlength="14" autocomplete="username" required>
+      </div>
+      <div class="auth-field">
+        <label for="loginSenha">Senha</label>
+        <input id="loginSenha" name="senha" type="password"
+               placeholder="Sua senha" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="auth-btn" id="btnLogin">Entrar</button>
+    </form>
+    <div class="auth-rodape">
+      Ainda não tem conta? Você recebe seu acesso após a primeira consulta aprovada.
+    </div>
+  </div>
+</div>
+
+<!-- Estado: lista de consultas (após login) -->
+<div class="auth-wrap" id="state-consultas" style="display:none">
+  <div style="width:100%;max-width:520px">
+    <div class="consultas-header">
+      <div>
+        <div class="consultas-saudacao" id="consultasSaudacao">Suas consultas</div>
+        <div class="consultas-sub">Toque numa consulta para abrir o atendimento.</div>
+      </div>
+      <div class="menu-paciente">
+        <button class="icon-btn" id="btnTrocarSenhaIco" title="Trocar senha" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.7"/>
+            <path d="M8 11V8a4 4 0 118 0v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button class="icon-btn" id="btnLogout" title="Sair" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M9 5H5a2 2 0 00-2 2v10a2 2 0 002 2h4M16 17l5-5-5-5M21 12H10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div id="consultasLista"></div>
+  </div>
+</div>
+
+<!-- Estado: trocar senha -->
+<div class="auth-wrap" id="state-trocar-senha" style="display:none">
+  <div class="auth-card">
+    <div class="auth-titulo">Trocar senha</div>
+    <div class="auth-sub">
+      Recomendamos trocar a senha temporária por uma que só você conhece (mínimo 6 caracteres).
+    </div>
+    <div class="auth-erro" id="trocaErro"></div>
+    <div class="auth-ok-msg" id="trocaOk">Senha alterada com sucesso.</div>
+    <form id="formTrocaSenha" autocomplete="off">
+      <div class="auth-field">
+        <label for="senhaAtual">Senha atual</label>
+        <input id="senhaAtual" name="senha_atual" type="password"
+               placeholder="Senha atual" autocomplete="current-password" required>
+      </div>
+      <div class="auth-field">
+        <label for="senhaNova">Nova senha</label>
+        <input id="senhaNova" name="senha_nova" type="password"
+               placeholder="Nova senha (mín. 6 caracteres)" minlength="6"
+               autocomplete="new-password" required>
+      </div>
+      <div class="auth-field">
+        <label for="senhaNova2">Confirme a nova senha</label>
+        <input id="senhaNova2" name="senha_nova2" type="password"
+               placeholder="Repita a nova senha" minlength="6"
+               autocomplete="new-password" required>
+      </div>
+      <button type="submit" class="auth-btn" id="btnTrocarSenha">Trocar senha</button>
+      <a class="auth-link" id="btnVoltarConsultas">← Voltar para minhas consultas</a>
+    </form>
   </div>
 </div>
 
@@ -389,6 +621,7 @@ nav{
 
 const API = 'https://web-production-0c606.up.railway.app';
 const POLL_MS = 5000;
+const SESSION_KEY = 'pj_paciente_session_v1';  // localStorage: { jwt, paciente: {id,nome}, savedAt }
 
 const params = new URLSearchParams(window.location.search);
 const token = params.get('t') || '';
@@ -420,9 +653,13 @@ function fmtDataHoraBRT(s) {
 }
 
 function showState(id) {
-  ['state-loading', 'state-error', 'state-ok'].forEach(s => {
+  // Esconde tudo, mostra só o solicitado.
+  const todos = ['state-loading', 'state-error', 'state-ok',
+                 'state-login', 'state-consultas', 'state-trocar-senha'];
+  todos.forEach(s => {
     const el = document.getElementById(s);
-    el.style.display = (s === id) ? (s === 'state-ok' ? 'flex' : 'flex') : 'none';
+    if (!el) return;
+    el.style.display = (s === id) ? 'flex' : 'none';
   });
 }
 
@@ -847,7 +1084,335 @@ inputTexto.addEventListener('keydown', e => {
   }
 });
 
-startPolling();
+// ══════════════════════════════════════════════════════════════════════════════
+// FASE 4 — Login do paciente / minhas consultas / trocar senha
+//
+// Roteamento:
+//   ?t=<jwt-consulta>  → fluxo antigo (chat) — startPolling()
+//   sem ?t=, hash="#login"     → tela de login
+//   sem ?t=, hash="#trocar-senha" + sessão → tela de troca de senha
+//   sem ?t=, sessão válida → lista de consultas
+//   sem ?t=, sem sessão    → tela de login
+// ══════════════════════════════════════════════════════════════════════════════
+
+function getSession() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (!s || !s.jwt || !s.paciente) return null;
+    return s;
+  } catch (_) { return null; }
+}
+
+function setSession(jwt, paciente) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify({
+    jwt, paciente, savedAt: Date.now(),
+  }));
+}
+
+function clearSession() {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+function fmtCpfMask(s) {
+  const d = (s || '').replace(/\D/g, '').slice(0, 11);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return `${d.slice(0,3)}.${d.slice(3)}`;
+  if (d.length <= 9) return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6)}`;
+  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`;
+}
+
+function fmtDataConsulta(s) {
+  if (!s) return '';
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    day: '2-digit', month: '2-digit', year: '2-digit',
+  });
+}
+
+// ── LOGIN ──────────────────────────────────────────────────────────────────
+const loginCpf    = document.getElementById('loginCpf');
+const loginSenha  = document.getElementById('loginSenha');
+const loginErro   = document.getElementById('loginErro');
+const btnLogin    = document.getElementById('btnLogin');
+const formLogin   = document.getElementById('formLogin');
+
+if (loginCpf) {
+  loginCpf.addEventListener('input', e => {
+    e.target.value = fmtCpfMask(e.target.value);
+  });
+}
+
+function mostrarLoginErro(msg) {
+  loginErro.textContent = msg;
+  loginErro.classList.add('show');
+}
+function limparLoginErro() {
+  loginErro.classList.remove('show');
+  loginErro.textContent = '';
+}
+
+async function doLogin(ev) {
+  if (ev) ev.preventDefault();
+  limparLoginErro();
+  const cpf = (loginCpf.value || '').replace(/\D/g, '');
+  const senha = (loginSenha.value || '').trim();
+  if (cpf.length !== 11 || !senha) {
+    mostrarLoginErro('Informe um CPF válido (11 dígitos) e a senha.');
+    return;
+  }
+  btnLogin.disabled = true;
+  btnLogin.textContent = 'Entrando…';
+
+  try {
+    const r = await fetch(`${API}/paciente/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cpf, senha }),
+    });
+    const data = await r.json().catch(() => ({}));
+
+    if (r.status === 429) {
+      const minutos = Math.ceil((data.retry_after || 60) / 60);
+      mostrarLoginErro(`Muitas tentativas. Tente novamente em ~${minutos} min.`);
+      return;
+    }
+    if (r.status === 401 || !data.ok) {
+      mostrarLoginErro(data.erro || 'CPF ou senha incorretos.');
+      return;
+    }
+    if (!r.ok) throw new Error('http ' + r.status);
+
+    setSession(data.token, data.paciente || { id: '', nome: '' });
+    loginSenha.value = '';
+    // Limpa hash #login se houver, abre lista
+    if (window.location.hash) window.location.hash = '';
+    abrirMinhasConsultas();
+  } catch (e) {
+    mostrarLoginErro('Não foi possível entrar agora. Tente de novo em instantes.');
+  } finally {
+    btnLogin.disabled = false;
+    btnLogin.textContent = 'Entrar';
+  }
+}
+if (formLogin) formLogin.addEventListener('submit', doLogin);
+
+// ── LISTA DE CONSULTAS ─────────────────────────────────────────────────────
+async function abrirMinhasConsultas() {
+  const sess = getSession();
+  if (!sess) { abrirLogin(); return; }
+
+  showState('state-loading');
+  const saudacaoEl = document.getElementById('consultasSaudacao');
+  if (saudacaoEl) {
+    const primeiro = (sess.paciente.nome || '').split(' ')[0] || '';
+    saudacaoEl.textContent = primeiro ? `Olá, ${primeiro}` : 'Suas consultas';
+  }
+
+  try {
+    const r = await fetch(`${API}/paciente/consultas`, {
+      headers: { 'Authorization': `Bearer ${sess.jwt}` },
+    });
+    if (r.status === 401) { clearSession(); abrirLogin(); return; }
+    if (!r.ok) throw new Error('http ' + r.status);
+    const data = await r.json();
+    if (!data.ok) throw new Error(data.erro || 'erro');
+
+    const consultas = data.consultas || [];
+    const lista = document.getElementById('consultasLista');
+
+    if (!consultas.length) {
+      lista.innerHTML = `<div class="consultas-vazio">
+        Você ainda não tem consultas registradas no seu histórico.
+      </div>`;
+    } else {
+      lista.innerHTML = consultas.map(c => {
+        const queixa = escapeHtml(c.queixa || c.motivo || 'Consulta médica');
+        const dataC  = fmtDataConsulta(c.created_at);
+        const status = c.status || '';
+        const statusLabel = STATUS_LABEL[status] || status || '—';
+        const idLeg = escapeHtml(c.consulta_id_legivel || '');
+        return `
+          <button class="consulta-card" data-id="${escapeHtml(c.id)}" type="button">
+            <div class="consulta-card-top">
+              <div class="consulta-card-queixa">${queixa}</div>
+              <div class="consulta-card-data">${dataC}</div>
+            </div>
+            <div class="consulta-card-bottom">
+              <span class="status-badge ${status}"><span class="dot"></span>${statusLabel}</span>
+              ${idLeg ? `<span class="id-pill">${idLeg}</span>` : ''}
+            </div>
+          </button>
+        `;
+      }).join('');
+      lista.querySelectorAll('.consulta-card').forEach(btn => {
+        btn.addEventListener('click', () => abrirConsulta(btn.dataset.id));
+      });
+    }
+
+    showState('state-consultas');
+  } catch (e) {
+    showError('Não foi possível carregar suas consultas',
+              'Verifique sua conexão e tente recarregar a página.');
+  }
+}
+
+async function abrirConsulta(consultaId) {
+  const sess = getSession();
+  if (!sess) { abrirLogin(); return; }
+  showState('state-loading');
+  try {
+    const r = await fetch(`${API}/paciente/consultas/${encodeURIComponent(consultaId)}/abrir`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${sess.jwt}` },
+    });
+    if (r.status === 401) { clearSession(); abrirLogin(); return; }
+    if (r.status === 404) {
+      showError('Consulta não disponível',
+                'Essa consulta não está mais acessível ou não pertence à sua conta.');
+      return;
+    }
+    if (!r.ok) throw new Error('http ' + r.status);
+    const data = await r.json();
+    if (!data.ok || !data.token) throw new Error('sem token');
+    // Redireciona pro modo chat — usa ?t= como sempre
+    window.location.href = `paciente.html?t=${encodeURIComponent(data.token)}`;
+  } catch (e) {
+    showError('Não foi possível abrir essa consulta',
+              'Tente novamente em instantes.');
+  }
+}
+
+document.getElementById('btnLogout')?.addEventListener('click', () => {
+  clearSession();
+  abrirLogin();
+});
+
+document.getElementById('btnTrocarSenhaIco')?.addEventListener('click', () => {
+  abrirTrocarSenha();
+});
+
+// ── TROCAR SENHA ───────────────────────────────────────────────────────────
+const formTrocaSenha = document.getElementById('formTrocaSenha');
+const senhaAtualEl   = document.getElementById('senhaAtual');
+const senhaNovaEl    = document.getElementById('senhaNova');
+const senhaNova2El   = document.getElementById('senhaNova2');
+const trocaErro      = document.getElementById('trocaErro');
+const trocaOk        = document.getElementById('trocaOk');
+const btnTrocaSenha  = document.getElementById('btnTrocarSenha');
+
+document.getElementById('btnVoltarConsultas')?.addEventListener('click', e => {
+  e.preventDefault();
+  abrirMinhasConsultas();
+});
+
+function abrirTrocarSenha() {
+  const sess = getSession();
+  if (!sess) { abrirLogin(); return; }
+  trocaErro.classList.remove('show');
+  trocaOk.classList.remove('show');
+  senhaAtualEl.value = '';
+  senhaNovaEl.value = '';
+  senhaNova2El.value = '';
+  showState('state-trocar-senha');
+}
+
+if (formTrocaSenha) {
+  formTrocaSenha.addEventListener('submit', async ev => {
+    ev.preventDefault();
+    trocaErro.classList.remove('show');
+    trocaOk.classList.remove('show');
+    const sa = (senhaAtualEl.value || '').trim();
+    const sn = (senhaNovaEl.value  || '').trim();
+    const s2 = (senhaNova2El.value || '').trim();
+    if (sn.length < 6) {
+      trocaErro.textContent = 'A nova senha precisa ter ao menos 6 caracteres.';
+      trocaErro.classList.add('show');
+      return;
+    }
+    if (sn !== s2) {
+      trocaErro.textContent = 'A confirmação não confere com a nova senha.';
+      trocaErro.classList.add('show');
+      return;
+    }
+    const sess = getSession();
+    if (!sess) { abrirLogin(); return; }
+    btnTrocaSenha.disabled = true;
+    btnTrocaSenha.textContent = 'Trocando…';
+    try {
+      const r = await fetch(`${API}/paciente/trocar-senha`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sess.jwt}`,
+        },
+        body: JSON.stringify({ senha_atual: sa, senha_nova: sn }),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (r.status === 401 && (data.erro || '').includes('senha atual')) {
+        trocaErro.textContent = 'Senha atual incorreta.';
+        trocaErro.classList.add('show');
+        return;
+      }
+      if (r.status === 401) { clearSession(); abrirLogin(); return; }
+      if (!r.ok || !data.ok) {
+        trocaErro.textContent = data.erro || 'Não foi possível trocar a senha agora.';
+        trocaErro.classList.add('show');
+        return;
+      }
+      trocaOk.classList.add('show');
+      senhaAtualEl.value = senhaNovaEl.value = senhaNova2El.value = '';
+      setTimeout(() => abrirMinhasConsultas(), 1200);
+    } catch (e) {
+      trocaErro.textContent = 'Erro de rede. Tente novamente.';
+      trocaErro.classList.add('show');
+    } finally {
+      btnTrocaSenha.disabled = false;
+      btnTrocaSenha.textContent = 'Trocar senha';
+    }
+  });
+}
+
+function abrirLogin() {
+  loginSenha.value = '';
+  limparLoginErro();
+  showState('state-login');
+  setTimeout(() => loginCpf?.focus(), 50);
+}
+
+// ── ROUTER ─────────────────────────────────────────────────────────────────
+
+function bootstrap() {
+  // Indicador "live" só faz sentido no modo chat — esconde nav fora dele
+  const navStatus = document.getElementById('navStatus');
+
+  if (token) {
+    // Modo CHAT (link com ?t=) — fluxo antigo, intocado
+    if (navStatus) navStatus.style.display = '';
+    startPolling();
+    return;
+  }
+
+  if (navStatus) navStatus.style.display = 'none';
+
+  const hash = (window.location.hash || '').replace('#', '').toLowerCase();
+  const sess = getSession();
+
+  if (hash === 'login' || !sess) {
+    abrirLogin();
+    return;
+  }
+  if (hash === 'trocar-senha') {
+    abrirTrocarSenha();
+    return;
+  }
+  abrirMinhasConsultas();
+}
+
+bootstrap();
 </script>
 </body>
 </html>
