@@ -132,12 +132,17 @@ nav{
 }
 .msg.paciente .msg-meta{text-align:right}
 .msg-author{
-  font-size:10px;font-weight:600;letter-spacing:.3px;
-  color:var(--muted);text-transform:uppercase;
-  margin-bottom:2px;
+  display:flex;flex-direction:column;gap:1px;
+  margin-bottom:4px;
 }
-.msg.medico .msg-author{color:var(--green)}
-.msg.ia .msg-author{color:var(--green2)}
+.msg-author .msg-name{
+  font-size:11.5px;font-weight:700;letter-spacing:0;
+  color:var(--green);
+}
+.msg-author .msg-crm{
+  font-size:9.5px;font-weight:500;letter-spacing:.5px;
+  color:var(--muted);text-transform:uppercase;
+}
 
 /* ── INPUT BAR (Fase 2) ── */
 .input-bar{
@@ -378,12 +383,11 @@ const STATUS_LABEL = {
   cancelada:         'cancelada',
 };
 
-const REMETENTE_LABEL = {
-  paciente: '',           // o próprio usuário, não rotula
-  medico:   'Dr.',
-  ia:       'Triagem',
-  sistema:  '',
-};
+// Identidade visível pro paciente em mensagens de IA e médico humano.
+// Hoje hardcoded (mesma identidade da IA prompt). Quando virar multi-médico
+// real, /paciente/me devolve { medico: { nome, crm } } e renderiza dinâmico.
+const MEDICO_NOME = 'Dr. Matheus Silva de Castro';
+const MEDICO_CRM  = 'CRM-SP 222371';
 
 function render(data) {
   const c = data.consulta || {};
@@ -427,11 +431,20 @@ function render(data) {
   } else {
     chat.innerHTML = msgsVisiveis.map(m => {
       const cls = ['paciente', 'medico', 'ia', 'sistema'].includes(m.remetente) ? m.remetente : 'sistema';
-      const author = REMETENTE_LABEL[cls] || '';
       const time = fmtHoraBRT(m.created_at);
+      // Mostra "Dr. Matheus Silva de Castro / CRM-SP 222371" em mensagens de
+      // medico e ia (paciente sabe a identidade de quem responde). Sistema e
+      // paciente não têm header.
+      const showAuthor = cls === 'medico' || cls === 'ia';
+      const authorBlock = showAuthor
+        ? `<div class="msg-author">
+             <span class="msg-name">${MEDICO_NOME}</span>
+             <span class="msg-crm">${MEDICO_CRM}</span>
+           </div>`
+        : '';
       return `
         <div class="msg ${cls}">
-          ${author ? `<div class="msg-author">${author}</div>` : ''}
+          ${authorBlock}
           ${escapeHtml(m.conteudo || '')}
           <div class="msg-meta">${time}</div>
         </div>`;
