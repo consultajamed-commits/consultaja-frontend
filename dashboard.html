@@ -1108,7 +1108,11 @@ async function loadMessages(consultaId) {
 }
 
 function renderMsg(m) {
-  const time = new Date(m.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  // timeZone explícito: created_at no banco é UTC; renderiza sempre em BRT
+  // independente do TZ do browser do médico.
+  const time = new Date(m.created_at).toLocaleTimeString('pt-BR', {
+    hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo'
+  });
   return `
     <div class="chat-msg ${m.remetente}">
       ${m.conteudo}
@@ -1277,7 +1281,9 @@ async function sendMessage() {
 
   // Optimistic render
   const container = document.getElementById('chatMessages');
-  const now = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const now = new Date().toLocaleTimeString('pt-BR', {
+    hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo'
+  });
   container.innerHTML += `
     <div class="chat-msg medico">
       ${text}

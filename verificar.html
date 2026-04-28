@@ -691,13 +691,28 @@ function showState(id) {
   document.getElementById(id).classList.add('active');
 }
 
+// Converte timestamp ISO (UTC do Postgres) pra horário de Brasília explícito.
+// Se a string não for parseable como Date, devolve crua — defensive: prefere
+// mostrar texto bruto a quebrar a página.
+function fmtDataHoraBRT(s) {
+  if (!s) return '—';
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return s;
+  const txt = d.toLocaleString('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
+  return `${txt} (BRT)`;
+}
+
 function renderValido(code, data) {
   const dias = parseInt(data.dias) || 1;
   const pct  = Math.min(Math.round((dias / 30) * 100), 100) + '%';
 
   document.getElementById('display-code').textContent = code;
   document.getElementById('v-paciente').textContent   = data.paciente || '—';
-  document.getElementById('v-emissao').textContent    = data.data_emissao || '—';
+  document.getElementById('v-emissao').textContent    = fmtDataHoraBRT(data.data_emissao);
   // Período de afastamento — só exibe para atestados
   const periodoRow = document.getElementById('v-periodo')?.closest('.info-row');
   if (data.tipo && data.tipo.toLowerCase().includes('receituário')) {
@@ -713,7 +728,7 @@ function renderValido(code, data) {
   document.querySelector('.doc-type-badge').innerHTML =
     `<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5 3.5-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg> ${data.tipo || 'Documento Médico'}`;
   document.querySelector('.sig-sub').textContent =
-    `Documento íntegro · Identidade do médico confirmada · Emissão: ${data.data_emissao || '—'}`;
+    `Documento íntegro · Identidade do médico confirmada · Emissão: ${fmtDataHoraBRT(data.data_emissao)}`;
 
   const cidRow = document.getElementById('v-cid')?.closest('.info-row');
   if (cidRow) cidRow.style.display = 'none';
