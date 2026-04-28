@@ -144,6 +144,25 @@ nav{
   color:var(--muted);text-transform:uppercase;
 }
 
+/* "Digitando..." — aparece enquanto IA processa, simula humano */
+.msg.digitando{
+  padding:9px 16px 8px;
+}
+.msg.digitando .dots{
+  display:inline-flex;gap:5px;padding:5px 2px 2px;
+}
+.msg.digitando .dots span{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--muted);
+  animation:typingBounce 1.4s infinite ease-in-out;
+}
+.msg.digitando .dots span:nth-child(2){animation-delay:.18s}
+.msg.digitando .dots span:nth-child(3){animation-delay:.36s}
+@keyframes typingBounce{
+  0%,60%,100%{transform:translateY(0);opacity:.35}
+  30%{transform:translateY(-5px);opacity:1}
+}
+
 /* ── INPUT BAR (Fase 2) ── */
 .input-bar{
   background:#fff;border-top:1px solid var(--border);
@@ -325,6 +344,7 @@ const token = params.get('t') || '';
 let pollTimer = null;
 let lastSig = '';     // assinatura do último estado renderizado, evita flicker
 let stale = false;    // sinaliza última request falhou
+let pausaPollingAteMs = 0;  // pausa fetchMe enquanto animação "digitando..." roda
 
 // Converte ISO UTC → horário de Brasília. Igual ao verificar.html (regra TZ).
 function fmtHoraBRT(s) {
@@ -476,6 +496,10 @@ async function fetchMe() {
     return;
   }
 
+  // Pausa polling automático enquanto a animação "digitando..." manual roda.
+  // Sem isso, polling renderiza tudo no meio da animação e quebra a UX.
+  if (Date.now() < pausaPollingAteMs) return;
+
   try {
     const r = await fetch(`${API}/paciente/me`, {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -533,6 +557,65 @@ function mostrarErro(txt) {
   setTimeout(() => inputErro.classList.remove('show'), 5000);
 }
 
+// ── Helpers da animação "digitando..." ──
+// Mostra bolha "Dr. Matheus / CRM-SP 222371 / ..." simulando humano digitando.
+// Aparece imediato após o paciente enviar e fica visível por tempo proporcional
+// ao tamanho da resposta da IA (UX humana — IA real responde em <1s, mas
+// resposta instantânea quebra a sensação de "estou conversando com alguém").
+function mostrarDigitando() {
+  if (document.getElementById('digitando-bolha')) return;
+  const chat = document.getElementById('chat');
+  const empty = chat.querySelector('.chat-empty');
+  if (empty) empty.remove();
+  const div = document.createElement('div');
+  div.id = 'digitando-bolha';
+  div.className = 'msg ia digitando';
+  div.innerHTML = `
+    <div class="msg-author">
+      <span class="msg-name">${MEDICO_NOME}</span>
+      <span class="msg-crm">${MEDICO_CRM}</span>
+    </div>
+    <span class="dots"><span></span><span></span><span></span></span>
+  `;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function esconderDigitando() {
+  const el = document.getElementById('digitando-bolha');
+  if (el) el.remove();
+}
+
+// Render otimista da mensagem do paciente — aparece em <50ms ao clicar enviar,
+// não espera roundtrip do POST. Substituída pelo render real quando fetchMe
+// chega (mesmo conteúdo, timestamp ligeiramente ajustado pelo servidor).
+function renderOtimistaPaciente(txt) {
+  const chat = document.getElementById('chat');
+  const empty = chat.querySelector('.chat-empty');
+  if (empty) empty.remove();
+  const time = new Date().toLocaleTimeString('pt-BR', {
+    hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo'
+  });
+  const div = document.createElement('div');
+  div.className = 'msg paciente';
+  div.id = 'msg-otimista-temp';
+  div.innerHTML = `${escapeHtml(txt)}<div class="msg-meta">${time}</div>`;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+// fetchMe sem render (pra controlar quando renderizar — usado em enviarMensagem
+// pra calcular delay da animação "digitando..." baseado no tamanho da resposta).
+async function fetchMeRaw() {
+  const r = await fetch(`${API}/paciente/me`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!r.ok) throw new Error('http ' + r.status);
+  const data = await r.json();
+  if (!data.ok) throw new Error(data.erro || 'erro');
+  return data;
+}
+
 async function enviarMensagem() {
   const txt = (inputTexto.value || '').trim();
   if (!txt) return;
@@ -540,6 +623,16 @@ async function enviarMensagem() {
   inputTexto.disabled = true;
   btnEnviar.disabled = true;
   inputErro.classList.remove('show');
+  inputTexto.value = '';
+
+  // Render otimista: msg paciente + bolha "digitando..." aparecem imediato
+  renderOtimistaPaciente(txt);
+  mostrarDigitando();
+
+  // Pausa polling automático pra não atrapalhar a animação
+  pausaPollingAteMs = Date.now() + 8000;
+
+  const inicio = Date.now();
 
   try {
     const r = await fetch(`${API}/paciente/mensagem`, {
@@ -552,6 +645,8 @@ async function enviarMensagem() {
     });
 
     if (r.status === 401) {
+      esconderDigitando();
+      document.getElementById('msg-otimista-temp')?.remove();
       mostrarErro('Sessão expirou — abra o link do WhatsApp novamente.');
       return;
     }
@@ -560,14 +655,41 @@ async function enviarMensagem() {
       throw new Error(data.erro || `HTTP ${r.status}`);
     }
 
-    inputTexto.value = '';
-    // Refetch imediato pra mostrar a mensagem sem esperar o próximo poll de 5s.
-    // Re-render via assinatura cuida pra não duplicar.
-    lastSig = '';  // força re-render mesmo se contagem coincidir (defesa)
-    await fetchMe();
+    // Backend já processou (paciente + IA). Pega estado novo e decide quanto
+    // tempo manter "digitando..." baseado no tamanho da resposta da IA.
+    const data = await fetchMeRaw();
+    const msgs = data.mensagens || [];
+    const ultima = msgs[msgs.length - 1];
+    const iaRespondeu = ultima && ultima.remetente === 'ia';
+
+    let alvoMs;
+    if (iaRespondeu) {
+      // Humano digitando ~30 char/s → ~33ms/char. Aplico 25ms/char como
+      // ritmo de leitura agradável; clamp 1.2s..3.5s pra não ficar muito
+      // rápido (parece magia) nem muito lento (paciente desiste).
+      const len = (ultima.conteudo || '').length;
+      alvoMs = Math.min(Math.max(1200, len * 25), 3500);
+    } else {
+      // IA não respondeu (toggle off ou status concluida) — esconde rápido,
+      // não enrola o paciente.
+      alvoMs = 400;
+    }
+
+    const decorrido = Date.now() - inicio;
+    if (decorrido < alvoMs) {
+      await new Promise(res => setTimeout(res, alvoMs - decorrido));
+    }
+
+    // Render final substitui todos os elementos otimistas pelos reais
+    esconderDigitando();
+    lastSig = '';
+    render(data);
   } catch (e) {
+    esconderDigitando();
+    document.getElementById('msg-otimista-temp')?.remove();
     mostrarErro('Não foi possível enviar agora. Tente novamente.');
   } finally {
+    pausaPollingAteMs = 0;  // libera polling normal
     inputTexto.disabled = false;
     btnEnviar.disabled = false;
     if (!inputTexto.matches(':focus')) inputTexto.focus();
