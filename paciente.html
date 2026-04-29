@@ -525,6 +525,16 @@ nav{
         </button>
       </div>
     </div>
+
+    <!-- CTA Nova consulta -->
+    <button class="auth-btn" id="btnNovaConsulta" type="button" style="
+      margin-bottom:18px;display:flex;align-items:center;justify-content:center;gap:8px;">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      Iniciar nova consulta
+    </button>
+
     <div id="consultasLista"></div>
   </div>
 </div>
@@ -1293,6 +1303,15 @@ document.getElementById('btnLogout')?.addEventListener('click', () => {
 
 document.getElementById('btnTrocarSenhaIco')?.addEventListener('click', () => {
   abrirTrocarSenha();
+});
+
+// "Iniciar nova consulta" — paciente recorrente vai pro pagamento.html no
+// modo express (?session=<jwt>). Lá os dados pessoais já vêm preenchidos
+// do /paciente/cadastro, ele só preenche motivo + queixa + pagamento.
+document.getElementById('btnNovaConsulta')?.addEventListener('click', () => {
+  const sess = getSession();
+  if (!sess) { abrirLogin(); return; }
+  window.location.href = `pagamento.html?session=${encodeURIComponent(sess.jwt)}`;
 });
 
 // ── TROCAR SENHA ───────────────────────────────────────────────────────────

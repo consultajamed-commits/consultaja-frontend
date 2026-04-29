@@ -381,43 +381,62 @@ select{
 
   <!-- FORMULÁRIO -->
   <div class="form-col">
-    <div class="form-title">Seus dados</div>
-    <div class="form-sub">Preencha para liberar o acesso à consulta.</div>
+    <div class="form-title" id="form-title">Seus dados</div>
+    <div class="form-sub" id="form-sub">Preencha para liberar o acesso à consulta.</div>
+
+    <!-- Banner modo logado (paciente recorrente vindo de paciente.html) -->
+    <div id="banner-logado" style="
+      display:none;background:var(--pale);border:1.5px solid var(--pale2);
+      border-radius:14px;padding:14px 16px;margin-bottom:20px;
+      align-items:center;gap:12px;">
+      <div style="
+        width:36px;height:36px;border-radius:50%;background:var(--green);
+        color:#fff;display:flex;align-items:center;justify-content:center;
+        flex-shrink:0;font-weight:700;
+        font-family:'Bricolage Grotesque',sans-serif;font-size:14px;"
+        id="banner-logado-iniciais">M</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;color:var(--ink);font-size:14px" id="banner-logado-nome">Carregando...</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.4">Vamos só pegar o motivo da nova consulta.</div>
+      </div>
+    </div>
 
     <form id="checkout-form" novalidate>
 
-      <!-- Dados pessoais -->
-      <div class="field-row">
-        <div class="field-group">
-          <label for="nome">Nome completo</label>
-          <input type="text" id="nome" placeholder="João Silva Santos" autocomplete="name">
-          <div class="field-err" id="err-nome">Por favor, insira seu nome completo.</div>
+      <!-- Dados pessoais (escondidos quando modo logado) -->
+      <div id="dados-pessoais">
+        <div class="field-row">
+          <div class="field-group">
+            <label for="nome">Nome completo</label>
+            <input type="text" id="nome" placeholder="João Silva Santos" autocomplete="name">
+            <div class="field-err" id="err-nome">Por favor, insira seu nome completo.</div>
+          </div>
+          <div class="field-group">
+            <label for="cpf">CPF</label>
+            <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" autocomplete="off">
+            <div class="field-err" id="err-cpf">CPF inválido.</div>
+          </div>
         </div>
-        <div class="field-group">
-          <label for="cpf">CPF</label>
-          <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" autocomplete="off">
-          <div class="field-err" id="err-cpf">CPF inválido.</div>
-        </div>
-      </div>
 
-      <div class="field-row">
-        <div class="field-group">
-          <label for="email">E-mail</label>
-          <input type="email" id="email" placeholder="joao@email.com" autocomplete="email">
-          <div class="field-err" id="err-email">E-mail inválido.</div>
+        <div class="field-row">
+          <div class="field-group">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" placeholder="joao@email.com" autocomplete="email">
+            <div class="field-err" id="err-email">E-mail inválido.</div>
+          </div>
+          <div class="field-group">
+            <label for="telefone">WhatsApp</label>
+            <input type="tel" id="telefone" placeholder="(11) 99999-9999" maxlength="15" autocomplete="tel">
+            <div class="field-err" id="err-telefone">Número inválido.</div>
+          </div>
         </div>
-        <div class="field-group">
-          <label for="telefone">WhatsApp</label>
-          <input type="tel" id="telefone" placeholder="(11) 99999-9999" maxlength="15" autocomplete="tel">
-          <div class="field-err" id="err-telefone">Número inválido.</div>
-        </div>
-      </div>
 
-      <div class="field-row">
-        <div class="field-group">
-          <label for="data_nascimento">Data de nascimento</label>
-          <input type="text" id="data_nascimento" placeholder="DD/MM/AAAA" maxlength="10" autocomplete="bday" inputmode="numeric">
-          <div class="field-err" id="err-data_nascimento">Data de nascimento inválida.</div>
+        <div class="field-row">
+          <div class="field-group">
+            <label for="data_nascimento">Data de nascimento</label>
+            <input type="text" id="data_nascimento" placeholder="DD/MM/AAAA" maxlength="10" autocomplete="bday" inputmode="numeric">
+            <div class="field-err" id="err-data_nascimento">Data de nascimento inválida.</div>
+          </div>
         </div>
       </div>
 
@@ -588,6 +607,9 @@ select{
 </main>
 
 <script>
+// ── API Railway (mesma usada nas outras páginas) ──
+const PJ_API_BASE = 'https://web-production-0c606.up.railway.app';
+
 // ── Método de pagamento
 function selectPay(el, type) {
   document.querySelectorAll('.pay-method').forEach(m => m.classList.remove('selected'));
@@ -597,6 +619,80 @@ function selectPay(el, type) {
   document.getElementById('pix-info').classList.toggle('show', type === 'pix');
   document.getElementById('card-fields').classList.toggle('show', type === 'cartao');
 }
+
+// ── Modo express (paciente recorrente vindo de paciente.html?Login) ──
+// URL: pagamento.html?session=<jwt>
+// Se session válida, fetcha /paciente/cadastro, preenche os campos pessoais
+// e esconde a seção. Paciente preenche só motivo + queixa + pagamento.
+//
+// Em falha (sessão expirada, paciente não encontrado, rede ruim) faz fallback
+// silencioso pro modo normal — paciente preenche tudo manualmente.
+
+const SESSION_KEY = 'pj_paciente_session_v1';
+
+function _formatCpfBR(cpf) {
+  const d = (cpf || '').replace(/\D/g, '').slice(0, 11);
+  if (d.length !== 11) return d;
+  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`;
+}
+function _formatTelBR(t) {
+  const d = (t || '').replace(/\D/g, '');
+  if (d.length === 13) return `(${d.slice(2,4)}) ${d.slice(4,9)}-${d.slice(9)}`;  // 5511...
+  if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+  if (d.length === 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+  return d;
+}
+
+(async function aplicarModoExpress() {
+  const params = new URLSearchParams(window.location.search);
+  let sessionJwt = params.get('session') || '';
+  // Fallback: se ?session= não veio mas o usuário tem sessão salva, usa ela.
+  // Caminho 2 funciona mesmo se o paciente abriu pagamento.html direto pelo
+  // menu enquanto logado em outra aba.
+  if (!sessionJwt) {
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      if (raw) {
+        const s = JSON.parse(raw);
+        if (s && s.jwt) sessionJwt = s.jwt;
+      }
+    } catch (_) { /* ignora */ }
+  }
+  if (!sessionJwt) return;
+
+  try {
+    const r = await fetch(`${PJ_API_BASE}/paciente/cadastro`, {
+      headers: { 'Authorization': `Bearer ${sessionJwt}` },
+    });
+    if (!r.ok) return;  // 401/404 → silencioso, modo normal
+    const data = await r.json();
+    if (!data.ok || !data.paciente) return;
+
+    const p = data.paciente;
+    document.getElementById('nome').value             = p.nome || '';
+    document.getElementById('cpf').value              = _formatCpfBR(p.cpf || '');
+    document.getElementById('email').value            = p.email || '';
+    document.getElementById('telefone').value         = _formatTelBR(p.telefone || '');
+    document.getElementById('data_nascimento').value  = p.data_nascimento || '';
+
+    // Esconde a seção de dados pessoais
+    document.getElementById('dados-pessoais').style.display = 'none';
+
+    // Mostra banner
+    const banner = document.getElementById('banner-logado');
+    banner.style.display = 'flex';
+    document.getElementById('banner-logado-nome').textContent = `Olá, ${p.nome || ''}`;
+    const ini = (p.nome || 'P').split(/\s+/).filter(Boolean);
+    const iniciais = ((ini[0]||'')[0] || '') + ((ini[ini.length-1]||'')[0] || '');
+    document.getElementById('banner-logado-iniciais').textContent = (iniciais || 'P').toUpperCase();
+
+    // Ajusta header
+    document.getElementById('form-title').textContent = 'Nova consulta';
+    document.getElementById('form-sub').textContent   = 'Conta vinculada — só nos diga o motivo e a queixa.';
+  } catch (_) {
+    // Rede ruim: deixa o paciente preencher manualmente. Não trava.
+  }
+})();
 
 // ── Máscaras
 document.getElementById('cpf').addEventListener('input', function(){
