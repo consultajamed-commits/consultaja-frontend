@@ -792,14 +792,22 @@ nav{
       </svg>
     </button>
 
-    <!-- Menu popover (Foto / Áudio) — abre ao clicar no clipe -->
+    <!-- Menu popover (Câmera / Galeria / Áudio) — abre ao clicar no clipe -->
     <div class="midia-menu" id="midiaMenu">
-      <button type="button" id="menuFoto">
+      <button type="button" id="menuCamera">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
           <path d="M3 7a2 2 0 0 1 2-2h3l2-2h4l2 2h3a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
           <circle cx="12" cy="13" r="3.5" stroke="currentColor" stroke-width="1.6"/>
         </svg>
-        Foto
+        Câmera
+      </button>
+      <button type="button" id="menuGaleria">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/>
+          <circle cx="9" cy="11" r="1.6" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M21 15l-4-4-7 7" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+        Galeria
       </button>
       <button type="button" id="menuAudio">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -810,8 +818,10 @@ nav{
       </button>
     </div>
 
-    <!-- Input file invisível, disparado pelo "Foto" -->
-    <input id="fileFoto" type="file" accept="image/*" style="display:none">
+    <!-- Inputs file invisíveis. capture="environment" abre câmera traseira no
+         mobile; sem capture abre file picker (galeria + arquivos) -->
+    <input id="fileCamera"  type="file" accept="image/*" capture="environment" style="display:none">
+    <input id="fileGaleria" type="file" accept="image/*"                       style="display:none">
 
     <input id="inputTexto" type="text" maxlength="2000"
            placeholder="Digite sua mensagem..." autocomplete="off">
@@ -1332,9 +1342,11 @@ function mostrarErro(txt) {
 // Refs DOM
 const btnClipe       = document.getElementById('btnClipe');
 const midiaMenu      = document.getElementById('midiaMenu');
-const menuFoto       = document.getElementById('menuFoto');
+const menuCamera     = document.getElementById('menuCamera');
+const menuGaleria    = document.getElementById('menuGaleria');
 const menuAudio      = document.getElementById('menuAudio');
-const fileFoto       = document.getElementById('fileFoto');
+const fileCamera     = document.getElementById('fileCamera');
+const fileGaleria    = document.getElementById('fileGaleria');
 const overlayPreview = document.getElementById('overlayPreview');
 const previewTitulo  = document.getElementById('previewTitulo');
 const previewConteudo = document.getElementById('previewConteudo');
@@ -1369,19 +1381,22 @@ document.addEventListener('click', e => {
   fecharMidiaMenu();
 });
 
-// ── Item "Foto" ──
+// ── Itens "Câmera" e "Galeria" ──
+//
+// Câmera (capture="environment"):
+//   - Mobile: abre câmera traseira direto. iOS/Android consistente.
+//   - Desktop: capture é IGNORADO pelos browsers — cai no file picker.
+//     (Pra "tirar foto" via webcam no PC seria preciso getUserMedia +
+//     <video> + canvas — V2.)
+//
+// Galeria (sem capture):
+//   - Mobile: abre file picker (galeria + arquivos).
+//   - Desktop: file picker normal.
 
-menuFoto.addEventListener('click', () => {
-  fecharMidiaMenu();
-  // Reset input pra disparar 'change' mesmo se selecionar a mesma foto
-  fileFoto.value = '';
-  fileFoto.click();
-});
-
-fileFoto.addEventListener('change', async () => {
-  const file = fileFoto.files && fileFoto.files[0];
+async function _processarFotoSelecionada(input) {
+  const file = input.files && input.files[0];
   if (!file) return;
-  fileFoto.value = '';  // pronto pra próxima
+  input.value = '';  // reset pra próxima
 
   try {
     const blob = await comprimirImagemParaUpload(file);
@@ -1394,7 +1409,21 @@ fileFoto.addEventListener('change', async () => {
   } catch (e) {
     mostrarErro(e.message || 'Não foi possível ler a imagem.');
   }
+}
+
+menuCamera.addEventListener('click', () => {
+  fecharMidiaMenu();
+  fileCamera.value = '';
+  fileCamera.click();
 });
+fileCamera.addEventListener('change', () => _processarFotoSelecionada(fileCamera));
+
+menuGaleria.addEventListener('click', () => {
+  fecharMidiaMenu();
+  fileGaleria.value = '';
+  fileGaleria.click();
+});
+fileGaleria.addEventListener('change', () => _processarFotoSelecionada(fileGaleria));
 
 // ── Preview compartilhado (foto + áudio) ──
 
