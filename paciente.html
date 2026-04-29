@@ -1452,23 +1452,27 @@ document.addEventListener('keydown', e => {
 //   reativar "digitando..." aqui também — paciente vai esperar a IA
 //   processar a transcrição/descrição.
 
-async function enviarMidiaDoPreview() {
-  if (!previewState) return;
-  const { blob, mime, tipo } = previewState;
-  const caption = previewCaption.value.trim();
-
-  previewEnviar.disabled = true;
-  previewCancelar.disabled = true;
-  const textoOriginal = previewEnviar.textContent;
-  previewEnviar.textContent = 'Enviando…';
-
-  // Render otimista: bolha temporária no chat até /me trazer a real.
+// Core de upload — usado tanto pelo preview (foto) quanto pelo áudio direto.
+// Encapsula: render otimista + pausa polling + POST + fetch /me + cleanup.
+//
+// Args:
+//   blob, mime, tipo: dados da mídia
+//   caption: legenda (vazia pra áudio, opcional pra foto)
+//   objectUrl: URL local pra render otimista (se nulo, função cria uma)
+//
+// Retorna: Promise<{ ok: boolean, erro?: string }>. UI específica (botões do
+// preview, fechar overlay, etc) fica com o caller.
+async function _enviarMidiaUpload({ blob, mime, tipo, caption, objectUrl }) {
   const otimistaId = `otimista-${Date.now()}`;
-  renderOtimistaMidia(otimistaId, tipo, previewState.objectUrl, caption);
+  // Cria objectUrl se caller não passou (caso de áudio direto)
+  const urlOtimista = objectUrl || URL.createObjectURL(blob);
+  const _criouUrl = !objectUrl;
 
-  // Pausa polling pra não sobrescrever a bolha otimista no meio do upload.
-  // 12s é folga generosa pra upload em rede ruim (4G fraco) — mais que
-  // suficiente em redes normais.
+  // Render otimista: bolha aparece no chat com objectUrl local
+  renderOtimistaMidia(otimistaId, tipo, urlOtimista, caption);
+
+  // Pausa polling pra não sobrescrever a bolha no meio do upload.
+  // 12s é folga generosa pra upload em rede ruim (4G fraco).
   pausaPollingAteMs = Date.now() + 12000;
 
   try {
@@ -1491,36 +1495,61 @@ async function enviarMidiaDoPreview() {
     if (r.status === 401) {
       removerOtimista(otimistaId);
       mostrarErro('Sessão expirou — abra o link do WhatsApp novamente.');
-      previewEnviar.disabled = false;
-      previewCancelar.disabled = false;
-      previewEnviar.textContent = textoOriginal;
-      return;
+      return { ok: false, erro: 'unauthorized' };
     }
     if (!r.ok) {
       const data = await r.json().catch(() => ({}));
       throw new Error(data.erro || `HTTP ${r.status}`);
     }
 
-    // Sucesso: fecha preview, re-busca estado, render real substitui otimista
-    fecharPreview();
+    // Sucesso: re-busca estado, render real substitui otimista
     lastSig = '';
     try {
       const data = await fetchMeRaw();
       removerOtimista(otimistaId);
       render(data);
     } catch (_) {
-      // Render falhou? polling normal vai pegar daqui a 5s
       removerOtimista(otimistaId);
     }
+    return { ok: true };
   } catch (e) {
     removerOtimista(otimistaId);
     mostrarErro(e.message || 'Não foi possível enviar agora. Tente novamente.');
+    return { ok: false, erro: e.message };
+  } finally {
+    pausaPollingAteMs = 0;
+    if (_criouUrl) URL.revokeObjectURL(urlOtimista);
+  }
+}
+
+// Botão "Enviar" do preview de FOTO. Lê caption do textarea e fecha overlay
+// no sucesso.
+async function enviarMidiaDoPreview() {
+  if (!previewState) return;
+  const { blob, mime, tipo, objectUrl } = previewState;
+  const caption = previewCaption.value.trim();
+
+  previewEnviar.disabled = true;
+  previewCancelar.disabled = true;
+  const textoOriginal = previewEnviar.textContent;
+  previewEnviar.textContent = 'Enviando…';
+
+  const result = await _enviarMidiaUpload({ blob, mime, tipo, caption, objectUrl });
+
+  if (result.ok) {
+    fecharPreview();  // sucesso: fecha overlay (revoga objectUrl)
+  } else {
+    // Falha: mantém preview aberto pra retry
     previewEnviar.disabled = false;
     previewCancelar.disabled = false;
     previewEnviar.textContent = textoOriginal;
-  } finally {
-    pausaPollingAteMs = 0;
   }
+}
+
+// Áudio: vai direto sem preview/confirmação (UX tipo WhatsApp).
+// Caption sempre vazia. Caller já fechou overlay de gravação.
+async function enviarAudioDireto(blob, mime) {
+  await _enviarMidiaUpload({ blob, mime, tipo: 'audio', caption: '' });
 }
 
 previewEnviar.addEventListener('click', enviarMidiaDoPreview);
@@ -1706,12 +1735,9 @@ function _iniciarGravacao() {
       return;
     }
 
-    abrirPreview({
-      blob,
-      mime: cleanMime,
-      tipo: 'audio',
-      titulo: 'Enviar áudio',
-    });
+    // Áudio vai DIRETO pro upload (sem preview/confirmação) — UX tipo WhatsApp.
+    // Quem soltou o botão já decidiu enviar. Sem caption pra áudio.
+    enviarAudioDireto(blob, cleanMime);
   };
 
   _mediaRecorder.start();
