@@ -1403,6 +1403,12 @@ function abrirPreview({ blob, mime, tipo, titulo }) {
   previewTitulo.textContent = titulo || (tipo === 'imagem' ? 'Enviar foto' : 'Enviar áudio');
   previewCaption.value = '';
 
+  // Reset do botão (defesa em profundidade — fecharPreview já reseta, mas
+  // garantia caso algo escape).
+  previewEnviar.disabled = false;
+  previewCancelar.disabled = false;
+  previewEnviar.textContent = 'Enviar';
+
   if (tipo === 'imagem') {
     previewConteudo.innerHTML =
       `<img src="${previewState.objectUrl}" alt="Preview da foto">`;
@@ -1422,6 +1428,13 @@ function fecharPreview() {
   overlayPreview.classList.remove('show');
   previewCaption.value = '';
   previewConteudo.innerHTML = '';
+  // IMPORTANTE: reseta o botão "Enviar" pro estado inicial. Sem isso, depois
+  // de um upload com sucesso (que fecha o preview) o botão fica preso em
+  // "Enviando…" e ao reabrir o preview pra outra foto o paciente vê o estado
+  // velho.
+  previewEnviar.disabled = false;
+  previewCancelar.disabled = false;
+  previewEnviar.textContent = 'Enviar';
 }
 
 previewCancelar.addEventListener('click', fecharPreview);
