@@ -399,19 +399,25 @@ if (vidaasCode) {
           return;
         }
 
-        // Outros erros → mostra fallback amigável e desativa
+        // Outros erros → reabilita botão e mostra fallback (paciente pode tentar
+        // novamente clicando, ou ignorar e seguir pelo WhatsApp).
         throw new Error(data.erro || `HTTP ${r.status}`);
       } catch (e) {
-        btn.disabled = true;
-        btn.style.opacity = '.5';
-        btn.style.cursor = 'not-allowed';
-        btnLabel.textContent = 'Não foi possível abrir agora';
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        btnLabel.textContent = 'Tentar abrir consulta de novo';
         btnMsg.style.display = 'block';
-        btnMsg.textContent = 'Tudo certo — você vai receber as instruções pelo WhatsApp em instantes.';
+        btnMsg.textContent = 'Tudo certo — você também receberá as instruções pelo WhatsApp em instantes.';
       }
     }
 
     btn.addEventListener('click', () => pedirSessao(1));
+
+    // ── Auto-redirect ── (reduz fricção pós-pagamento)
+    // 1.2s de delay pra paciente ler "Pagamento confirmado!" antes de sair daqui.
+    // Se falhar, fallback amigável reabilita o botão pra retentar manualmente.
+    setTimeout(() => pedirSessao(1), 1200);
   }
 }
 </script>
