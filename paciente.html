@@ -926,10 +926,14 @@ function startPolling() {
 
 // Pausa polling se aba não está visível (economiza request quando paciente
 // minimiza ou troca de aba). Retoma ao voltar.
+//
+// Importante: só restartar o polling se a página estiver no MODO CHAT
+// (com `?t=` na URL). Sem esse guard, voltar pra aba quando estávamos em
+// /paciente#login disparava fetchMe() sem token e mostrava "Link incompleto".
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-  } else if (!pollTimer) {
+  } else if (!pollTimer && token) {
     startPolling();
   }
 });

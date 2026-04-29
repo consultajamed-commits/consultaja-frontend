@@ -636,8 +636,12 @@ function _formatCpfBR(cpf) {
   return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`;
 }
 function _formatTelBR(t) {
-  const d = (t || '').replace(/\D/g, '');
-  if (d.length === 13) return `(${d.slice(2,4)}) ${d.slice(4,9)}-${d.slice(9)}`;  // 5511...
+  let d = (t || '').replace(/\D/g, '');
+  // Telefones em pacientes.telefone vêm em formato Z-API (DDI 55 + DDD + número
+  // = 12-13 chars). Strip o "55" pra cair em 10/11 dígitos puros BR.
+  if ((d.length === 12 || d.length === 13) && d.startsWith('55')) {
+    d = d.slice(2);
+  }
   if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
   if (d.length === 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
   return d;
@@ -675,20 +679,51 @@ function _formatTelBR(t) {
     document.getElementById('telefone').value         = _formatTelBR(p.telefone || '');
     document.getElementById('data_nascimento').value  = p.data_nascimento || '';
 
-    // Esconde a seção de dados pessoais
-    document.getElementById('dados-pessoais').style.display = 'none';
+    // Valida cada campo do cadastro. Se TUDO passar, esconde a seção de dados
+    // pessoais (modo express puro). Se algum falhar (ex: telefone com formato
+    // estranho do banco), mantém visível pra paciente revisar/corrigir antes
+    // de seguir — caso contrário o submit falha silencioso porque a validação
+    // bate em campo escondido.
+    const idsCadastro = ['nome', 'cpf', 'email', 'telefone', 'data_nascimento'];
+    let tudoValido = true;
+    for (const id of idsCadastro) {
+      const v = VALIDADORES[id];
+      if (!v) continue;
+      const r = v();
+      if (!r.ok) { tudoValido = false; break; }
+    }
 
-    // Mostra banner
+    // Banner sempre aparece (paciente sabe que está logado).
     const banner = document.getElementById('banner-logado');
     banner.style.display = 'flex';
-    document.getElementById('banner-logado-nome').textContent = `Olá, ${p.nome || ''}`;
     const ini = (p.nome || 'P').split(/\s+/).filter(Boolean);
     const iniciais = ((ini[0]||'')[0] || '') + ((ini[ini.length-1]||'')[0] || '');
     document.getElementById('banner-logado-iniciais').textContent = (iniciais || 'P').toUpperCase();
 
-    // Ajusta header
-    document.getElementById('form-title').textContent = 'Nova consulta';
-    document.getElementById('form-sub').textContent   = 'Conta vinculada — só nos diga o motivo e a queixa.';
+    if (tudoValido) {
+      // Modo express puro: esconde campos pessoais
+      document.getElementById('dados-pessoais').style.display = 'none';
+      document.getElementById('banner-logado-nome').textContent = `Olá, ${p.nome || ''}`;
+      banner.querySelector('div > div:nth-child(2)').textContent =
+        'Vamos só pegar o motivo da nova consulta.';
+      document.getElementById('form-title').textContent = 'Nova consulta';
+      document.getElementById('form-sub').textContent   = 'Conta vinculada — só nos diga o motivo e a queixa.';
+    } else {
+      // Cadastro com algum dado inconsistente — paciente revisa e corrige.
+      document.getElementById('banner-logado-nome').textContent = `Olá, ${p.nome || ''}`;
+      banner.querySelector('div > div:nth-child(2)').textContent =
+        'Confira seus dados — algum campo precisa de revisão antes de seguir.';
+      document.getElementById('form-title').textContent = 'Nova consulta';
+      document.getElementById('form-sub').textContent   = 'Confirme seus dados e nos diga o motivo da nova consulta.';
+      // Marca os campos que falharam pra o paciente ver direto
+      idsCadastro.forEach(id => {
+        const v = VALIDADORES[id];
+        if (!v) return;
+        const r = v();
+        if (!r.ok) setFieldState(id, 'err', r.msg);
+        else       setFieldState(id, 'ok');
+      });
+    }
   } catch (_) {
     // Rede ruim: deixa o paciente preencher manualmente. Não trava.
   }
