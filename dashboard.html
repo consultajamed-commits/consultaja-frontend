@@ -934,7 +934,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--ink);l
             </svg>
             Galeria
           </button>
-          <button type="button" id="menuAudio">
+          <!--
+            Botão "Áudio" desativado: vai ser coberto pela fase de videochamada
+            síncrona. Áudio assíncrono + videochamada = redundância UX.
+            JS handler + endpoint backend continuam dormindo — pra reativar,
+            remover o style="display:none".
+          -->
+          <button type="button" id="menuAudio" style="display:none">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <rect x="9" y="3" width="6" height="12" rx="3" stroke="currentColor" stroke-width="1.6"/>
               <path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
