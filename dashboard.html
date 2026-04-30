@@ -617,6 +617,199 @@ body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--ink);l
   .sidebar{display:none}
   .topbar-badge{display:none}
 }
+
+/* ═══════════════ FASE 5 — MÍDIA NO CHAT (botão clipe + overlays) ═══════════════ */
+
+/* Input bar precisa de position:relative pra ancorar o menu popover */
+.chat-input-bar{position:relative}
+
+/* Botão clipe (visual sutil ao lado do input) */
+.chat-clipe{
+  width:42px;height:42px;border-radius:50%;
+  background:transparent;color:var(--muted);
+  border:1.5px solid var(--border);
+  cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.chat-clipe:hover{background:var(--pale);color:var(--green);border-color:var(--green)}
+
+/* Menu popover Galeria/Áudio */
+.midia-menu{
+  position:absolute;
+  bottom:62px;left:24px;
+  background:#fff;border:1px solid var(--border);
+  border-radius:12px;padding:6px;
+  box-shadow:0 8px 24px rgba(12,17,14,.10);
+  display:none;flex-direction:column;
+  gap:2px;min-width:180px;z-index:50;
+  animation:midiaMenuIn .15s ease-out;
+}
+.midia-menu.show{display:flex}
+@keyframes midiaMenuIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.midia-menu button{
+  display:flex;align-items:center;gap:10px;
+  width:100%;padding:10px 12px;
+  background:transparent;color:var(--ink);
+  border:none;border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:14px;
+  cursor:pointer;text-align:left;
+  height:auto;
+  transition:background .15s;
+}
+.midia-menu button:hover{background:var(--pale);color:var(--green)}
+.midia-menu button svg{flex-shrink:0;color:var(--green)}
+
+/* Overlays (preview, gravação, lightbox) */
+.midia-overlay{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(12,17,14,.75);
+  display:none;align-items:center;justify-content:center;
+  padding:20px;
+  animation:overlayIn .2s ease-out;
+}
+.midia-overlay.show{display:flex}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}
+
+/* Card de preview de mídia (foto + áudio antes de enviar) */
+.preview-card{
+  background:#fff;border-radius:16px;
+  max-width:480px;width:100%;
+  display:flex;flex-direction:column;
+  overflow:hidden;max-height:90vh;
+}
+.preview-card-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;
+  border-bottom:1px solid var(--border);
+}
+.preview-card-titulo{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:15px;font-weight:700;color:var(--ink);
+}
+.preview-fechar{
+  background:transparent;border:none;color:var(--muted);
+  cursor:pointer;padding:4px;
+  font-size:20px;line-height:1;
+  width:auto;height:auto;border-radius:0;
+}
+.preview-fechar:hover{color:var(--ink);background:transparent}
+.preview-conteudo{
+  background:var(--pale);
+  display:flex;align-items:center;justify-content:center;
+  min-height:200px;max-height:50vh;overflow:hidden;
+}
+.preview-conteudo img{max-width:100%;max-height:50vh;object-fit:contain}
+.preview-conteudo audio{width:90%}
+.preview-rodape{padding:12px 16px;border-top:1px solid var(--border)}
+.preview-caption{
+  width:100%;padding:10px 12px;
+  border:1.5px solid var(--border);border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:14px;
+  background:var(--white);color:var(--ink);outline:none;
+  resize:none;min-height:42px;max-height:120px;margin-bottom:10px;
+}
+.preview-caption:focus{border-color:var(--green)}
+.preview-acoes{display:flex;gap:8px;justify-content:flex-end}
+.preview-acoes button{
+  width:auto;height:auto;border-radius:10px;
+  padding:10px 18px;font-size:14px;font-weight:600;
+  font-family:'DM Sans',sans-serif;
+}
+.preview-btn-cancelar{
+  background:transparent;color:var(--muted);
+  border:1.5px solid var(--border);
+}
+.preview-btn-cancelar:hover:not(:disabled){
+  background:var(--white);color:var(--ink);border-color:var(--ink2);
+}
+.preview-btn-enviar{background:var(--green);color:#fff;border:none}
+.preview-btn-enviar:hover:not(:disabled){background:var(--green2)}
+
+/* Card de gravação de áudio (segurar pra gravar) */
+.gravar-card{
+  background:#fff;border-radius:16px;
+  width:100%;max-width:340px;
+  padding:24px 20px;text-align:center;
+}
+.gravar-titulo{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:17px;font-weight:700;color:var(--ink);margin-bottom:6px;
+}
+.gravar-sub{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.5}
+.gravar-timer{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:32px;font-weight:700;color:var(--ink);
+  margin:14px 0;letter-spacing:1px;
+}
+.gravar-timer.gravando{color:var(--danger,#DC2626)}
+.gravar-mic{
+  width:88px;height:88px;border-radius:50%;
+  background:var(--green);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 14px;cursor:pointer;
+  user-select:none;-webkit-user-select:none;
+  transition:background .15s,transform .1s;
+  border:none;
+}
+.gravar-mic.ativo{
+  background:var(--danger,#DC2626);
+  transform:scale(1.08);
+  box-shadow:0 0 0 8px rgba(220,38,38,.18);
+  animation:micPulse 1.2s infinite;
+}
+@keyframes micPulse{
+  0%,100%{box-shadow:0 0 0 8px rgba(220,38,38,.18)}
+  50%{box-shadow:0 0 0 14px rgba(220,38,38,.10)}
+}
+.gravar-instrucao{font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.gravar-acoes{display:flex;gap:8px;justify-content:center;margin-top:8px}
+
+/* Lightbox */
+.lightbox{
+  position:fixed;inset:0;z-index:2000;
+  background:rgba(0,0,0,.92);
+  display:none;align-items:center;justify-content:center;
+  padding:20px;cursor:zoom-out;
+}
+.lightbox.show{display:flex;animation:overlayIn .15s ease-out}
+.lightbox img{
+  max-width:100%;max-height:100%;
+  object-fit:contain;border-radius:8px;
+  box-shadow:0 8px 40px rgba(0,0,0,.5);
+}
+.lightbox-fechar{
+  position:absolute;top:18px;right:18px;
+  width:40px;height:40px;border-radius:50%;
+  background:rgba(255,255,255,.12);color:#fff;border:none;
+  font-size:24px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(8px);
+  transition:background .15s;
+}
+.lightbox-fechar:hover{background:rgba(255,255,255,.22)}
+
+/* Mídia renderizada no chat */
+.chat-msg-midia-img{
+  display:block;max-width:280px;max-height:340px;
+  width:auto;height:auto;
+  border-radius:10px;cursor:zoom-in;
+  background:var(--pale);
+}
+.chat-msg-midia-audio{
+  display:block;width:240px;
+  margin-top:0;
+}
+.chat-msg.medico .chat-msg-midia-audio{filter:invert(1) hue-rotate(180deg)}
+.chat-msg .chat-msg-caption{
+  margin-top:6px;font-size:13.5px;line-height:1.4;
+}
+.chat-msg-erro-midia{
+  font-style:italic;color:var(--muted);font-size:13px;
+}
+
+/* Bolha otimista enquanto upload acontece */
+.chat-msg.otimista{opacity:.75}
 </style>
 </head>
 <body>
@@ -724,10 +917,82 @@ body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--ink);l
       </div>
       <div class="chat-messages" id="chatMessages"></div>
       <div class="chat-input-bar">
+        <button id="btnClipe" type="button" class="chat-clipe" aria-label="Anexar mídia">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"
+                  stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <!-- Menu (Galeria / Áudio) — sem câmera no dashboard (decisão Sprint 5.3) -->
+        <div class="midia-menu" id="midiaMenu">
+          <button type="button" id="menuGaleria">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="9" cy="11" r="1.6" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M21 15l-4-4-7 7" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+            Galeria
+          </button>
+          <button type="button" id="menuAudio">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <rect x="9" y="3" width="6" height="12" rx="3" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            Áudio
+          </button>
+        </div>
+
+        <input id="fileGaleria" type="file" accept="image/*" style="display:none">
+
         <input class="chat-input" id="chatInput" type="text" placeholder="Digite sua mensagem..." onkeydown="if(event.key==='Enter')sendMessage()">
         <button class="chat-send" onclick="sendMessage()">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M16 2L8 10M16 2l-5 14-3-6-6-3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
+      </div>
+
+      <!-- Overlay: preview de foto OU áudio gravado antes de enviar -->
+      <div class="midia-overlay" id="overlayPreview">
+        <div class="preview-card">
+          <div class="preview-card-header">
+            <div class="preview-card-titulo" id="previewTitulo">Enviar foto</div>
+            <button class="preview-fechar" id="previewFechar" type="button" aria-label="Fechar">×</button>
+          </div>
+          <div class="preview-conteudo" id="previewConteudo"></div>
+          <div class="preview-rodape">
+            <textarea id="previewCaption" class="preview-caption"
+                      placeholder="Adicione uma legenda (opcional)" maxlength="500"></textarea>
+            <div class="preview-acoes">
+              <button class="preview-btn-cancelar" id="previewCancelar" type="button">Cancelar</button>
+              <button class="preview-btn-enviar"   id="previewEnviar"   type="button">Enviar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overlay: gravação de áudio (hold to record) -->
+      <div class="midia-overlay" id="overlayGravar">
+        <div class="gravar-card">
+          <div class="gravar-titulo">Gravar áudio</div>
+          <div class="gravar-sub">Segure o microfone pra gravar. Solte pra parar — você poderá ouvir antes de enviar.</div>
+          <div class="gravar-timer" id="gravarTimer">0:00</div>
+          <button class="gravar-mic" id="gravarMic" type="button" aria-label="Gravar">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="none">
+              <rect x="9" y="3" width="6" height="12" rx="3" stroke="currentColor" stroke-width="2" fill="currentColor"/>
+              <path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <div class="gravar-instrucao" id="gravarInstrucao">Pressione e segure</div>
+          <div class="gravar-acoes">
+            <button class="preview-btn-cancelar" id="gravarCancelar" type="button">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lightbox de imagem -->
+      <div class="lightbox" id="lightbox">
+        <button class="lightbox-fechar" id="lightboxFechar" type="button" aria-label="Fechar">×</button>
+        <img id="lightboxImg" src="" alt="">
       </div>
     </div>
 
@@ -1123,25 +1388,574 @@ async function loadMessages(consultaId) {
     .order('created_at', { ascending: true });
 
   const container = document.getElementById('chatMessages');
-  if (!error && data) {
-    container.innerHTML = data.map(m => renderMsg(m)).join('');
-    container.scrollTop = container.scrollHeight;
+  if (error || !data) return;
+
+  // Fase 5: pra mensagens com mídia, busca signed URLs em batch via Railway.
+  // Bucket é privado — JS client não consegue gerar signed URL sozinho.
+  const paths = data
+    .filter(m => m.tipo && m.tipo !== 'texto' && m.media_path)
+    .map(m => m.media_path);
+
+  let mediaUrls = {};
+  if (paths.length > 0 && authToken) {
+    try {
+      const r = await fetch(`${AUTH_API}/medico/midia-urls`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ paths }),
+      });
+      if (r.ok) {
+        const body = await r.json();
+        mediaUrls = body.urls || {};
+      }
+    } catch (e) {
+      console.warn('[loadMessages] midia-urls falhou:', e);
+      // Segue sem URLs — render mostra placeholder "indisponível"
+    }
   }
+
+  container.innerHTML = data.map(m => renderMsg(m, mediaUrls)).join('');
+  container.scrollTop = container.scrollHeight;
 }
 
-function renderMsg(m) {
+function renderMsg(m, mediaUrls = {}) {
   // timeZone explícito: created_at no banco é UTC; renderiza sempre em BRT
   // independente do TZ do browser do médico.
   const time = new Date(m.created_at).toLocaleTimeString('pt-BR', {
     hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo'
   });
+
+  const tipo = m.tipo || 'texto';
+  let body;
+
+  if (tipo === 'imagem' || tipo === 'audio') {
+    const url = mediaUrls[m.media_path];
+    const cap = (m.conteudo || '').trim();
+    const captionHtml = cap ? `<div class="chat-msg-caption">${_escapeHtmlMedico(cap)}</div>` : '';
+    if (!url) {
+      // Sem URL: signed URL falhou OU mensagem ainda sem path (otimista pré-render)
+      const rotulo = tipo === 'imagem' ? 'Imagem indisponível no momento' : 'Áudio indisponível no momento';
+      body = `<div class="chat-msg-erro-midia">${rotulo}</div>${captionHtml}`;
+    } else if (tipo === 'imagem') {
+      body = `<img class="chat-msg-midia-img" src="${_escapeHtmlMedico(url)}" alt="" loading="lazy">${captionHtml}`;
+    } else {
+      body = `<audio class="chat-msg-midia-audio" src="${_escapeHtmlMedico(url)}" controls preload="metadata"></audio>${captionHtml}`;
+    }
+  } else {
+    // Texto legacy: m.conteudo pode conter HTML válido (template strings antigas
+    // injetavam HTML às vezes). Mantemos compatibilidade — não escapa.
+    body = m.conteudo || '';
+  }
+
   return `
-    <div class="chat-msg ${m.remetente}">
-      ${m.conteudo}
+    <div class="chat-msg ${m.remetente}" data-tipo="${tipo}">
+      ${body}
       <div class="chat-msg-time">${time}</div>
     </div>
   `;
 }
+
+function _escapeHtmlMedico(s) {
+  return String(s).replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+// ── FASE 5: Upload de mídia (foto OU áudio do médico) ──
+async function _enviarMidiaPreviewMedico() {
+  if (!_previewState || !currentConsulta) return;
+  const r = _getMidiaRefs();
+  const { blob, mime, tipo, objectUrl } = _previewState;
+  const caption = r.previewCaption.value.trim();
+
+  r.previewEnviar.disabled = true;
+  r.previewCancelar.disabled = true;
+  const txtOriginal = r.previewEnviar.textContent;
+  r.previewEnviar.textContent = 'Enviando…';
+
+  // Render otimista no chat
+  const otimistaId = `otimista-${Date.now()}`;
+  _renderOtimistaMidiaMedico(otimistaId, tipo, objectUrl, caption);
+
+  try {
+    const ext = mime === 'image/jpeg' ? 'jpg'
+              : mime === 'audio/webm' ? 'webm'
+              : mime === 'audio/mp4'  ? 'm4a'
+              : mime === 'audio/ogg'  ? 'ogg'
+              : 'bin';
+    const fd = new FormData();
+    fd.append('consulta_id', currentConsulta.id);
+    fd.append('file', blob, `upload.${ext}`);
+    fd.append('tipo', tipo);
+    if (caption) fd.append('caption', caption);
+
+    const resp = await fetch(`${AUTH_API}/medico/mensagem-midia`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${authToken}` },
+      body: fd,
+    });
+
+    if (resp.status === 401) {
+      _removerOtimistaMedico(otimistaId);
+      alert('Sua sessão expirou. Faça login novamente.');
+      return;
+    }
+    if (resp.status === 403) {
+      _removerOtimistaMedico(otimistaId);
+      alert('Esta consulta não pertence a você.');
+      return;
+    }
+    if (!resp.ok) {
+      const data = await resp.json().catch(() => ({}));
+      throw new Error(data.erro || `HTTP ${resp.status}`);
+    }
+
+    // Sucesso: fecha preview + reload messages (pra trazer URL real)
+    _fecharPreviewMidia();
+    _removerOtimistaMedico(otimistaId);
+    await loadMessages(currentConsulta.id);
+  } catch (e) {
+    _removerOtimistaMedico(otimistaId);
+    alert(e.message || 'Não foi possível enviar agora. Tente novamente.');
+    r.previewEnviar.disabled = false;
+    r.previewCancelar.disabled = false;
+    r.previewEnviar.textContent = txtOriginal;
+  }
+}
+
+function _renderOtimistaMidiaMedico(otimistaId, tipo, objectUrl, caption) {
+  const container = document.getElementById('chatMessages');
+  if (!container) return;
+  const time = new Date().toLocaleTimeString('pt-BR', {
+    hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo',
+  });
+  const captionHtml = caption ? `<div class="chat-msg-caption">${_escapeHtmlMedico(caption)}</div>` : '';
+  const inner = tipo === 'imagem'
+    ? `<img class="chat-msg-midia-img" src="${objectUrl}" alt="">${captionHtml}`
+    : `<audio class="chat-msg-midia-audio" src="${objectUrl}" controls preload="metadata"></audio>${captionHtml}`;
+  const div = document.createElement('div');
+  div.className = 'chat-msg medico otimista';
+  div.id = otimistaId;
+  div.innerHTML = `${inner}<div class="chat-msg-time">${time} · enviando…</div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function _removerOtimistaMedico(otimistaId) {
+  const el = document.getElementById(otimistaId);
+  if (el) el.remove();
+}
+
+// ── Lightbox helpers ──
+function _abrirLightboxMedico(src) {
+  if (!src) return;
+  const r = _getMidiaRefs();
+  r.lightboxImg.src = src;
+  r.lightbox.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function _fecharLightboxMedico() {
+  const r = _getMidiaRefs();
+  r.lightbox.classList.remove('show');
+  // Aguarda animação fechar antes de limpar src (evita flash)
+  setTimeout(() => {
+    if (!r.lightbox.classList.contains('show')) r.lightboxImg.src = '';
+  }, 200);
+  document.body.style.overflow = '';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FASE 5 — MÍDIA NO DASHBOARD (clipe → galeria/áudio + render inline)
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Diferenças chave vs paciente.html:
+// - Sem Câmera no menu (só Galeria + Áudio) — médico raramente tira foto
+// - Áudio com preview obrigatório (médico revisa antes de mandar)
+// - Endpoint diferente: POST /medico/mensagem-midia (em vez de paciente)
+// - Auth: JWT do médico (authToken global)
+// - Render: dashboard lê mensagens via Supabase JS direto, mas mídia precisa
+//   de signed URL → batch via POST /medico/midia-urls
+//
+// Refs DOM (capturadas lazy: dashboard só monta esses elementos depois do login)
+let _midiaRefs = null;
+function _getMidiaRefs() {
+  if (_midiaRefs) return _midiaRefs;
+  _midiaRefs = {
+    btnClipe:        document.getElementById('btnClipe'),
+    midiaMenu:       document.getElementById('midiaMenu'),
+    menuGaleria:     document.getElementById('menuGaleria'),
+    menuAudio:       document.getElementById('menuAudio'),
+    fileGaleria:     document.getElementById('fileGaleria'),
+    overlayPreview:  document.getElementById('overlayPreview'),
+    previewTitulo:   document.getElementById('previewTitulo'),
+    previewConteudo: document.getElementById('previewConteudo'),
+    previewCaption:  document.getElementById('previewCaption'),
+    previewCancelar: document.getElementById('previewCancelar'),
+    previewEnviar:   document.getElementById('previewEnviar'),
+    previewFechar:   document.getElementById('previewFechar'),
+    overlayGravar:   document.getElementById('overlayGravar'),
+    gravarTimer:     document.getElementById('gravarTimer'),
+    gravarMic:       document.getElementById('gravarMic'),
+    gravarInstrucao: document.getElementById('gravarInstrucao'),
+    gravarCancelar:  document.getElementById('gravarCancelar'),
+    lightbox:        document.getElementById('lightbox'),
+    lightboxImg:     document.getElementById('lightboxImg'),
+    lightboxFechar:  document.getElementById('lightboxFechar'),
+  };
+  return _midiaRefs;
+}
+
+// ── Helper: compressão de imagem client-side ──
+//
+// Mesmo princípio do paciente.html: redimensionar pra max 1600px no maior lado,
+// re-encodar como JPEG q0.85. Backend faz strip EXIF + reencode novamente
+// (defesa em profundidade).
+
+const MAX_IMG_DIMENSAO = 1600;
+const JPEG_QUALITY     = 0.85;
+const LIMITE_IMG_BYTES_FRONT = 5 * 1024 * 1024;
+
+async function comprimirImagemParaUpload(file) {
+  if (!file || !file.type.startsWith('image/')) {
+    throw new Error('Arquivo precisa ser uma imagem.');
+  }
+  if (file.size > LIMITE_IMG_BYTES_FRONT) {
+    throw new Error(`Imagem muito grande (${(file.size/1024/1024).toFixed(1)} MB). Limite: 5 MB.`);
+  }
+  let bitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch (e) {
+    throw new Error('Não foi possível ler a imagem. Tente outra foto.');
+  }
+  let { width, height } = bitmap;
+  if (Math.max(width, height) > MAX_IMG_DIMENSAO) {
+    const ratio = MAX_IMG_DIMENSAO / Math.max(width, height);
+    width = Math.round(width * ratio);
+    height = Math.round(height * ratio);
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, width, height);
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close && bitmap.close();
+  return await new Promise((resolve, reject) => {
+    canvas.toBlob(
+      b => b ? resolve(b) : reject(new Error('Falha ao codificar imagem.')),
+      'image/jpeg',
+      JPEG_QUALITY,
+    );
+  });
+}
+
+// ── Estado compartilhado: blob a enviar (foto OU áudio) ──
+let _previewState = null;  // {blob, mime, tipo, objectUrl}
+
+// ── Menu (clipe) ──
+function _abrirMidiaMenu()  { _getMidiaRefs().midiaMenu.classList.add('show'); }
+function _fecharMidiaMenu() { _getMidiaRefs().midiaMenu.classList.remove('show'); }
+
+document.addEventListener('click', e => {
+  const r = _getMidiaRefs();
+  if (!r.midiaMenu || !r.midiaMenu.classList.contains('show')) return;
+  if (e.target === r.btnClipe || (r.btnClipe && r.btnClipe.contains(e.target))) return;
+  if (r.midiaMenu.contains(e.target)) return;
+  _fecharMidiaMenu();
+});
+
+// Wiring inicial — chamado após DOM pronto
+function _initMidiaWiring() {
+  const r = _getMidiaRefs();
+  if (!r.btnClipe) return;  // dashboard pode não ter os elementos (login screen)
+
+  r.btnClipe.addEventListener('click', e => {
+    e.stopPropagation();
+    if (!currentConsulta) return;  // sem consulta ativa, ignora
+    r.midiaMenu.classList.toggle('show');
+  });
+
+  r.menuGaleria.addEventListener('click', () => {
+    _fecharMidiaMenu();
+    r.fileGaleria.value = '';
+    r.fileGaleria.click();
+  });
+
+  r.fileGaleria.addEventListener('change', async () => {
+    const file = r.fileGaleria.files && r.fileGaleria.files[0];
+    if (!file) return;
+    r.fileGaleria.value = '';
+    try {
+      const blob = await comprimirImagemParaUpload(file);
+      _abrirPreviewMidia({
+        blob, mime: 'image/jpeg', tipo: 'imagem',
+        titulo: 'Enviar foto pro paciente',
+      });
+    } catch (e) {
+      alert(e.message || 'Não foi possível ler a imagem.');
+    }
+  });
+
+  // ── Áudio (hold-to-record + preview obrigatório) ──
+  r.menuAudio.addEventListener('click', () => {
+    _fecharMidiaMenu();
+    _abrirOverlayGravar();
+  });
+
+  r.gravarMic.addEventListener('mousedown', _iniciarGravacao);
+  r.gravarMic.addEventListener('mouseup',    _pararGravacao);
+  r.gravarMic.addEventListener('mouseleave', _pararGravacao);
+  r.gravarMic.addEventListener('touchstart', e => { e.preventDefault(); _iniciarGravacao(); }, { passive: false });
+  r.gravarMic.addEventListener('touchend',   e => { e.preventDefault(); _pararGravacao(); },   { passive: false });
+  r.gravarMic.addEventListener('touchcancel', _pararGravacao);
+
+  r.gravarCancelar.addEventListener('click', () => _fecharOverlayGravar({ abortar: true }));
+
+  // Preview: botões Cancelar / Fechar / Enviar
+  r.previewCancelar.addEventListener('click', _fecharPreviewMidia);
+  r.previewFechar.addEventListener('click', _fecharPreviewMidia);
+  r.previewEnviar.addEventListener('click', _enviarMidiaPreviewMedico);
+
+  // ── Lightbox: event delegation no #chatMessages ──
+  // 1 listener pega click em qualquer .chat-msg-midia-img (mensagens reais
+  // e otimistas). Sem rebind a cada loadMessages.
+  const chatContainer = document.getElementById('chatMessages');
+  if (chatContainer) {
+    chatContainer.addEventListener('click', e => {
+      const img = e.target.closest('.chat-msg-midia-img');
+      if (!img) return;
+      _abrirLightboxMedico(img.src);
+    });
+  }
+
+  // Fundo do lightbox fecha; botão × fecha; click NA imagem NÃO fecha
+  r.lightbox.addEventListener('click', e => {
+    if (e.target === r.lightboxImg) return;
+    _fecharLightboxMedico();
+  });
+  r.lightboxFechar.addEventListener('click', e => {
+    e.stopPropagation();
+    _fecharLightboxMedico();
+  });
+
+  // ESC fecha lightbox (separado dos outros ESCs porque overlay de gravação +
+  // preview podem estar abertos juntos com lightbox em tese — sem race)
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const ref = _getMidiaRefs();
+    if (ref.lightbox && ref.lightbox.classList.contains('show')) _fecharLightboxMedico();
+  });
+
+  // ESC também fecha gravação (alem do preview, já tratado acima)
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const ref = _getMidiaRefs();
+    if (ref.overlayGravar && ref.overlayGravar.classList.contains('show')) {
+      _fecharOverlayGravar({ abortar: true });
+    }
+  });
+}
+
+// ── Áudio: helpers (escopo módulo) ──
+//
+// Diferença do paciente.html: aqui o áudio SEMPRE passa pelo preview depois
+// de gravar. Médico ouve antes de mandar. Decisão da Sprint 5.3 (2b).
+
+const AUDIO_MAX_SEGUNDOS = 180;  // 3 min ~ 5MB em opus
+
+let _mediaStream      = null;
+let _mediaRecorder    = null;
+let _recChunks        = [];
+let _recStartTime     = 0;
+let _recTimerInterval = null;
+let _recAbortado      = false;
+
+function _selecionarMimeAudio() {
+  const candidatos = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'];
+  if (typeof MediaRecorder === 'undefined' || !MediaRecorder.isTypeSupported) return null;
+  for (const m of candidatos) if (MediaRecorder.isTypeSupported(m)) return m;
+  return null;
+}
+
+async function _abrirOverlayGravar() {
+  const r = _getMidiaRefs();
+  if (typeof MediaRecorder === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+    alert('Seu navegador não suporta gravação. Atualize ou use Chrome/Safari recente.');
+    return;
+  }
+  if (!_selecionarMimeAudio()) {
+    alert('Seu navegador não suporta gravação de áudio.');
+    return;
+  }
+  try {
+    _mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (e) {
+    alert('Permissão do microfone negada. Habilite nas configurações do navegador.');
+    return;
+  }
+  _recChunks = [];
+  _recAbortado = false;
+  r.gravarTimer.textContent = '0:00';
+  r.gravarTimer.classList.remove('gravando');
+  r.gravarMic.classList.remove('ativo');
+  r.gravarInstrucao.textContent = 'Pressione e segure';
+  r.overlayGravar.classList.add('show');
+}
+
+function _fecharOverlayGravar({ abortar = true } = {}) {
+  const r = _getMidiaRefs();
+  if (abortar) _recAbortado = true;
+  if (_mediaRecorder && _mediaRecorder.state === 'recording') {
+    try { _mediaRecorder.stop(); } catch (_) {}
+  }
+  if (_mediaStream) {
+    _mediaStream.getTracks().forEach(t => t.stop());
+    _mediaStream = null;
+  }
+  if (_recTimerInterval) {
+    clearInterval(_recTimerInterval);
+    _recTimerInterval = null;
+  }
+  r.overlayGravar.classList.remove('show');
+  r.gravarMic.classList.remove('ativo');
+  r.gravarTimer.classList.remove('gravando');
+  _recChunks = [];
+  _mediaRecorder = null;
+}
+
+function _iniciarGravacao() {
+  if (!_mediaStream) return;
+  if (_mediaRecorder && _mediaRecorder.state === 'recording') return;
+
+  const r = _getMidiaRefs();
+  const mime = _selecionarMimeAudio();
+  _recChunks = [];
+
+  try {
+    _mediaRecorder = new MediaRecorder(_mediaStream, mime ? { mimeType: mime } : {});
+  } catch (e) {
+    alert('Não foi possível iniciar a gravação.');
+    _fecharOverlayGravar();
+    return;
+  }
+
+  _mediaRecorder.ondataavailable = e => {
+    if (e.data && e.data.size > 0) _recChunks.push(e.data);
+  };
+
+  _mediaRecorder.onstop = () => {
+    if (_recTimerInterval) {
+      clearInterval(_recTimerInterval);
+      _recTimerInterval = null;
+    }
+    r.gravarMic.classList.remove('ativo');
+    r.gravarTimer.classList.remove('gravando');
+
+    if (_recAbortado) return;
+
+    const blobMimeRaw = (_mediaRecorder?.mimeType) || mime || 'audio/webm';
+    const cleanMime = blobMimeRaw.split(';')[0].trim() || 'audio/webm';
+    const blob = new Blob(_recChunks, { type: cleanMime });
+
+    if (_mediaStream) {
+      _mediaStream.getTracks().forEach(t => t.stop());
+      _mediaStream = null;
+    }
+    r.overlayGravar.classList.remove('show');
+
+    if (blob.size < 1024) {
+      alert('Gravação muito curta. Mantenha o botão pressionado por mais tempo.');
+      return;
+    }
+    if (blob.size > 5 * 1024 * 1024) {
+      alert('Áudio muito longo. Máximo 3 minutos.');
+      return;
+    }
+
+    // PREVIEW OBRIGATÓRIO — médico revisa antes de mandar (decisão 2b)
+    _abrirPreviewMidia({
+      blob,
+      mime: cleanMime,
+      tipo: 'audio',
+      titulo: 'Enviar áudio pro paciente',
+    });
+  };
+
+  _mediaRecorder.start();
+  _recStartTime = Date.now();
+  r.gravarMic.classList.add('ativo');
+  r.gravarTimer.classList.add('gravando');
+  r.gravarInstrucao.textContent = 'Solte pra parar';
+
+  _recTimerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - _recStartTime) / 1000);
+    const mm = Math.floor(elapsed / 60);
+    const ss = elapsed % 60;
+    r.gravarTimer.textContent = `${mm}:${ss.toString().padStart(2, '0')}`;
+    if (elapsed >= AUDIO_MAX_SEGUNDOS) _pararGravacao();
+  }, 200);
+}
+
+function _pararGravacao() {
+  if (_mediaRecorder && _mediaRecorder.state === 'recording') {
+    _recAbortado = false;
+    try { _mediaRecorder.stop(); } catch (_) {}
+  }
+}
+
+// Inicializa wiring após DOM ready (sem esperar por login)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _initMidiaWiring);
+} else {
+  _initMidiaWiring();
+}
+
+// ── Preview compartilhado (definido aqui pra galeria já funcionar; áudio reusa) ──
+function _abrirPreviewMidia({ blob, mime, tipo, titulo }) {
+  const r = _getMidiaRefs();
+  _previewState = { blob, mime, tipo, objectUrl: URL.createObjectURL(blob) };
+  r.previewTitulo.textContent = titulo || (tipo === 'imagem' ? 'Enviar foto' : 'Enviar áudio');
+  r.previewCaption.value = '';
+  r.previewEnviar.disabled = false;
+  r.previewCancelar.disabled = false;
+  r.previewEnviar.textContent = 'Enviar';
+
+  if (tipo === 'imagem') {
+    r.previewConteudo.innerHTML = `<img src="${_previewState.objectUrl}" alt="">`;
+  } else {
+    r.previewConteudo.innerHTML = `<audio src="${_previewState.objectUrl}" controls preload="metadata"></audio>`;
+  }
+  r.overlayPreview.classList.add('show');
+  setTimeout(() => r.previewCaption.focus(), 150);
+}
+
+function _fecharPreviewMidia() {
+  const r = _getMidiaRefs();
+  if (_previewState && _previewState.objectUrl) URL.revokeObjectURL(_previewState.objectUrl);
+  _previewState = null;
+  r.overlayPreview.classList.remove('show');
+  r.previewCaption.value = '';
+  r.previewConteudo.innerHTML = '';
+  r.previewEnviar.disabled = false;
+  r.previewCancelar.disabled = false;
+  r.previewEnviar.textContent = 'Enviar';
+}
+
+// ESC fecha preview
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const r = _getMidiaRefs();
+  if (r.overlayPreview && r.overlayPreview.classList.contains('show')) _fecharPreviewMidia();
+});
+
+// (Upload propriamente dito — POST /medico/mensagem-midia + render otimista —
+//  vem na Tarefa 5 quando integrarmos com loadMessages)
 
 // ═══════════════ Z-API CONFIG ═══════════════
 const ZAPI_INSTANCE = '3F0AC26C91A9B1041B529E8469198590';
@@ -1784,11 +2598,21 @@ function subscribeRealtime() {
   sb.channel('mensagens-changes')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensagens' }, (payload) => {
       const msg = payload.new;
-      if (currentConsulta && msg.consulta_id === currentConsulta.id && msg.remetente !== 'medico') {
-        const container = document.getElementById('chatMessages');
-        container.innerHTML += renderMsg(msg);
-        container.scrollTop = container.scrollHeight;
+      if (!currentConsulta || msg.consulta_id !== currentConsulta.id) return;
+      if (msg.remetente === 'medico') return;  // próprio médico já vê via append local
+
+      // Fase 5: se for mídia, payload do realtime NÃO tem signed URL (Supabase
+      // não gera). Recarrega a lista inteira pra buscar URLs via /medico/midia-urls.
+      // Pra mensagens texto, mantém o append rápido sem refetch.
+      const tipo = msg.tipo || 'texto';
+      if (tipo !== 'texto') {
+        loadMessages(currentConsulta.id);
+        return;
       }
+
+      const container = document.getElementById('chatMessages');
+      container.innerHTML += renderMsg(msg);
+      container.scrollTop = container.scrollHeight;
     })
     .subscribe();
 }
