@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sua consulta — ConsultaJá!</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<!-- Agora.io SDK (videochamada V.0). Carregado lazy só quando overlay abre. -->
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.2.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -629,6 +631,180 @@ nav{
   .auth-card{padding:22px 18px 20px}
   .auth-titulo{font-size:19px}
 }
+
+/* ════════════════ VIDEOCHAMADA — V.1 paciente ════════════════ */
+
+/* Modal "Médico está chamando" — aparece quando polling detecta
+   videochamada_iniciada_em populada e encerrada_em null */
+.vc-convite-overlay{
+  position:fixed;inset:0;z-index:1500;
+  background:rgba(12,17,14,.85);
+  display:none;align-items:center;justify-content:center;
+  padding:20px;
+  animation:overlayIn .2s ease-out;
+}
+.vc-convite-overlay.show{display:flex}
+.vc-convite-card{
+  background:#fff;border-radius:18px;
+  width:100%;max-width:380px;
+  padding:30px 26px 22px;
+  text-align:center;
+}
+.vc-convite-icone{
+  width:84px;height:84px;border-radius:50%;
+  background:var(--pale);color:var(--green);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 18px;
+  animation:vcRing 1.5s infinite;
+}
+@keyframes vcRing{
+  0%,100%{box-shadow:0 0 0 0 rgba(10,102,64,.4)}
+  50%{box-shadow:0 0 0 18px rgba(10,102,64,0)}
+}
+.vc-convite-titulo{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:20px;font-weight:700;color:var(--ink);
+  margin-bottom:6px;
+}
+.vc-convite-sub{
+  font-size:14px;color:var(--muted);line-height:1.5;
+  margin-bottom:22px;
+}
+.vc-convite-acoes{display:flex;gap:10px}
+.vc-convite-acoes button{
+  flex:1;padding:13px;border-radius:12px;
+  font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;
+  cursor:pointer;border:none;
+  transition:background .15s,transform .1s;
+}
+.vc-convite-recusar{
+  background:transparent;color:var(--muted);
+  border:1.5px solid var(--border);
+}
+.vc-convite-recusar:hover{background:var(--white);color:var(--ink);border-color:var(--ink2)}
+.vc-convite-entrar{background:var(--green);color:#fff}
+.vc-convite-entrar:hover{background:var(--green2)}
+
+/* Tela de videochamada — fullscreen com video remoto + auto-vídeo PIP */
+.vc-room{
+  position:fixed;inset:0;z-index:1600;
+  background:#000;
+  display:none;flex-direction:column;
+  animation:overlayIn .2s ease-out;
+}
+.vc-room.show{display:flex}
+.vc-room-header{
+  position:absolute;top:0;left:0;right:0;z-index:2;
+  padding:14px 18px;
+  background:linear-gradient(to bottom,rgba(0,0,0,.55) 0%,rgba(0,0,0,0) 100%);
+  color:#fff;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.vc-room-medico{
+  display:flex;align-items:center;gap:10px;
+  font-family:'DM Sans',sans-serif;
+}
+.vc-room-medico-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--green);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:13px;
+  font-family:'Bricolage Grotesque',sans-serif;
+}
+.vc-room-medico-info{font-size:13.5px;line-height:1.3}
+.vc-room-medico-nome{font-weight:600}
+.vc-room-medico-status{font-size:11px;opacity:.7}
+.vc-room-timer{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:14px;font-weight:600;
+  background:rgba(0,0,0,.4);
+  padding:5px 12px;border-radius:100px;
+  letter-spacing:.5px;
+}
+
+/* Vídeo remoto (médico) — ocupa quase tela toda */
+.vc-remoto{
+  flex:1;position:relative;background:#0a0a0a;
+}
+.vc-remoto-video{
+  width:100%;height:100%;
+  object-fit:cover;
+}
+.vc-remoto-placeholder{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#aaa;gap:12px;
+}
+.vc-remoto-placeholder-avatar{
+  width:88px;height:88px;border-radius:50%;
+  background:var(--green);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:700;
+  font-family:'Bricolage Grotesque',sans-serif;
+}
+
+/* Auto-vídeo (paciente) — picture-in-picture canto inferior direito */
+.vc-local{
+  position:absolute;
+  right:14px;bottom:96px;
+  width:110px;height:160px;
+  border-radius:14px;overflow:hidden;
+  background:#222;
+  border:2px solid rgba(255,255,255,.2);
+  box-shadow:0 4px 16px rgba(0,0,0,.4);
+  z-index:2;
+}
+.vc-local-video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.vc-local-off{
+  position:absolute;inset:0;
+  background:#222;color:#888;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;text-align:center;padding:8px;
+}
+
+/* Controles inferior (mute mic, mute câmera, sair) */
+.vc-controles{
+  position:absolute;bottom:0;left:0;right:0;z-index:3;
+  padding:18px 16px 26px;
+  background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,0) 100%);
+  display:flex;justify-content:center;gap:14px;
+}
+.vc-btn{
+  width:54px;height:54px;border-radius:50%;
+  background:rgba(255,255,255,.18);color:#fff;border:none;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(10px);
+  transition:background .15s,transform .1s;
+}
+.vc-btn:hover{background:rgba(255,255,255,.28)}
+.vc-btn:active{transform:scale(.94)}
+.vc-btn.mutado{background:rgba(255,255,255,.85);color:#000}
+.vc-btn-sair{background:var(--danger,#DC2626);color:#fff}
+.vc-btn-sair:hover{background:#B91C1C}
+
+/* Estado de conexão (loading/erro) sobreposto */
+.vc-status{
+  position:absolute;inset:0;z-index:4;
+  background:rgba(0,0,0,.85);color:#fff;
+  display:none;align-items:center;justify-content:center;flex-direction:column;
+  gap:14px;padding:20px;text-align:center;
+}
+.vc-status.show{display:flex}
+.vc-status-spinner{
+  width:36px;height:36px;border-radius:50%;
+  border:3px solid rgba(255,255,255,.2);
+  border-top-color:#fff;
+  animation:spin .8s linear infinite;
+}
+.vc-status-msg{font-size:14px;color:#ddd;max-width:280px;line-height:1.5}
+.vc-status-erro .vc-status-spinner{display:none}
+.vc-status-erro{color:#fca5a5}
+
+@media(max-width:480px){
+  .vc-local{width:90px;height:130px;right:10px;bottom:88px}
+  .vc-controles{gap:10px;padding:14px 10px 20px}
+  .vc-btn{width:48px;height:48px}
+}
 </style>
 </head>
 <body>
@@ -886,6 +1062,86 @@ nav{
   <div class="lightbox" id="lightbox">
     <button class="lightbox-fechar" id="lightboxFechar" type="button" aria-label="Fechar">×</button>
     <img id="lightboxImg" src="" alt="">
+  </div>
+
+  <!-- ════════════════ V.1: VIDEOCHAMADA ════════════════ -->
+
+  <!-- Modal "Médico está chamando" — aparece via polling -->
+  <div class="vc-convite-overlay" id="vcConvite">
+    <div class="vc-convite-card">
+      <div class="vc-convite-icone">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none">
+          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"
+                stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="vc-convite-titulo">Médico está chamando</div>
+      <div class="vc-convite-sub">
+        Dr. Matheus Silva de Castro está iniciando uma videochamada com você.
+        Permita acesso à câmera e microfone ao entrar.
+      </div>
+      <div class="vc-convite-acoes">
+        <button class="vc-convite-recusar" id="vcConviteRecusar" type="button">Agora não</button>
+        <button class="vc-convite-entrar"  id="vcConviteEntrar"  type="button">Entrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sala de videochamada (fullscreen) -->
+  <div class="vc-room" id="vcRoom">
+    <div class="vc-room-header">
+      <div class="vc-room-medico">
+        <div class="vc-room-medico-avatar">DM</div>
+        <div class="vc-room-medico-info">
+          <div class="vc-room-medico-nome">Dr. Matheus Silva de Castro</div>
+          <div class="vc-room-medico-status">CRM-SP 222371</div>
+        </div>
+      </div>
+      <div class="vc-room-timer" id="vcRoomTimer">0:00</div>
+    </div>
+
+    <div class="vc-remoto" id="vcRemoto">
+      <!-- Vídeo do médico injetado pelo Agora SDK aqui -->
+      <div class="vc-remoto-placeholder" id="vcRemotoPlaceholder">
+        <div class="vc-remoto-placeholder-avatar">DM</div>
+        <div>Aguardando câmera do médico…</div>
+      </div>
+    </div>
+
+    <!-- Auto-vídeo (paciente) -->
+    <div class="vc-local" id="vcLocal">
+      <!-- Stream local injetado pelo Agora aqui -->
+      <div class="vc-local-off" id="vcLocalOff" style="display:none">Câmera desligada</div>
+    </div>
+
+    <!-- Controles -->
+    <div class="vc-controles">
+      <button class="vc-btn" id="vcBtnMic" type="button" title="Mute mic">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <rect x="9" y="3" width="6" height="12" rx="3" stroke="currentColor" stroke-width="2" fill="currentColor"/>
+          <path d="M5 11a7 7 0 0014 0M12 18v3M9 21h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="vc-btn" id="vcBtnCam" type="button" title="Mute câmera">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M23 7l-7 5 7 5V7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="currentColor"/>
+          <rect x="1" y="5" width="15" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </button>
+      <button class="vc-btn vc-btn-sair" id="vcBtnSair" type="button" title="Sair">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                transform="rotate(135 12 12)"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Status overlay (conectando, erro) -->
+    <div class="vc-status" id="vcStatus">
+      <div class="vc-status-spinner" id="vcStatusSpinner"></div>
+      <div class="vc-status-msg" id="vcStatusMsg">Conectando…</div>
+    </div>
   </div>
 
   <!-- Seção de documentos (Fase 3) — aparece quando GET /paciente/documentos retorna ≥1 -->
@@ -2402,6 +2658,301 @@ function bootstrap() {
 }
 
 bootstrap();
+
+// ══════════════════════════════════════════════════════════════════════════════
+// VIDEOCHAMADA — V.1 paciente
+// ══════════════════════════════════════════════════════════════════════════════
+//
+// Fluxo:
+//   1. fetchMe() retorna consulta com videochamada_iniciada_em populada
+//      e videochamada_encerrada_em null → render() detecta e abre o convite
+//   2. Paciente clica "Entrar" → POST /paciente/videochamada/token →
+//      Agora SDK conecta no channel cj-{uuid}, publica audio+video local,
+//      subscreve ao stream do médico
+//   3. Polling continua durante a chamada. Se encerrada_em for populada
+//      (médico encerrou), auto-disconnect.
+//   4. Paciente clica botão sair → desconecta cliente Agora (médico vê
+//      via "user-left" event do Agora). Não chama backend — paciente não
+//      tem permissão pra encerrar (médico controla)
+//
+// Estado preservado entre re-renders (não pode reconectar a cada poll de 5s):
+//   _vc.cliente, _vc.localTrackAudio, _vc.localTrackVideo, _vc.estaConectado,
+//   _vc.estaNoConvite (flag pra evitar reabrir modal a cada poll)
+
+const _vc = {
+  cliente: null,
+  localTrackAudio: null,
+  localTrackVideo: null,
+  estaConectado: false,
+  estaNoConvite: false,
+  conviteIdJaVisto: null,    // id da consulta com convite mostrado pra esta sessão
+  recusaIdJaVisto: null,     // id de convite recusado nesta sessão
+  micMutado: false,
+  camMutada: false,
+  timerInterval: null,
+  timerStart: 0,
+  conexaoIniciadaEm: null,
+};
+
+// Refs DOM (capturadas lazy só quando precisar)
+let _vcRefs = null;
+function _vcGetRefs() {
+  if (_vcRefs) return _vcRefs;
+  _vcRefs = {
+    convite:        document.getElementById('vcConvite'),
+    conviteEntrar:  document.getElementById('vcConviteEntrar'),
+    conviteRecusar: document.getElementById('vcConviteRecusar'),
+    room:           document.getElementById('vcRoom'),
+    timer:          document.getElementById('vcRoomTimer'),
+    remoto:         document.getElementById('vcRemoto'),
+    remotoPlaceholder: document.getElementById('vcRemotoPlaceholder'),
+    local:          document.getElementById('vcLocal'),
+    localOff:       document.getElementById('vcLocalOff'),
+    btnMic:         document.getElementById('vcBtnMic'),
+    btnCam:         document.getElementById('vcBtnCam'),
+    btnSair:        document.getElementById('vcBtnSair'),
+    status:         document.getElementById('vcStatus'),
+    statusMsg:      document.getElementById('vcStatusMsg'),
+    statusSpinner:  document.getElementById('vcStatusSpinner'),
+  };
+  return _vcRefs;
+}
+
+// ── Detecção do convite (chamado pela render() quando consulta atualiza) ──
+
+function vcChecarConvite(consulta) {
+  if (!consulta) return;
+  const iniciada = consulta.videochamada_iniciada_em;
+  const encerrada = consulta.videochamada_encerrada_em;
+
+  // Convite ativo: iniciada populada + não encerrada + na consulta atual
+  const conviteAtivo = iniciada && !encerrada;
+  const conviteId = consulta.id + '|' + iniciada;
+
+  // Se está conectado e médico encerrou → auto-disconnect
+  if (_vc.estaConectado && encerrada) {
+    console.log('[vc] médico encerrou — desconectando');
+    _vcDesconectar({ motivo: 'medico-encerrou' });
+    return;
+  }
+
+  // Se conectado, ignora convite (já está dentro)
+  if (_vc.estaConectado) return;
+
+  // Convite ativo + ainda não vi nesta sessão + não recusei
+  if (conviteAtivo
+      && _vc.conviteIdJaVisto !== conviteId
+      && _vc.recusaIdJaVisto !== conviteId) {
+    _vc.conviteIdJaVisto = conviteId;
+    _vc.estaNoConvite = true;
+    _vcGetRefs().convite.classList.add('show');
+  }
+
+  // Convite encerrado enquanto modal aberto → fecha modal
+  if (!conviteAtivo && _vc.estaNoConvite) {
+    _vc.estaNoConvite = false;
+    _vcGetRefs().convite.classList.remove('show');
+  }
+}
+
+// ── Recusar convite ──
+_vcGetRefs().conviteRecusar.addEventListener('click', () => {
+  const refs = _vcGetRefs();
+  refs.convite.classList.remove('show');
+  _vc.estaNoConvite = false;
+  // Marca recusa pra esta sessão (não reabre modal até médico reabrir
+  // a videochamada — iniciada_em mudaria, conviteId muda também)
+  _vc.recusaIdJaVisto = _vc.conviteIdJaVisto;
+});
+
+// ── Entrar na videochamada ──
+_vcGetRefs().conviteEntrar.addEventListener('click', async () => {
+  const refs = _vcGetRefs();
+  refs.convite.classList.remove('show');
+  _vc.estaNoConvite = false;
+
+  // Mostra room com status "conectando"
+  refs.room.classList.add('show');
+  _vcMostrarStatus('Conectando à videochamada…');
+
+  try {
+    // 1. Pede token do backend
+    const tokenResp = await fetch(`${API}/paciente/videochamada/token`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!tokenResp.ok) {
+      const err = await tokenResp.json().catch(() => ({}));
+      throw new Error(err.erro || `HTTP ${tokenResp.status}`);
+    }
+    const tk = await tokenResp.json();
+    if (!tk.ok) throw new Error(tk.erro || 'falha ao obter token');
+
+    await _vcConectarAgora(tk);
+  } catch (e) {
+    console.error('[vc] erro ao entrar:', e);
+    _vcMostrarStatus(
+      e.message || 'Não foi possível conectar. Verifique permissões e tente novamente.',
+      true
+    );
+    setTimeout(() => _vcDesconectar({ motivo: 'erro' }), 4000);
+  }
+});
+
+// ── Conectar no Agora SDK ──
+async function _vcConectarAgora(tk) {
+  if (typeof AgoraRTC === 'undefined') {
+    throw new Error('Agora SDK não carregado.');
+  }
+  AgoraRTC.setLogLevel(2);  // warn level
+
+  _vc.cliente = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+
+  // Listener: stream remoto entrou (médico publicou audio/video)
+  _vc.cliente.on('user-published', async (remoteUser, mediaType) => {
+    await _vc.cliente.subscribe(remoteUser, mediaType);
+    if (mediaType === 'video') {
+      const refs = _vcGetRefs();
+      refs.remotoPlaceholder.style.display = 'none';
+      remoteUser.videoTrack.play(refs.remoto);
+    }
+    if (mediaType === 'audio') {
+      remoteUser.audioTrack.play();
+    }
+  });
+
+  // Médico saiu (encerrou ou caiu rede)
+  _vc.cliente.on('user-unpublished', (remoteUser, mediaType) => {
+    if (mediaType === 'video') {
+      _vcGetRefs().remotoPlaceholder.style.display = 'flex';
+    }
+  });
+  _vc.cliente.on('user-left', () => {
+    console.log('[vc] médico saiu — encerrando');
+    _vcDesconectar({ motivo: 'medico-saiu' });
+  });
+
+  // Conecta no channel
+  await _vc.cliente.join(tk.app_id, tk.channel, tk.token, tk.uid_paciente);
+
+  // Cria tracks locais (pede permissão câmera + mic)
+  try {
+    [_vc.localTrackAudio, _vc.localTrackVideo] = await AgoraRTC.createMicrophoneAndCameraTracks();
+  } catch (e) {
+    throw new Error(
+      'Permissão de câmera/microfone negada. Habilite nas configurações do navegador e entre de novo.'
+    );
+  }
+
+  const refs = _vcGetRefs();
+  // Renderiza vídeo local no PIP
+  _vc.localTrackVideo.play(refs.local);
+  // Publica
+  await _vc.cliente.publish([_vc.localTrackAudio, _vc.localTrackVideo]);
+
+  _vc.estaConectado = true;
+  _vc.conexaoIniciadaEm = Date.now();
+  _vcEsconderStatus();
+  _vcStartTimer();
+}
+
+// ── Botões mic/cam/sair ──
+_vcGetRefs().btnMic.addEventListener('click', async () => {
+  if (!_vc.localTrackAudio) return;
+  _vc.micMutado = !_vc.micMutado;
+  await _vc.localTrackAudio.setMuted(_vc.micMutado);
+  _vcGetRefs().btnMic.classList.toggle('mutado', _vc.micMutado);
+});
+
+_vcGetRefs().btnCam.addEventListener('click', async () => {
+  if (!_vc.localTrackVideo) return;
+  _vc.camMutada = !_vc.camMutada;
+  await _vc.localTrackVideo.setMuted(_vc.camMutada);
+  _vcGetRefs().btnCam.classList.toggle('mutado', _vc.camMutada);
+  _vcGetRefs().localOff.style.display = _vc.camMutada ? 'flex' : 'none';
+});
+
+_vcGetRefs().btnSair.addEventListener('click', () => {
+  _vcDesconectar({ motivo: 'usuario-saiu' });
+});
+
+// ── Desconectar e limpar ──
+async function _vcDesconectar({ motivo = 'manual' } = {}) {
+  console.log(`[vc] desconectando: ${motivo}`);
+  const refs = _vcGetRefs();
+
+  if (_vc.timerInterval) {
+    clearInterval(_vc.timerInterval);
+    _vc.timerInterval = null;
+  }
+
+  try {
+    if (_vc.localTrackAudio) {
+      _vc.localTrackAudio.stop();
+      _vc.localTrackAudio.close();
+    }
+    if (_vc.localTrackVideo) {
+      _vc.localTrackVideo.stop();
+      _vc.localTrackVideo.close();
+    }
+    if (_vc.cliente) {
+      await _vc.cliente.leave();
+    }
+  } catch (e) {
+    console.warn('[vc] erro ao desconectar:', e);
+  }
+
+  _vc.cliente = null;
+  _vc.localTrackAudio = null;
+  _vc.localTrackVideo = null;
+  _vc.estaConectado = false;
+  _vc.micMutado = false;
+  _vc.camMutada = false;
+
+  refs.room.classList.remove('show');
+  refs.btnMic.classList.remove('mutado');
+  refs.btnCam.classList.remove('mutado');
+  refs.localOff.style.display = 'none';
+  refs.remotoPlaceholder.style.display = 'flex';
+  _vcEsconderStatus();
+}
+
+// ── Status overlay ──
+function _vcMostrarStatus(msg, isErro = false) {
+  const refs = _vcGetRefs();
+  refs.statusMsg.textContent = msg;
+  refs.status.classList.toggle('vc-status-erro', isErro);
+  refs.status.classList.add('show');
+}
+function _vcEsconderStatus() {
+  _vcGetRefs().status.classList.remove('show');
+}
+
+// ── Timer ──
+function _vcStartTimer() {
+  const refs = _vcGetRefs();
+  _vc.timerStart = Date.now();
+  refs.timer.textContent = '0:00';
+  _vc.timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - _vc.timerStart) / 1000);
+    const mm = Math.floor(elapsed / 60);
+    const ss = elapsed % 60;
+    refs.timer.textContent = `${mm}:${ss.toString().padStart(2, '0')}`;
+  }, 1000);
+}
+
+// ── Hook: integra render() existente ──
+// fetchMe atualmente chama render(data). Vamos injetar uma chamada de
+// vcChecarConvite passando consulta. Como render() é uma função grande,
+// fazemos wrap em vez de modificar internamente.
+const _renderOriginal = render;
+render = function(data) {
+  _renderOriginal(data);
+  if (data && data.consulta) vcChecarConvite(data.consulta);
+};
 </script>
 </body>
 </html>
