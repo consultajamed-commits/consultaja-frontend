@@ -157,6 +157,34 @@ body{font-family:'DM Sans',sans-serif;line-height:1.6;overflow:hidden;height:100
 }
 .btn-vidaas.active-sig:hover{background:var(--success-bg)}
 
+/* Hamburger mobile (escondido em desktop) */
+.dash-menu-toggle{
+  display:none;width:38px;height:38px;border-radius:10px;
+  border:1.5px solid var(--border);background:transparent;
+  cursor:pointer;flex-direction:column;
+  align-items:center;justify-content:center;gap:4px;
+  flex-shrink:0;
+  transition:border-color .2s,background .2s;
+}
+.dash-menu-toggle:hover{border-color:var(--green);background:var(--pale)}
+.dash-menu-toggle span{
+  display:block;width:16px;height:2px;
+  background:var(--ink);border-radius:2px;
+  transition:transform .3s,opacity .3s;
+}
+.dash-menu-toggle.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.dash-menu-toggle.active span:nth-child(2){opacity:0}
+.dash-menu-toggle.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+/* Sidebar overlay (mobile drawer backdrop) */
+.sidebar-overlay{
+  display:none;position:fixed;inset:0;
+  background:var(--overlay);backdrop-filter:blur(4px);
+  z-index:140;opacity:0;pointer-events:none;
+  transition:opacity .3s;
+}
+.sidebar-overlay.show{opacity:1;pointer-events:auto}
+
 /* ── SIDEBAR ── */
 .sidebar{
   background:var(--surface);
@@ -610,8 +638,23 @@ body{font-family:'DM Sans',sans-serif;line-height:1.6;overflow:hidden;height:100
 /* ── RESPONSIVE ── */
 @media(max-width:768px){
   .dashboard{grid-template-columns:1fr}
-  .sidebar{display:none}
   .topbar-badge{display:none}
+  .topbar-status{display:none}
+  .topbar-user span{display:none}            /* só avatar */
+  .topbar{padding:0 14px}
+
+  .dash-menu-toggle{display:flex}            /* hamburger aparece */
+
+  /* Sidebar vira drawer fixed na esquerda */
+  .sidebar{
+    position:fixed;top:54px;left:-340px;
+    width:320px;max-width:85vw;height:calc(100vh - 54px);
+    z-index:150;
+    box-shadow:8px 0 30px rgba(0,0,0,.18);
+    transition:left .35s cubic-bezier(.4,0,.2,1);
+  }
+  .sidebar.open{left:0}
+  .sidebar-overlay{display:block}
 }
 
 /* ═══════════════ FASE 5 — MÍDIA NO CHAT (botão clipe + overlays) ═══════════════ */
@@ -1030,6 +1073,9 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
   <!-- TOPBAR -->
   <div class="topbar">
     <div class="topbar-left">
+      <button class="dash-menu-toggle" id="dashMenuToggle" onclick="toggleDashSidebar()" aria-label="Abrir lista de pacientes">
+        <span></span><span></span><span></span>
+      </button>
       <div class="topbar-logo">
         <span class="dot"></span>
         ConsultaJá!
@@ -1053,8 +1099,11 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
     </div>
   </div>
 
+  <!-- Overlay backdrop (só visível em mobile com drawer aberta) -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleDashSidebar()"></div>
+
   <!-- SIDEBAR -->
-  <div class="sidebar">
+  <div class="sidebar" id="dashSidebar">
     <div class="sidebar-header">
       <div class="sidebar-title">
         Pacientes
@@ -1498,6 +1547,24 @@ async function loadConsultas() {
   }
 }
 
+// ═══════════════ MOBILE SIDEBAR DRAWER ═══════════════
+function toggleDashSidebar() {
+  const sb = document.getElementById('dashSidebar');
+  const ov = document.getElementById('sidebarOverlay');
+  const tg = document.getElementById('dashMenuToggle');
+  if(!sb || !ov || !tg) return;
+  const open = sb.classList.toggle('open');
+  ov.classList.toggle('show', open);
+  tg.classList.toggle('active', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+function closeDashSidebarIfMobile() {
+  if (window.innerWidth <= 768) {
+    const sb = document.getElementById('dashSidebar');
+    if (sb && sb.classList.contains('open')) toggleDashSidebar();
+  }
+}
+
 // ═══════════════ RENDER PATIENT LIST ═══════════════
 function renderPatientList() {
   const list = document.getElementById('patientList');
@@ -1559,6 +1626,9 @@ async function selectConsulta(id) {
 
   // Fecha o painel SOAP se estava aberto pra outro paciente
   soapFechar();
+
+  // Em mobile, fecha drawer automaticamente ao selecionar paciente
+  closeDashSidebarIfMobile();
 
   currentConsulta = consulta;
 
