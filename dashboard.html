@@ -789,9 +789,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--ink);l
 }
 .lightbox-fechar:hover{background:rgba(255,255,255,.22)}
 
-/* Mídia renderizada no chat */
+/* Mídia renderizada no chat — dimensão compacta no dashboard pq médico
+   atende várias consultas no dia, chat com fotos grandes consome scroll
+   demais. Click → lightbox abre fullscreen pra ver detalhe. */
 .chat-msg-midia-img{
-  display:block;max-width:280px;max-height:340px;
+  display:block;max-width:200px;max-height:240px;
   width:auto;height:auto;
   border-radius:10px;cursor:zoom-in;
   background:var(--pale);
@@ -960,12 +962,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--ink);l
             Galeria
           </button>
           <!--
-            Botão "Áudio" desativado: vai ser coberto pela fase de videochamada
-            síncrona. Áudio assíncrono + videochamada = redundância UX.
-            JS handler + endpoint backend continuam dormindo — pra reativar,
-            remover o style="display:none".
+            Áudio do MÉDICO continua disponível: ele pode mandar orientação
+            falada pro paciente entre interações. Áudio do PACIENTE foi
+            removido (vide paciente.html) porque vai ser coberto pela fase
+            de videochamada síncrona — médico continua tendo a opção aqui.
           -->
-          <button type="button" id="menuAudio" style="display:none">
+          <button type="button" id="menuAudio">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <rect x="9" y="3" width="6" height="12" rx="3" stroke="currentColor" stroke-width="1.6"/>
               <path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
@@ -2655,7 +2657,7 @@ function subscribeRealtime() {
     })
     .subscribe();
 
-  // Listen for new messages
+  // Listen for new messages (INSERT)
   sb.channel('mensagens-changes')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensagens' }, (payload) => {
       const msg = payload.new;
@@ -2674,6 +2676,20 @@ function subscribeRealtime() {
       const container = document.getElementById('chatMessages');
       container.innerHTML += renderMsg(msg);
       _scrollChatPraFim(container);
+    })
+    // FASE 6: ouve UPDATE em mensagens — backend faz UPDATE em ia_descricao
+    // quando GPT-4o vision termina de processar uma imagem do paciente.
+    // Sem esse listener, médico só via a análise IA depois de F5/relogin.
+    // Recarregamos tudo pq o payload UPDATE traz a row inteira mas sem
+    // signed URLs de mídia (essas só vêm via batch /medico/midia-urls).
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'mensagens' }, (payload) => {
+      const msg = payload.new;
+      if (!currentConsulta || msg.consulta_id !== currentConsulta.id) return;
+      // Só nos importamos com UPDATE que traz ia_descricao nova (vision terminou)
+      const old = payload.old || {};
+      if (msg.ia_descricao && msg.ia_descricao !== old.ia_descricao) {
+        loadMessages(currentConsulta.id);
+      }
     })
     .subscribe();
 }
