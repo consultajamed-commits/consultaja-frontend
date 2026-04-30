@@ -139,8 +139,53 @@
 
 
 /* ════════════════════════════════════════════════════════════════════════
+   INPUTS — input, textarea, select (todos compartilham o mesmo visual)
+   ════════════════════════════════════════════════════════════════════════ */
+
+.cj-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  background: var(--surface);
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+.cj-input:focus {
+  border-color: var(--green);
+}
+.cj-input::placeholder {
+  color: var(--muted);
+}
+.cj-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--white);
+}
+
+/* Estado de erro — borda vermelha */
+.cj-input-error {
+  border-color: var(--danger);
+}
+.cj-input-error:focus {
+  border-color: var(--danger);
+}
+
+/* ── Modifiers ─────────────────────────────────────────────────────── */
+
+/* Tamanho */
+.cj-input-sm  { padding: 8px 12px; font-size: 13px; }
+.cj-input-lg  { padding: 16px 20px; font-size: 16px; }
+
+/* Forma pill (pra chat inputs e similares) */
+.cj-input-pill { border-radius: 100px; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
    FUTURO — primitivas a serem extraídas em sprints subsequentes:
-   .cj-input         — input/textarea padrão (border, padding, focus)
    .cj-card          — card com surface + border + radius + sombra
    .cj-badge         — chip de status (success/warning/danger/info)
    .cj-spinner       — loader inline
