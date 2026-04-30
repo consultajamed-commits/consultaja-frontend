@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Política de Privacidade · ConsultaJá</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
+<script>
+(function(){
+  const s = localStorage.getItem('cj-theme');
+  const d = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.setAttribute('data-theme', s || (d ? 'dark' : 'light'));
+})();
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--ink);line-height:1.65}
+
+.legal-nav{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:14px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:10;
+}
+.legal-logo{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:18px;font-weight:800;color:var(--ink);
+  display:flex;align-items:center;gap:8px;text-decoration:none;
+}
+.legal-logo .dot{width:8px;height:8px;border-radius:50%;background:var(--green3)}
+.legal-back{
+  font-size:13px;color:var(--green);
+  text-decoration:none;font-weight:500;
+  display:flex;align-items:center;gap:6px;
+  padding:6px 12px;border:1px solid var(--border);
+  border-radius:100px;
+  transition:background .2s,border-color .2s;
+}
+.legal-back:hover{background:var(--pale);border-color:var(--green)}
+
+main{max-width:720px;margin:0 auto;padding:48px 24px 96px}
+
+h1{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:36px;font-weight:800;letter-spacing:-1.2px;
+  color:var(--ink);margin-bottom:8px;
+}
+.legal-meta{
+  font-size:13px;color:var(--muted);
+  margin-bottom:28px;padding-bottom:24px;
+  border-bottom:1px solid var(--border);
+}
+
+.toc{
+  background:var(--pale);border:1px solid var(--pale2);
+  border-radius:12px;padding:18px 22px;margin-bottom:36px;
+}
+.toc-title{
+  font-size:11px;font-weight:600;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--green);
+  margin-bottom:10px;
+}
+.toc ol{padding-left:20px;margin:0}
+.toc li{margin-bottom:4px;font-size:14px;color:var(--ink2)}
+.toc a{color:var(--ink2);text-decoration:none}
+.toc a:hover{color:var(--green)}
+
+h2{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:20px;font-weight:700;
+  margin-top:36px;margin-bottom:12px;
+  color:var(--ink);scroll-margin-top:80px;
+}
+h3{font-size:15px;font-weight:600;margin-top:20px;margin-bottom:6px;color:var(--ink2)}
+p{font-size:15px;color:var(--ink2);margin-bottom:12px}
+ul{padding-left:24px;margin-bottom:12px}
+li{font-size:15px;color:var(--ink2);margin-bottom:6px}
+a{color:var(--green);text-decoration:underline;text-underline-offset:2px}
+a:hover{color:var(--green2)}
+strong{color:var(--ink);font-weight:600}
+em{color:var(--ink2);font-style:normal;font-weight:500}
+
+.legal-footer{
+  margin-top:48px;padding-top:24px;
+  border-top:1px solid var(--border);
+  font-size:13px;color:var(--muted);
+}
+.legal-footer a{color:var(--green)}
+
+.callout{
+  background:var(--pale);border-left:3px solid var(--green);
+  padding:14px 18px;border-radius:0 10px 10px 0;
+  margin:18px 0;font-size:14px;color:var(--ink2);
+}
+</style>
+</head>
+<body>
+<nav class="legal-nav">
+  <a href="index.html" class="legal-logo"><span class="dot"></span>ConsultaJá!</a>
+  <a href="javascript:history.length>1?history.back():location.href='index.html'" class="legal-back">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3L5 7l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Voltar
+  </a>
+</nav>
+
+<main>
+  <h1>Política de Privacidade</h1>
+  <div class="legal-meta">Última atualização: 30 de abril de 2026 · Lei 13.709/2018 (LGPD)</div>
+
+  <div class="toc">
+    <div class="toc-title">Sumário</div>
+    <ol>
+      <li><a href="#quem">Quem somos</a></li>
+      <li><a href="#contato">Como entrar em contato</a></li>
+      <li><a href="#dados">Quais dados coletamos</a></li>
+      <li><a href="#finalidade">Para que usamos seus dados</a></li>
+      <li><a href="#bases">Bases legais (LGPD Art. 7º e 11)</a></li>
+      <li><a href="#compartilhamento">Com quem compartilhamos</a></li>
+      <li><a href="#retencao">Por quanto tempo guardamos</a></li>
+      <li><a href="#direitos">Seus direitos como titular</a></li>
+      <li><a href="#seguranca">Segurança</a></li>
+      <li><a href="#cookies">Cookies e tecnologias</a></li>
+      <li><a href="#menores">Crianças e adolescentes</a></li>
+      <li><a href="#mudancas">Alterações nesta política</a></li>
+      <li><a href="#anpd">ANPD</a></li>
+    </ol>
+  </div>
+
+  <h2 id="quem">1. Quem somos</h2>
+  <p>O <strong>ConsultaJá</strong> é uma plataforma de telemedicina operada pelo médico <strong>Dr. Matheus Silva de Castro</strong> (CRM-SP 222371), em conformidade com a Lei 14.510/2022 (Telemedicina), Resolução CFM 2.314/2022 e Lei 13.709/2018 (LGPD).</p>
+  <p>Somos o <em>controlador</em> dos seus dados pessoais nos termos da LGPD.</p>
+
+  <h2 id="contato">2. Como entrar em contato</h2>
+  <p>Para questões relacionadas a privacidade, exercício de direitos do titular ou esclarecimentos sobre esta política:</p>
+  <ul>
+    <li>E-mail: <a href="mailto:matheuus.castro@gmail.com">matheuus.castro@gmail.com</a></li>
+    <li>Resposta em até <strong>15 dias</strong> a partir do recebimento</li>
+  </ul>
+
+  <h2 id="dados">3. Quais dados coletamos</h2>
+
+  <h3>3.1 Dados de identificação</h3>
+  <ul>
+    <li>Nome completo</li>
+    <li>CPF</li>
+    <li>Data de nascimento</li>
+    <li>E-mail</li>
+    <li>Telefone (utilizado também para contato via WhatsApp)</li>
+  </ul>
+
+  <h3>3.2 Dados sensíveis de saúde (LGPD Art. 5º, II)</h3>
+  <ul>
+    <li>Motivo da consulta e queixa principal</li>
+    <li>Histórico médico fornecido por você no chat</li>
+    <li>Imagens enviadas durante o atendimento (com metadados de localização — EXIF — removidos automaticamente)</li>
+    <li>Áudios eventualmente enviados pelo médico</li>
+    <li>Anamnese estruturada (formato SOAP) gerada pelo médico</li>
+    <li>Receituários e atestados emitidos</li>
+  </ul>
+
+  <h3>3.3 Dados técnicos e de pagamento</h3>
+  <ul>
+    <li>Endereço IP e logs de acesso (Marco Civil da Internet)</li>
+    <li>Dados de pagamento processados pelo <strong>Mercado Pago</strong> (não armazenamos número completo do cartão — apenas referências de transação)</li>
+  </ul>
+
+  <h2 id="finalidade">4. Para que usamos seus dados</h2>
+  <ul>
+    <li>Realizar o atendimento médico solicitado</li>
+    <li>Emitir documentos médicos com assinatura digital ICP-Brasil (atestado, receituário, orientações)</li>
+    <li>Cumprir a obrigação legal de manter prontuário médico (Resolução CFM 1.821/2007)</li>
+    <li>Comunicar com você via WhatsApp (envio de credenciais de acesso, documentos finalizados, mensagens do médico)</li>
+    <li>Processar pagamentos via Pix ou cartão</li>
+    <li>Análise interna de qualidade do atendimento</li>
+  </ul>
+
+  <h2 id="bases">5. Bases legais</h2>
+  <p>O tratamento dos seus dados se baseia nos seguintes fundamentos da LGPD:</p>
+  <ul>
+    <li><strong>Consentimento</strong> (Art. 7º, I e Art. 11, I) — você assina o TCLE no momento do pagamento</li>
+    <li><strong>Execução de contrato</strong> (Art. 7º, V) — para prestação do serviço médico que você contratou</li>
+    <li><strong>Cumprimento de obrigação legal</strong> (Art. 7º, II) — manutenção do prontuário, emissão de receituário</li>
+    <li><strong>Tutela da saúde</strong> (Art. 11, II, "f") — para dados sensíveis de saúde</li>
+  </ul>
+
+  <h2 id="compartilhamento">6. Com quem compartilhamos</h2>
+  <p>Seus dados são compartilhados <strong>apenas</strong> com as seguintes operadoras, todas necessárias à prestação do serviço:</p>
+  <ul>
+    <li><strong>Mercado Pago</strong> — processamento de pagamentos</li>
+    <li><strong>VIDaaS / SoluTI / ICP-Brasil</strong> — assinatura digital de PDFs</li>
+    <li><strong>Z-API / Meta (WhatsApp Business)</strong> — envio de mensagens</li>
+    <li><strong>Supabase</strong> — armazenamento criptografado dos dados (servidores em região AWS)</li>
+    <li><strong>OpenAI</strong> (GPT-4o) — auxílio à triagem inicial. Os dados enviados <em>não</em> são utilizados para treinamento de modelos por padrão (política de uso comercial OpenAI)</li>
+    <li><strong>Anthropic</strong> (Claude) — eventualmente utilizado pelo médico em revisão de prontuário, mesma política de não-treinamento</li>
+  </ul>
+  <div class="callout">
+    <strong>Não vendemos seus dados.</strong> Não há compartilhamento com fins de marketing, publicidade ou outros usos não relacionados ao atendimento médico.
+  </div>
+
+  <h2 id="retencao">7. Por quanto tempo guardamos</h2>
+  <ul>
+    <li><strong>Prontuário médico:</strong> mínimo de 20 anos (Resolução CFM 1.821/2007, Art. 8º)</li>
+    <li><strong>Dados de pagamento:</strong> 5 anos (legislação fiscal e civil)</li>
+    <li><strong>Logs de acesso:</strong> 6 meses (Marco Civil da Internet)</li>
+    <li><strong>Dados não relacionados ao prontuário:</strong> até a finalidade ser cumprida ou mediante solicitação de eliminação</li>
+  </ul>
+  <p>Após o período obrigatório, os dados são anonimizados ou eliminados.</p>
+
+  <h2 id="direitos">8. Seus direitos como titular</h2>
+  <p>Conforme o Art. 18 da LGPD, você pode solicitar a qualquer momento:</p>
+  <ul>
+    <li>Confirmação da existência de tratamento dos seus dados</li>
+    <li>Acesso aos dados que temos sobre você</li>
+    <li>Correção de dados incompletos, inexatos ou desatualizados</li>
+    <li>Anonimização, bloqueio ou eliminação de dados desnecessários</li>
+    <li>Portabilidade dos dados a outro fornecedor</li>
+    <li>Eliminação dos dados tratados com seu consentimento (exceto quando a obrigação legal nos impede de eliminar — caso do prontuário)</li>
+    <li>Informação sobre entidades com quem os dados foram compartilhados</li>
+    <li>Revogação do consentimento</li>
+  </ul>
+  <p>Como exercer: envie e-mail para <a href="mailto:matheuus.castro@gmail.com">matheuus.castro@gmail.com</a> com identificação (CPF e nome completo). Resposta em até 15 dias.</p>
+
+  <h2 id="seguranca">9. Segurança</h2>
+  <ul>
+    <li>Conexão criptografada (TLS 1.2+) em trânsito</li>
+    <li>Senhas armazenadas com bcrypt</li>
+    <li>Banco de dados com Row Level Security (RLS)</li>
+    <li>Tokens de sessão JWT com expiração curta</li>
+    <li>PDFs assinados digitalmente com certificado ICP-Brasil (PAdES)</li>
+    <li>Acesso ao prontuário restrito ao médico responsável</li>
+    <li>Imagens enviadas têm metadados de localização (EXIF) removidos automaticamente</li>
+  </ul>
+
+  <h2 id="cookies">10. Cookies e tecnologias</h2>
+  <p>Utilizamos <em>localStorage</em> do navegador apenas para:</p>
+  <ul>
+    <li>Preferência de tema (claro/escuro)</li>
+    <li>Tokens de sessão para login do paciente</li>
+  </ul>
+  <p><strong>Não utilizamos</strong> cookies de rastreamento publicitário, pixels de mídias sociais ou ferramentas de remarketing.</p>
+
+  <h2 id="menores">11. Crianças e adolescentes</h2>
+  <p>A plataforma destina-se a maiores de 18 anos. Atendimentos a menores de idade exigem consentimento expresso e acompanhamento de responsável legal, que deve aceitar os termos no lugar do menor.</p>
+
+  <h2 id="mudancas">12. Alterações nesta política</h2>
+  <p>Podemos atualizar esta política periodicamente. Mudanças significativas serão informadas via WhatsApp ou e-mail cadastrado. A data de última atualização está sempre no topo deste documento.</p>
+
+  <h2 id="anpd">13. Autoridade Nacional de Proteção de Dados</h2>
+  <p>Se considerar que seus direitos não foram respeitados, você pode reclamar à Autoridade Nacional de Proteção de Dados — ANPD: <a href="https://www.gov.br/anpd/" target="_blank" rel="noopener">gov.br/anpd</a>.</p>
+
+  <div class="legal-footer">
+    Este documento complementa o <a href="tcle.html">Termo de Consentimento Livre e Esclarecido (TCLE)</a>. Para dúvidas: <a href="mailto:matheuus.castro@gmail.com">matheuus.castro@gmail.com</a>.
+  </div>
+</main>
+
+<button class="theme-toggle-fab" onclick="cjToggleTheme()" aria-label="Alternar tema">
+  <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+</button>
+
+<script>
+function cjToggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('cj-theme', next);
+}
+</script>
+</body>
+</html>
