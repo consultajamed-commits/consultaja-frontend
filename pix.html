@@ -570,6 +570,16 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
       </div>
     </div>
 
+    <!-- Fallback: paciente pagou mas a tela não atualizou (rede ruim, etc) -->
+    <button id="cj-btn-verificar" type="button" onclick="cjVerificarPagamento()"
+      style="margin-top:14px;width:100%;padding:13px;
+             background:transparent;color:var(--green);
+             font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+             border:1.5px solid var(--green);border-radius:100px;cursor:pointer;
+             transition:background .2s,color .2s;">
+      Já paguei? Verificar agora
+    </button>
+
     <!-- Botão renovar (aparece após expirar) -->
     <button id="renovar-btn" onclick="renovarQR()"
       style="display:none;width:100%;padding:15px;background:var(--amber);color:#fff;
@@ -719,22 +729,91 @@ if (pixQrCode) {
   }
 }
 
-// ── Polling real — verifica pagamento a cada 4 segundos
+// ── Polling real — verifica pagamento a cada 4 segundos via Railway
+//
+// HISTÓRICO: antes consultávamos um webhook custom do n8n que era um GET
+// pra retornar status do payment. Bug em 30/04/2026: paciente pagou,
+// webhook do MP avisou n8n (Z-API confirmou no WhatsApp), mas o GET de
+// status retornava algo que não batia com 'approved'. Resultado: frontend
+// ficava polling pra sempre, paciente preso na tela aguardando.
+//
+// AGORA: consultamos Railway (/pagamento/status?payment_id=X) que vai
+// direto na API do Mercado Pago. Source of truth. Sem intermediário n8n.
+//
+// Custo: 1 chamada extra por polling (Railway → MP). Imperceptível pq
+// MP responde em ~200ms e free tier do Railway aguenta tranquilo.
+
+const RAILWAY_API = 'https://web-production-0c606.up.railway.app';
+
 let pollingInterval;
+let pollingTentativas = 0;
+
 if (pixPaymentId) {
   pollingInterval = setInterval(async () => {
+    pollingTentativas++;
     try {
       const res = await fetch(
-        `https://n8nconsultaja.duckdns.org/webhook/18655eec-04af-4662-879b-d5b34b54d0f2?id=${pixPaymentId}`
+        `${RAILWAY_API}/pagamento/status?payment_id=${encodeURIComponent(pixPaymentId)}`
       );
       const data = await res.json();
-      if (data.status === 'approved') {
+      if (data.ok && data.status === 'approved') {
         clearInterval(pollingInterval);
         simularPagamento();
       }
-    } catch(e) { /* continua tentando */ }
+      // Se rejected/cancelled, não vai virar approved nunca — para o polling
+      else if (data.ok && (data.status === 'rejected' || data.status === 'cancelled')) {
+        clearInterval(pollingInterval);
+        console.warn('[pix] pagamento ' + data.status);
+      }
+    } catch(e) {
+      // Best-effort: continua tentando. Polling persiste mesmo com 1-2
+      // falhas de rede (o usuário 4G fraco eventualmente conecta).
+      console.warn('[pix] polling falhou:', e);
+    }
   }, 4000);
 }
+
+// ── Botão de fallback: "Já paguei? Verificar agora"
+//
+// Se polling falhar por qualquer motivo (rede ruim, JS lento, etc), paciente
+// pode forçar a verificação manualmente. Resolve o cenário "paguei mas a
+// tela não atualizou" sem precisar refresh ou voltar ao início.
+window.cjVerificarPagamento = async function() {
+  if (!pixPaymentId) {
+    alert('Nenhum pagamento em aberto. Volte e gere um novo Pix.');
+    return;
+  }
+  const btn = document.getElementById('cj-btn-verificar');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Verificando…';
+  }
+  try {
+    const res = await fetch(
+      `${RAILWAY_API}/pagamento/status?payment_id=${encodeURIComponent(pixPaymentId)}`
+    );
+    const data = await res.json();
+    if (data.ok && data.status === 'approved') {
+      clearInterval(pollingInterval);
+      simularPagamento();
+      return;
+    }
+    if (data.ok && data.status === 'pending') {
+      alert('Pagamento ainda processando. Aguarde mais alguns segundos e tente novamente.');
+    } else if (data.ok && (data.status === 'rejected' || data.status === 'cancelled')) {
+      alert('Pagamento foi ' + data.status + '. Volte e gere um novo Pix.');
+    } else {
+      alert('Status: ' + (data.status || 'desconhecido') + '. Aguarde e tente de novo.');
+    }
+  } catch (e) {
+    alert('Não foi possível verificar agora. Verifique sua conexão e tente novamente.');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Já paguei? Verificar agora';
+    }
+  }
+};
 </script>
 </body>
 </html>
