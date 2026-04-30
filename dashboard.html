@@ -808,6 +808,31 @@ body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--ink);l
   font-style:italic;color:var(--muted);font-size:13px;
 }
 
+/* FASE 6: badge "Análise IA" abaixo da imagem (paciente → médico).
+   Cor distinta (lavanda/lilás) pra diferenciar de caption do paciente.
+   Indica claramente que é texto gerado por IA, não palavras do paciente. */
+.chat-msg-ia-desc{
+  margin-top:8px;
+  padding:8px 10px;
+  background:#F3F0FF;
+  border:1px solid #E0D7FF;
+  border-radius:8px;
+  font-size:12.5px;
+  color:#4C1D95;
+  line-height:1.45;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  max-width:280px;
+}
+.chat-msg-ia-desc-label{
+  font-size:9.5px;
+  font-weight:700;
+  letter-spacing:.6px;
+  color:#7C3AED;
+  text-transform:uppercase;
+}
+
 /* Bolha otimista enquanto upload acontece */
 .chat-msg.otimista{opacity:.75}
 </style>
@@ -1441,12 +1466,27 @@ function renderMsg(m, mediaUrls = {}) {
     const url = mediaUrls[m.media_path];
     const cap = (m.conteudo || '').trim();
     const captionHtml = cap ? `<div class="chat-msg-caption">${_escapeHtmlMedico(cap)}</div>` : '';
+
+    // FASE 6: descrição clínica gerada por GPT-4o vision. Aparece SÓ pra
+    // imagens recebidas DO PACIENTE (não pras enviadas pelo médico).
+    // Visualmente: badge sutil abaixo da imagem com prefixo "Análise IA".
+    // Quando ainda não processada (thread async não terminou), não mostra
+    // nada — médico vê quando atualizar.
+    let iaDescHtml = '';
+    if (tipo === 'imagem' && m.remetente === 'paciente' && m.ia_descricao) {
+      iaDescHtml = `
+        <div class="chat-msg-ia-desc">
+          <span class="chat-msg-ia-desc-label">Análise IA</span>
+          ${_escapeHtmlMedico(m.ia_descricao)}
+        </div>`;
+    }
+
     if (!url) {
       // Sem URL: signed URL falhou OU mensagem ainda sem path (otimista pré-render)
       const rotulo = tipo === 'imagem' ? 'Imagem indisponível no momento' : 'Áudio indisponível no momento';
-      body = `<div class="chat-msg-erro-midia">${rotulo}</div>${captionHtml}`;
+      body = `<div class="chat-msg-erro-midia">${rotulo}</div>${captionHtml}${iaDescHtml}`;
     } else if (tipo === 'imagem') {
-      body = `<img class="chat-msg-midia-img" src="${_escapeHtmlMedico(url)}" alt="" loading="lazy">${captionHtml}`;
+      body = `<img class="chat-msg-midia-img" src="${_escapeHtmlMedico(url)}" alt="" loading="lazy">${captionHtml}${iaDescHtml}`;
     } else {
       body = `<audio class="chat-msg-midia-audio" src="${_escapeHtmlMedico(url)}" controls preload="metadata"></audio>${captionHtml}`;
     }
