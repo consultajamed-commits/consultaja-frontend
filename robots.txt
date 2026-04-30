@@ -1,0 +1,74 @@
+# ConsultaJá! — robots.txt
+# Última atualização: 30/04/2026
+
+# ──────────────────────────────────────────────────────────────────
+# Bots de IA / scrapers — bloqueados
+# ConsultaJá é plataforma médica com dados sensíveis (LGPD).
+# Não autorizamos uso do conteúdo pra treinar modelos de linguagem
+# nem indexação por crawlers que não respeitem privacidade.
+# ──────────────────────────────────────────────────────────────────
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: OAI-SearchBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Omgilibot
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+User-agent: ImagesiftBot
+Disallow: /
+
+# ──────────────────────────────────────────────────────────────────
+# Bots de busca tradicionais — permitidos com restrições
+# ──────────────────────────────────────────────────────────────────
+
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /verificar.html
+Allow: /politica.html
+Allow: /tcle.html
+# Páginas privadas (exigem login/JWT, sem valor pra indexação)
+Disallow: /paciente.html
+Disallow: /dashboard.html
+Disallow: /pix.html
+Disallow: /confirmacao.html
+Disallow: /pagamento.html
+Disallow: /vidaas-callback.html
+# Reduz frequência (proteção bandwidth)
+Crawl-delay: 5
