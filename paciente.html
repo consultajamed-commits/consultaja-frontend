@@ -1083,7 +1083,7 @@ function render(data) {
   // Auto-scroll só se chat acabou de carregar OU usuário tá no fim
   const distanciaDoFundo = chat.scrollHeight - chat.scrollTop - chat.clientHeight;
   if (eraVazio || distanciaDoFundo < 80) {
-    chat.scrollTop = chat.scrollHeight;
+    _scrollChatPraFim(chat);
   }
 
   // Quando status muda, refaz fetch de documentos (PDF aparece após aprovação)
@@ -1097,6 +1097,23 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
   ));
+}
+
+// Scroll robusto: imagens carregam de forma assíncrona DEPOIS do innerHTML
+// ser setado. Se a gente só faz `scrollTop = scrollHeight` na hora, scrollHeight
+// reflete o tamanho SEM as imagens (que ainda não carregaram). Quando elas
+// carregam, scrollHeight cresce e o scroll parece "voltar pro meio".
+//
+// Solução: scroll inicial imediato + re-scroll a cada imagem que carregar.
+function _scrollChatPraFim(chatEl) {
+  if (!chatEl) return;
+  chatEl.scrollTop = chatEl.scrollHeight;
+  chatEl.querySelectorAll('img').forEach(img => {
+    if (img.complete) return;
+    const reScroll = () => { chatEl.scrollTop = chatEl.scrollHeight; };
+    img.addEventListener('load',  reScroll, { once: true });
+    img.addEventListener('error', reScroll, { once: true });
+  });
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1618,7 +1635,7 @@ function renderOtimistaMidia(otimistaId, tipo, objectUrl, caption) {
   inner += `<div class="msg-meta">${time} · enviando…</div>`;
   div.innerHTML = inner;
   chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+  _scrollChatPraFim(chat);
 }
 
 function removerOtimista(otimistaId) {
@@ -1911,7 +1928,7 @@ function mostrarDigitando() {
     <span class="dots"><span></span><span></span><span></span></span>
   `;
   chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+  _scrollChatPraFim(chat);
 }
 
 function esconderDigitando() {
@@ -1934,7 +1951,7 @@ function renderOtimistaPaciente(txt) {
   div.id = 'msg-otimista-temp';
   div.innerHTML = `${escapeHtml(txt)}<div class="msg-meta">${time}</div>`;
   chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+  _scrollChatPraFim(chat);
 }
 
 // fetchMe sem render (pra controlar quando renderizar — usado em enviarMensagem

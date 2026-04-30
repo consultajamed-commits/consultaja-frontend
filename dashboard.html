@@ -1418,7 +1418,7 @@ async function loadMessages(consultaId) {
   }
 
   container.innerHTML = data.map(m => renderMsg(m, mediaUrls)).join('');
-  container.scrollTop = container.scrollHeight;
+  _scrollChatPraFim(container);
 }
 
 function renderMsg(m, mediaUrls = {}) {
@@ -1462,6 +1462,21 @@ function _escapeHtmlMedico(s) {
   return String(s).replace(/[&<>"']/g, c => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
   ));
+}
+
+// Scroll robusto: imagens carregam de forma assíncrona DEPOIS do innerHTML ser
+// setado. scrollTop = scrollHeight imediato reflete altura SEM as imagens.
+// Quando elas carregam, scrollHeight cresce e o scroll parece "voltar".
+// Solução: scroll inicial + re-scroll quando cada img dispara load/error.
+function _scrollChatPraFim(container) {
+  if (!container) return;
+  _scrollChatPraFim(container);
+  container.querySelectorAll('img').forEach(img => {
+    if (img.complete) return;
+    const reScroll = () => { _scrollChatPraFim(container); };
+    img.addEventListener('load',  reScroll, { once: true });
+    img.addEventListener('error', reScroll, { once: true });
+  });
 }
 
 // ── FASE 5: Upload de mídia (foto OU áudio do médico) ──
@@ -1541,7 +1556,7 @@ function _renderOtimistaMidiaMedico(otimistaId, tipo, objectUrl, caption) {
   div.id = otimistaId;
   div.innerHTML = `${inner}<div class="chat-msg-time">${time} · enviando…</div>`;
   container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
+  _scrollChatPraFim(container);
 }
 
 function _removerOtimistaMedico(otimistaId) {
@@ -2126,7 +2141,7 @@ async function sendMessage() {
       <div class="chat-msg-time">${now}</div>
     </div>
   `;
-  container.scrollTop = container.scrollHeight;
+  _scrollChatPraFim(container);
 
   // Salvar no Supabase
   await sb.from('mensagens').insert(msg);
@@ -2612,7 +2627,7 @@ function subscribeRealtime() {
 
       const container = document.getElementById('chatMessages');
       container.innerHTML += renderMsg(msg);
-      container.scrollTop = container.scrollHeight;
+      _scrollChatPraFim(container);
     })
     .subscribe();
 }
