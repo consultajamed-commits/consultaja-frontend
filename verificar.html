@@ -16,6 +16,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/components.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 /* Apelidos locais. Variáveis principais herdadas de theme.css. */
@@ -612,7 +613,7 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
       <p>Verificar outro documento</p>
       <div class="search-box">
         <input class="search-input" type="text" placeholder="Digite o código (ex: CJ-...)" id="valid-input">
-        <button class="search-btn" onclick="var v=document.getElementById('valid-input').value.trim();if(v)pedirTipo(v);">Verificar</button>
+        <button class="cj-btn-primary cj-btn-sm cj-btn-rounded" onclick="var v=document.getElementById('valid-input').value.trim();if(v)pedirTipo(v);">Verificar</button>
       </div>
     </div>
   </div>
@@ -645,7 +646,7 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
       <p>Verificar outro documento</p>
       <div class="search-box">
         <input class="search-input" type="text" placeholder="Ex: CJ-1744908000" id="manual-input">
-        <button class="search-btn" onclick="var v=document.getElementById('manual-input').value.trim();if(v)pedirTipo(v);">Verificar</button>
+        <button class="cj-btn-primary cj-btn-sm cj-btn-rounded" onclick="var v=document.getElementById('manual-input').value.trim();if(v)pedirTipo(v);">Verificar</button>
       </div>
     </div>
   </div>

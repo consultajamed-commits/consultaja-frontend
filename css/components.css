@@ -1,0 +1,125 @@
+/* ╔═══════════════════════════════════════════════════════════════════════╗
+   ║  ConsultaJá! — Componentes reutilizáveis (.cj-*)                      ║
+   ║                                                                       ║
+   ║  Importado APÓS theme.css em todas as páginas:                        ║
+   ║    <link rel="stylesheet" href="css/theme.css">                       ║
+   ║    <link rel="stylesheet" href="css/components.css">                  ║
+   ║                                                                       ║
+   ║  Padrão BEM-like: variantes em classes próprias, modifiers compõem.   ║
+   ║  Ex: <button class="cj-btn-primary cj-btn-lg cj-btn-block">           ║
+   ║                                                                       ║
+   ║  Convenção: classes legacy (.btn-main, .auth-btn, .search-btn etc)    ║
+   ║  continuam funcionando — migração é gradual, página por página.       ║
+   ╚═══════════════════════════════════════════════════════════════════════╝ */
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   BUTTONS — base + 4 variantes + modifiers de tamanho/forma/largura
+   ════════════════════════════════════════════════════════════════════════ */
+
+.cj-btn-primary,
+.cj-btn-secondary,
+.cj-btn-ghost,
+.cj-btn-danger {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 14px 24px;
+  border-radius: 100px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  white-space: nowrap;
+  line-height: 1;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s, color 0.2s, border-color 0.2s,
+              transform 0.15s, box-shadow 0.2s, opacity 0.15s;
+}
+
+.cj-btn-primary:disabled,
+.cj-btn-secondary:disabled,
+.cj-btn-ghost:disabled,
+.cj-btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ── Variantes ─────────────────────────────────────────────────────── */
+
+/* Primary — CTA principal (verde sólido) */
+.cj-btn-primary {
+  background: var(--green);
+  color: #fff;
+  box-shadow: var(--shadow-btn);
+}
+.cj-btn-primary:hover:not(:disabled) {
+  background: var(--green2);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-btn-hover);
+}
+
+/* Secondary — ação importante mas não principal (verde outline) */
+.cj-btn-secondary {
+  background: transparent;
+  color: var(--green);
+  border-color: var(--green);
+}
+.cj-btn-secondary:hover:not(:disabled) {
+  background: var(--green);
+  color: #fff;
+}
+
+/* Ghost — ação terciária / cancelar (cinza transparente) */
+.cj-btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border-color: var(--border);
+}
+.cj-btn-ghost:hover:not(:disabled) {
+  border-color: var(--green);
+  color: var(--green);
+  background: var(--pale);
+}
+
+/* Danger — ações destrutivas (logout, encerrar videochamada, deletar) */
+.cj-btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+.cj-btn-danger:hover:not(:disabled) {
+  filter: brightness(0.9);
+  transform: translateY(-1px);
+}
+
+/* ── Modifiers ─────────────────────────────────────────────────────── */
+/* Combinam com qualquer variante: <button class="cj-btn-primary cj-btn-sm"> */
+
+/* Tamanho */
+.cj-btn-sm  { padding: 12px 20px; font-size: 14px; gap: 6px; }
+.cj-btn-md  { padding: 14px 24px; font-size: 15px; gap: 8px; }   /* default explícito */
+.cj-btn-lg  { padding: 17px 32px; font-size: 17px; gap: 10px; font-weight: 600; }
+
+/* Forma — sobrescreve o pill (100px) padrão */
+.cj-btn-rounded { border-radius: 12px; }
+.cj-btn-square  { border-radius: 6px; }
+
+/* Largura — full width (útil em formulários e mobile) */
+.cj-btn-block {
+  width: 100%;
+  display: flex;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   FUTURO — primitivas a serem extraídas em sprints subsequentes:
+   .cj-input         — input/textarea padrão (border, padding, focus)
+   .cj-card          — card com surface + border + radius + sombra
+   .cj-badge         — chip de status (success/warning/danger/info)
+   .cj-spinner       — loader inline
+   .cj-divider       — separador horizontal sutil
+   ════════════════════════════════════════════════════════════════════════ */
