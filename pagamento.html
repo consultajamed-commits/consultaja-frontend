@@ -102,30 +102,25 @@ label{
   text-transform:uppercase;color:var(--muted);
   margin-bottom:7px;
 }
-input:not([type=checkbox]):not([type=radio]),select,textarea{
-  width:100%;padding:13px 16px;
-  border:1.5px solid var(--border);border-radius:12px;
-  font-family:'DM Sans',sans-serif;font-size:15px;color:var(--ink);
-  background:var(--surface);outline:none;
-  transition:border-color .2s,box-shadow .2s;
-  -webkit-appearance:none;appearance:none;
-}
-input:not([type=checkbox]):not([type=radio]):focus,select:focus,textarea:focus{
-  border-color:var(--green);
+/* Inputs do formulário usam .cj-input do design system (components.css).
+   Aqui ficam só extras específicos do pagamento: glow no focus, estados
+   de validação (.err / .ok), chevron do select e proporções do textarea. */
+.cj-input:focus{
   box-shadow:0 0 0 3px rgba(10,102,64,.08);
 }
-input.err,select.err,textarea.err{
+.cj-input.err{
   border-color:var(--err);
   box-shadow:0 0 0 3px rgba(220,38,38,.06);
 }
-input.ok,select.ok,textarea.ok{
+.cj-input.ok{
   border-color:var(--green3);
   box-shadow:0 0 0 3px rgba(18,184,112,.10);
 }
 .field-err{font-size:12px;color:var(--err);margin-top:5px;display:none}
 .field-err.show{display:block}
-textarea{resize:vertical;min-height:100px;line-height:1.6}
-select{
+textarea.cj-input{resize:vertical;min-height:100px;line-height:1.6}
+select.cj-input{
+  -webkit-appearance:none;appearance:none;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7870' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat:no-repeat;
   background-position:right 16px center;
@@ -502,12 +497,12 @@ function cjToggleTheme(){
         <div class="field-row">
           <div class="field-group">
             <label for="nome">Nome completo</label>
-            <input type="text" id="nome" placeholder="João Silva Santos" autocomplete="name">
+            <input type="text" id="nome" class="cj-input" placeholder="João Silva Santos" autocomplete="name">
             <div class="field-err" id="err-nome">Por favor, insira seu nome completo.</div>
           </div>
           <div class="field-group">
             <label for="cpf">CPF</label>
-            <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14" autocomplete="off">
+            <input type="text" id="cpf" class="cj-input" placeholder="000.000.000-00" maxlength="14" autocomplete="off">
             <div class="field-err" id="err-cpf">CPF inválido.</div>
           </div>
         </div>
@@ -515,12 +510,12 @@ function cjToggleTheme(){
         <div class="field-row">
           <div class="field-group">
             <label for="email">E-mail</label>
-            <input type="email" id="email" placeholder="joao@email.com" autocomplete="email">
+            <input type="email" id="email" class="cj-input" placeholder="joao@email.com" autocomplete="email">
             <div class="field-err" id="err-email">E-mail inválido.</div>
           </div>
           <div class="field-group">
             <label for="telefone">WhatsApp</label>
-            <input type="tel" id="telefone" placeholder="(11) 99999-9999" maxlength="15" autocomplete="tel">
+            <input type="tel" id="telefone" class="cj-input" placeholder="(11) 99999-9999" maxlength="15" autocomplete="tel">
             <div class="field-err" id="err-telefone">Número inválido.</div>
           </div>
         </div>
@@ -528,7 +523,7 @@ function cjToggleTheme(){
         <div class="field-row">
           <div class="field-group">
             <label for="data_nascimento">Data de nascimento</label>
-            <input type="text" id="data_nascimento" placeholder="DD/MM/AAAA" maxlength="10" autocomplete="bday" inputmode="numeric">
+            <input type="text" id="data_nascimento" class="cj-input" placeholder="DD/MM/AAAA" maxlength="10" autocomplete="bday" inputmode="numeric">
             <div class="field-err" id="err-data_nascimento">Data de nascimento inválida.</div>
           </div>
         </div>
@@ -536,7 +531,7 @@ function cjToggleTheme(){
 
       <div class="field-group">
         <label for="motivo">Motivo da consulta</label>
-        <select id="motivo">
+        <select id="motivo" class="cj-input">
           <option value="" disabled selected>Selecione o principal motivo</option>
           <option value="atestado">Atestado médico (afastamento do trabalho)</option>
           <option value="atestado-escola">Atestado médico (falta escolar)</option>
@@ -549,7 +544,7 @@ function cjToggleTheme(){
 
       <div class="field-group">
         <label for="queixa">Descreva brevemente sua queixa</label>
-        <textarea id="queixa" placeholder="Ex: Estou com febre de 38.5°C, dor de cabeça e cansaço desde ontem. Preciso de atestado para o trabalho..."></textarea>
+        <textarea id="queixa" class="cj-input" placeholder="Ex: Estou com febre de 38.5°C, dor de cabeça e cansaço desde ontem. Preciso de atestado para o trabalho..."></textarea>
       </div>
 
       <!-- Pagamento -->
@@ -605,21 +600,21 @@ function cjToggleTheme(){
         </div>
         <div class="field-group" style="margin:0">
           <label for="card-num">Número do cartão</label>
-          <input type="text" id="card-num" placeholder="0000 0000 0000 0000" maxlength="19" autocomplete="cc-number">
+          <input type="text" id="card-num" class="cj-input" placeholder="0000 0000 0000 0000" maxlength="19" autocomplete="cc-number">
         </div>
         <div class="field-row" style="margin:0">
           <div class="field-group" style="margin:0">
             <label for="card-exp">Validade</label>
-            <input type="text" id="card-exp" placeholder="MM/AA" maxlength="5" autocomplete="cc-exp">
+            <input type="text" id="card-exp" class="cj-input" placeholder="MM/AA" maxlength="5" autocomplete="cc-exp">
           </div>
           <div class="field-group" style="margin:0">
             <label for="card-cvv">CVV</label>
-            <input type="text" id="card-cvv" placeholder="000" maxlength="4" autocomplete="cc-csc">
+            <input type="text" id="card-cvv" class="cj-input" placeholder="000" maxlength="4" autocomplete="cc-csc">
           </div>
         </div>
         <div class="field-group" style="margin:0">
           <label for="card-name">Nome no cartão</label>
-          <input type="text" id="card-name" placeholder="JOÃO S SANTOS" autocomplete="cc-name" style="text-transform:uppercase">
+          <input type="text" id="card-name" class="cj-input" placeholder="JOÃO S SANTOS" autocomplete="cc-name" style="text-transform:uppercase">
         </div>
       </div>
 
