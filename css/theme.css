@@ -153,3 +153,50 @@ body * {
               fill 0.2s ease,
               stroke 0.2s ease;
 }
+
+/* ── Toggle flutuante de tema ──
+   Botão circular fixo no canto superior direito. Funciona em qualquer
+   página sem perturbar o layout. Aplica em todas as páginas exceto
+   index (que tem o toggle integrado no nav).
+
+   Uso:
+     <button class="theme-toggle-fab" onclick="cjToggleTheme()" aria-label="Alternar tema">
+       <svg class="icon-sun" ...>...</svg>
+       <svg class="icon-moon" ...>...</svg>
+     </button>
+*/
+.theme-toggle-fab {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 9000;            /* acima de quase tudo, abaixo de modais críticos */
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-card);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+.theme-toggle-fab:hover {
+  border-color: var(--green);
+  color: var(--green);
+  transform: translateY(-1px);
+}
+.theme-toggle-fab svg {
+  width: 18px;
+  height: 18px;
+}
+.theme-toggle-fab .icon-sun  { display: none; }
+.theme-toggle-fab .icon-moon { display: block; }
+[data-theme="dark"] .theme-toggle-fab .icon-sun  { display: block; }
+[data-theme="dark"] .theme-toggle-fab .icon-moon { display: none; }
+
+@media (max-width: 480px) {
+  .theme-toggle-fab { top: 10px; right: 10px; width: 36px; height: 36px; }
+}

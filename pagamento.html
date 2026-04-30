@@ -193,6 +193,85 @@ select{
 }
 .card-fields.show{display:flex}
 
+/* ── Cartão de crédito visual (preview que se atualiza com input) ── */
+.card-preview{
+  position:relative;
+  width:100%;max-width:340px;
+  aspect-ratio:1.586/1;       /* proporção real cartão CR-80 */
+  border-radius:14px;
+  background:linear-gradient(135deg,#0A6640 0%,#0D8A55 50%,#12B870 100%);
+  color:#fff;
+  padding:18px 20px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  margin:0 auto;
+  box-shadow:0 12px 32px rgba(10,102,64,.35), 0 4px 12px rgba(0,0,0,.18);
+  font-family:'DM Sans',sans-serif;
+  overflow:hidden;
+}
+.card-preview::before{
+  /* círculo decorativo no canto superior direito */
+  content:'';position:absolute;
+  top:-40px;right:-40px;
+  width:140px;height:140px;border-radius:50%;
+  background:rgba(255,255,255,.08);
+}
+.card-preview::after{
+  content:'';position:absolute;
+  bottom:-50px;left:-30px;
+  width:120px;height:120px;border-radius:50%;
+  background:rgba(255,255,255,.05);
+}
+.card-preview-top{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  position:relative;z-index:1;
+}
+.card-preview-chip{
+  width:36px;height:26px;border-radius:5px;
+  background:linear-gradient(135deg,#FFD580,#E0A040);
+  position:relative;
+}
+.card-preview-chip::before{
+  content:'';position:absolute;inset:3px;
+  border:1px solid rgba(0,0,0,.18);border-radius:3px;
+  background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.15) 3px 4px);
+}
+.card-preview-bandeira{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:13px;font-weight:700;
+  letter-spacing:.5px;
+  background:rgba(255,255,255,.18);
+  padding:5px 10px;border-radius:6px;
+  backdrop-filter:blur(4px);
+  text-transform:uppercase;
+}
+.card-preview-numero{
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:18px;font-weight:600;
+  letter-spacing:2.5px;
+  position:relative;z-index:1;
+  color:#fff;
+}
+.card-preview-base{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  position:relative;z-index:1;
+  font-size:11px;
+}
+.card-preview-base .label{
+  text-transform:uppercase;font-size:9px;
+  opacity:.7;letter-spacing:.5px;
+  margin-bottom:3px;
+}
+.card-preview-base .value{
+  font-family:'DM Sans',sans-serif;
+  font-size:13px;font-weight:600;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+}
+
+@media(max-width:380px){
+  .card-preview-numero{font-size:15px;letter-spacing:1.5px}
+}
+
 /* PIX fields */
 .pix-info{
   display:none;
@@ -352,6 +431,20 @@ select{
 </style>
 </head>
 <body>
+<!-- Toggle dark/light flutuante (decisão de produto: aparece em todas as
+     páginas pra facilitar teste/uso. Persiste em localStorage 'cj-theme'). -->
+<button class="theme-toggle-fab" onclick="cjToggleTheme()" aria-label="Alternar tema dark/light" title="Alternar tema">
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+</button>
+<script>
+function cjToggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('cj-theme', next);
+}
+</script>
 
 <!-- NAV -->
 <nav>
@@ -491,6 +584,24 @@ select{
 
       <!-- Card fields -->
       <div class="card-fields" id="card-fields">
+        <!-- Visual do cartão — atualiza em tempo real conforme paciente digita -->
+        <div class="card-preview" id="cardPreview">
+          <div class="card-preview-top">
+            <div class="card-preview-chip"></div>
+            <div class="card-preview-bandeira" id="cardBandeira">Cartão</div>
+          </div>
+          <div class="card-preview-numero" id="cardPreviewNumero">•••• •••• •••• ••••</div>
+          <div class="card-preview-base">
+            <div>
+              <div class="label">Titular</div>
+              <div class="value" id="cardPreviewNome">Nome no cartão</div>
+            </div>
+            <div style="text-align:right">
+              <div class="label">Validade</div>
+              <div class="value" id="cardPreviewExp">MM/AA</div>
+            </div>
+          </div>
+        </div>
         <div class="field-group" style="margin:0">
           <label for="card-num">Número do cartão</label>
           <input type="text" id="card-num" placeholder="0000 0000 0000 0000" maxlength="19" autocomplete="cc-number">
@@ -752,17 +863,85 @@ document.getElementById('data_nascimento').addEventListener('input', function(){
   this.value = v;
 });
 
+// ── Cartão de crédito: preview visual em tempo real ─────────────────────
+//
+// Detecção de bandeira por prefixo do número:
+//   4xxx          → Visa
+//   51-55, 2221-2720 → Mastercard
+//   34, 37        → American Express (Amex)
+//   6xxx (vários) → Discover/Elo (genérico → "Cartão")
+
+function _detectarBandeira(numeroDigitos) {
+  if (!numeroDigitos) return 'Cartão';
+  if (/^4/.test(numeroDigitos))               return 'Visa';
+  if (/^(5[1-5])/.test(numeroDigitos))        return 'Mastercard';
+  if (/^(2[2-7])/.test(numeroDigitos))        return 'Mastercard';
+  if (/^(34|37)/.test(numeroDigitos))         return 'Amex';
+  if (/^(6011|65|64[4-9])/.test(numeroDigitos)) return 'Discover';
+  if (/^(50|636|627|65)/.test(numeroDigitos)) return 'Elo';
+  return 'Cartão';
+}
+
+function _formatarNumeroCartao(d) {
+  /* Visa/Master/Discover: 4-4-4-4. Amex: 4-6-5. */
+  if (/^(34|37)/.test(d)) {
+    /* Amex */
+    const p1 = d.slice(0,4),  p2 = d.slice(4,10), p3 = d.slice(10,15);
+    return [p1,p2,p3].filter(Boolean).join(' ');
+  }
+  return d.replace(/(.{4})/g,'$1 ').trim();
+}
+
+function _atualizarCardPreview() {
+  const numEl  = document.getElementById('card-num');
+  const nameEl = document.getElementById('card-name');
+  const expEl  = document.getElementById('card-exp');
+  const pNum   = document.getElementById('cardPreviewNumero');
+  const pNome  = document.getElementById('cardPreviewNome');
+  const pExp   = document.getElementById('cardPreviewExp');
+  const pBand  = document.getElementById('cardBandeira');
+  if (!numEl || !pNum) return;
+
+  const dig = (numEl.value || '').replace(/\D/g, '');
+  const bandeira = _detectarBandeira(dig);
+  pBand.textContent = bandeira;
+
+  /* Preencher o número do cartão com placeholder até 16 dígitos.
+     Mantém formato 4-4-4-4 ou 4-6-5 (Amex) com bullet pra dígitos faltantes. */
+  const formatado = _formatarNumeroCartao(dig);
+  if (formatado) {
+    /* mostra dígitos digitados + bullets pra completar */
+    const targetLen = (bandeira === 'Amex') ? 15 : 16;
+    const restante  = targetLen - dig.length;
+    if (restante > 0) {
+      const bullets = '•'.repeat(restante);
+      pNum.textContent = _formatarNumeroCartao(dig + bullets);
+    } else {
+      pNum.textContent = formatado;
+    }
+  } else {
+    pNum.textContent = '•••• •••• •••• ••••';
+  }
+
+  pNome.textContent = (nameEl?.value || '').trim().toUpperCase() || 'Nome no cartão';
+  pExp.textContent  = (expEl?.value  || '').trim() || 'MM/AA';
+}
+
 document.getElementById('card-num')?.addEventListener('input', function(){
   let v = this.value.replace(/\D/g,'').slice(0,16);
-  v = v.replace(/(.{4})/g,'$1 ').trim();
+  v = _formatarNumeroCartao(v);
   this.value = v;
+  _atualizarCardPreview();
 });
 
 document.getElementById('card-exp')?.addEventListener('input', function(){
   let v = this.value.replace(/\D/g,'').slice(0,4);
   if(v.length > 2) v = v.slice(0,2)+'/'+v.slice(2);
   this.value = v;
+  _atualizarCardPreview();
 });
+
+document.getElementById('card-name')?.addEventListener('input', _atualizarCardPreview);
 
 // ── Validação
 //
