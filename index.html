@@ -422,6 +422,96 @@ h1 .line2{display:block;font-weight:400;font-style:italic;color:var(--ink2)}
 .typing span:nth-child(3){animation-delay:.3s}
 @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 
+/* ── PHONE SCREENS (slide chat ⇄ videochamada) ── */
+.phone-screens{
+  display:flex;width:200%;
+  transform:translateX(0);
+  transition:transform .65s cubic-bezier(.4,0,.2,1);
+}
+.phone-screens.show-video{transform:translateX(-50%)}
+.phone-screen{
+  width:50%;flex-shrink:0;
+  display:flex;flex-direction:column;
+}
+
+/* Header de videochamada */
+.phone-header-video{background:linear-gradient(135deg,var(--green) 0%,var(--green2) 100%)}
+.vc-live-dot{
+  display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:#ef4444;margin-right:4px;
+  animation:blink 1.4s infinite;
+}
+
+/* Body da videochamada */
+.video-body{
+  flex:1;
+  background:linear-gradient(180deg,#0c1812 0%,#050a08 100%);
+  display:flex;flex-direction:column;
+  position:relative;min-height:380px;
+}
+.video-main{
+  flex:1;position:relative;display:flex;
+  align-items:center;justify-content:center;overflow:hidden;
+}
+.video-doc-stage{
+  width:100%;height:100%;
+  background:radial-gradient(ellipse at center 35%,rgba(18,184,112,.18) 0%,transparent 65%);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;
+}
+.video-doc-avatar{
+  width:74px;height:74px;border-radius:50%;
+  background:linear-gradient(135deg,var(--green2),var(--green3));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bricolage Grotesque',sans-serif;
+  font-size:30px;font-weight:800;color:#fff;
+  box-shadow:0 0 0 4px rgba(75,228,166,.18),0 0 0 9px rgba(75,228,166,.08);
+  animation:vcPulse 2.4s ease-in-out infinite;
+}
+@keyframes vcPulse{
+  0%,100%{box-shadow:0 0 0 4px rgba(75,228,166,.18),0 0 0 9px rgba(75,228,166,.08)}
+  50%{box-shadow:0 0 0 6px rgba(75,228,166,.28),0 0 0 16px rgba(75,228,166,.10)}
+}
+.video-doc-name{
+  font-size:13px;font-weight:600;color:#fff;
+  font-family:'Bricolage Grotesque',sans-serif;
+}
+.video-doc-sub{
+  font-size:10.5px;color:rgba(255,255,255,.6);
+  display:flex;align-items:center;gap:5px;
+}
+.video-doc-sub::before{
+  content:'';width:5px;height:5px;border-radius:50%;
+  background:var(--green3);box-shadow:0 0 6px var(--green3);
+}
+
+/* PIP do paciente (canto inferior direito) */
+.video-pip{
+  position:absolute;bottom:68px;right:10px;
+  width:54px;height:74px;border-radius:8px;
+  background:linear-gradient(180deg,#1a3527 0%,#0c1812 100%);
+  border:1.5px solid rgba(255,255,255,.12);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:4px;
+  color:rgba(255,255,255,.55);
+}
+.video-pip-label{font-size:9px;opacity:.7}
+
+/* Controles bottom */
+.video-controls{
+  display:flex;justify-content:center;gap:14px;
+  padding:14px 0;
+  background:rgba(0,0,0,.35);
+  backdrop-filter:blur(8px);
+}
+.vc-btn-circ{
+  width:38px;height:38px;border-radius:50%;
+  border:none;background:rgba(255,255,255,.14);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  cursor:default;pointer-events:none;
+}
+.vc-btn-circ.danger{background:#ef4444}
+
 /* ── COMO FUNCIONA ── */
 .section{padding:96px 64px}
 .label{
@@ -892,16 +982,57 @@ footer{
   <div class="hero-right">
     <div class="phone-frame">
       <div class="phone-notch"><div class="phone-notch-pill"></div></div>
-      <div class="phone-header">
-        <div class="phone-avatar">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="7" r="3" stroke="white" stroke-width="1.5"/><path d="M3 15a6 6 0 0112 0" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <div class="phone-screens" id="phoneScreens">
+        <!-- Tela 1 — chat -->
+        <div class="phone-screen">
+          <div class="phone-header">
+            <div class="phone-avatar">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="7" r="3" stroke="white" stroke-width="1.5"/><path d="M3 15a6 6 0 0112 0" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="phone-header-info">
+              <div class="phone-name">Dra. Ana · ConsultaJá</div>
+              <div class="phone-status"><span class="status-dot"></span> online agora</div>
+            </div>
+          </div>
+          <div class="chat-body" id="liveChat"></div>
         </div>
-        <div class="phone-header-info">
-          <div class="phone-name">Dra. Ana · ConsultaJá</div>
-          <div class="phone-status"><span class="status-dot"></span> online agora</div>
+        <!-- Tela 2 — videochamada -->
+        <div class="phone-screen">
+          <div class="phone-header phone-header-video">
+            <div class="phone-avatar">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="9" height="8" rx="1.5" stroke="white" stroke-width="1.4"/><path d="M11 6.5l3-1.5v6l-3-1.5z" stroke="white" stroke-width="1.4" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="phone-header-info">
+              <div class="phone-name">Dra. Ana · em chamada</div>
+              <div class="phone-status"><span class="vc-live-dot"></span><span id="vcTimer">02:34</span> · ao vivo</div>
+            </div>
+          </div>
+          <div class="video-body">
+            <div class="video-main">
+              <div class="video-doc-stage">
+                <div class="video-doc-avatar">A</div>
+                <div class="video-doc-name">Dra. Ana</div>
+                <div class="video-doc-sub">conexão estável · HD</div>
+              </div>
+              <div class="video-pip">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="3.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 19a7 7 0 0114 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                <div class="video-pip-label">você</div>
+              </div>
+            </div>
+            <div class="video-controls">
+              <button class="vc-btn-circ" aria-label="Microfone" tabindex="-1">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="6" y="2" width="4" height="8" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M3.5 8a4.5 4.5 0 009 0M8 13v2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </button>
+              <button class="vc-btn-circ" aria-label="Câmera" tabindex="-1">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="9" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M11 6.5l3-1.5v6l-3-1.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="vc-btn-circ danger" aria-label="Encerrar" tabindex="-1">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="chat-body" id="liveChat"></div>
     </div>
   </div>
 </section>
@@ -1376,7 +1507,28 @@ document.querySelectorAll('.step,.diff-card,.doc-card-team,.depo-card').forEach(
       await wait(600);
     }
 
-    await wait(2500);
+    await wait(1800);
+    if(!alive()) return;
+
+    // ──── Slide pra videochamada (mostra a feature de telemedicina ao vivo) ────
+    const phoneScreens = document.getElementById('phoneScreens');
+    const vcTimer = document.getElementById('vcTimer');
+    if(phoneScreens){
+      phoneScreens.classList.add('show-video');
+      let tSec = 154; // começa em 02:34
+      const ticker = setInterval(()=>{
+        tSec++;
+        const mm = String(Math.floor(tSec/60)).padStart(2,'0');
+        const ss = String(tSec%60).padStart(2,'0');
+        if(vcTimer) vcTimer.textContent = mm+':'+ss;
+      }, 110);
+      await wait(5500);
+      clearInterval(ticker);
+      if(!alive()){ phoneScreens.classList.remove('show-video'); return; }
+      phoneScreens.classList.remove('show-video');
+      await wait(800);
+    }
+
     if(!alive()) return;
     running = false;
     run();
@@ -1387,6 +1539,8 @@ document.querySelectorAll('.step,.diff-card,.doc-card-team,.depo-card').forEach(
     running = false;
     timeouts.forEach(clearTimeout);
     timeouts = [];
+    const ps = document.getElementById('phoneScreens');
+    if(ps) ps.classList.remove('show-video');
   }
 
   let isVisible = true;
