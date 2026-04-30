@@ -339,12 +339,7 @@ select.cj-input{
   opacity:0;animation:fadeUp .5s .25s forwards;
 }
 
-.summary-card{
-  background:var(--surface);
-  border:1.5px solid var(--border);
-  border-radius:20px;
-  overflow:hidden;
-}
+/* .summary-card: base via .cj-card.cj-card-lg.cj-card-flush (components.css) */
 .summary-header{
   background:var(--green);
   padding:20px 24px;
@@ -647,7 +642,7 @@ function cjToggleTheme(){
 
   <!-- RESUMO -->
   <div class="summary-col">
-    <div class="summary-card">
+    <div class="summary-card cj-card cj-card-lg cj-card-flush">
       <div class="summary-header">
         <div class="summary-product">Consulta médica online</div>
         <div class="summary-desc">Via chat · Sem câmera · Sem agendamento</div>
