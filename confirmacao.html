@@ -46,14 +46,11 @@ main{
   padding:48px 24px;
 }
 
+/* base + sombra agora vem do .cj-card.cj-card-xl.cj-card-shadow (components.css) */
 .card{
-  background:var(--surface);
-  border:1.5px solid var(--border);
-  border-radius:24px;
-  padding:52px 48px;
+  padding:52px 48px;          /* override do .cj-card-xl (32px) — mantém respiro original */
   max-width:520px;width:100%;
   text-align:center;
-  box-shadow:0 8px 40px rgba(10,102,64,.08);
   opacity:0;
   animation:cardIn .6s .1s forwards;
 }
@@ -192,7 +189,7 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
 </nav>
 
 <main>
-  <div class="card">
+  <div class="card cj-card cj-card-xl cj-card-shadow">
     <div class="check-circle">
       <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
         <path d="M7 18l7.5 7.5L29 11" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>

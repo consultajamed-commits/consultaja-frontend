@@ -185,8 +185,41 @@
 
 
 /* ════════════════════════════════════════════════════════════════════════
+   CARDS — surface + border + radius com modifiers de tamanho e elevação
+   ════════════════════════════════════════════════════════════════════════ */
+
+.cj-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+/* ── Tamanhos ───────────────────────────────────────────────────────── */
+.cj-card-sm  { border-radius: 12px; padding: 14px; }
+.cj-card-lg  { border-radius: 20px; padding: 24px; }
+.cj-card-xl  { border-radius: 24px; padding: 32px; }
+
+/* ── Modifiers ──────────────────────────────────────────────────────── */
+
+/* Sombra — pra hero cards, confirmação, modais */
+.cj-card-shadow { box-shadow: var(--shadow-card); }
+
+/* Sem padding interno — útil pra cards com header colorido (qr-card, summary-card) */
+.cj-card-flush { padding: 0; overflow: hidden; }
+
+/* Clicável — sidebar de pacientes, lista de consultas */
+.cj-card-hover { cursor: pointer; }
+.cj-card-hover:hover { background: var(--pale); }
+
+/* Estado ativo (selecionado) */
+.cj-card.active,
+.cj-card-active { background: var(--pale); border-color: var(--green); }
+
+
+/* ════════════════════════════════════════════════════════════════════════
    FUTURO — primitivas a serem extraídas em sprints subsequentes:
-   .cj-card          — card com surface + border + radius + sombra
    .cj-badge         — chip de status (success/warning/danger/info)
    .cj-spinner       — loader inline
    .cj-divider       — separador horizontal sutil
