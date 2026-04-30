@@ -521,15 +521,7 @@ nav{
   color:var(--ink2);text-transform:uppercase;
   margin-bottom:6px;
 }
-.auth-field input{
-  width:100%;padding:12px 14px;
-  border:1.5px solid var(--border);border-radius:10px;
-  font-family:'DM Sans',sans-serif;font-size:15px;
-  background:var(--white);color:var(--ink);
-  outline:none;transition:border-color .15s;
-}
-.auth-field input:focus{border-color:var(--green)}
-.auth-field input:disabled{opacity:.6}
+/* Inputs do .auth-field migrados pra .cj-input (components.css) */
 .auth-erro{
   font-size:13px;color:var(--danger);
   background:var(--danger-bg);border:1px solid #FCA5A5;
@@ -867,12 +859,12 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
     <form id="formLogin" autocomplete="on">
       <div class="auth-field">
         <label for="loginCpf">CPF</label>
-        <input id="loginCpf" name="cpf" type="text" inputmode="numeric"
+        <input id="loginCpf" class="cj-input" name="cpf" type="text" inputmode="numeric"
                placeholder="000.000.000-00" maxlength="14" autocomplete="username" required>
       </div>
       <div class="auth-field">
         <label for="loginSenha">Senha</label>
-        <input id="loginSenha" name="senha" type="password"
+        <input id="loginSenha" class="cj-input" name="senha" type="password"
                placeholder="Sua senha" autocomplete="current-password" required>
       </div>
       <button type="submit" class="cj-btn-primary cj-btn-block cj-btn-rounded" id="btnLogin">Entrar</button>
@@ -931,18 +923,18 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
     <form id="formTrocaSenha" autocomplete="off">
       <div class="auth-field">
         <label for="senhaAtual">Senha atual</label>
-        <input id="senhaAtual" name="senha_atual" type="password"
+        <input id="senhaAtual" class="cj-input" name="senha_atual" type="password"
                placeholder="Senha atual" autocomplete="current-password" required>
       </div>
       <div class="auth-field">
         <label for="senhaNova">Nova senha</label>
-        <input id="senhaNova" name="senha_nova" type="password"
+        <input id="senhaNova" class="cj-input" name="senha_nova" type="password"
                placeholder="Nova senha (mín. 6 caracteres)" minlength="6"
                autocomplete="new-password" required>
       </div>
       <div class="auth-field">
         <label for="senhaNova2">Confirme a nova senha</label>
-        <input id="senhaNova2" name="senha_nova2" type="password"
+        <input id="senhaNova2" class="cj-input" name="senha_nova2" type="password"
                placeholder="Repita a nova senha" minlength="6"
                autocomplete="new-password" required>
       </div>
