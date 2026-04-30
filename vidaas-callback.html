@@ -4,12 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ativando assinatura — ConsultaJá!</title>
+
+<script>(function(){const s=localStorage.getItem('cj-theme');const d=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.setAttribute('data-theme',s||(d?'dark':'light'))})();</script>
+
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--green:#0A6640;--green3:#12B870;--ink:#0C110E;--muted:#6B7870;--white:#F7FAF8;--border:#D8E8DF;--pale:#EBF7F1;--danger:#DC2626}
-body{font-family:'DM Sans',sans-serif;background:var(--white);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-.card{max-width:440px;width:100%;background:#fff;border:1px solid var(--border);border-radius:24px;padding:48px 40px;text-align:center;box-shadow:0 16px 48px rgba(10,102,64,.08)}
+/* Variáveis vêm de theme.css */
+body{font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{max-width:440px;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:48px 40px;text-align:center;box-shadow:var(--shadow-card)}
 .logo{font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;color:var(--ink);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px}
 .logo .dot{width:10px;height:10px;border-radius:50%;background:var(--green3);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
@@ -22,7 +26,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--white);min-height:100vh;d
 .status-sub{font-size:13px;color:var(--muted)}
 
 .success-icon{width:64px;height:64px;border-radius:50%;background:var(--pale);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
-.error-icon{width:64px;height:64px;border-radius:50%;background:#FEF2F2;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.error-icon{width:64px;height:64px;border-radius:50%;background:var(--danger-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
 
 .state{display:none}
 .state.active{display:block}

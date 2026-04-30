@@ -1,0 +1,155 @@
+/* ╔═══════════════════════════════════════════════════════════════════════╗
+   ║  ConsultaJá! — Variáveis de tema (light + dark)                       ║
+   ║                                                                       ║
+   ║  Importado por todas as páginas via:                                  ║
+   ║    <link rel="stylesheet" href="css/theme.css">                       ║
+   ║                                                                       ║
+   ║  Toggle de tema fica APENAS no index.html. Outras páginas herdam      ║
+   ║  via localStorage 'cj-theme'. Script de inicialização é inline no     ║
+   ║  <head> de cada página pra evitar FOUC (flash of unstyled content):   ║
+   ║                                                                       ║
+   ║    <script>                                                           ║
+   ║    (function(){                                                       ║
+   ║      const s = localStorage.getItem('cj-theme');                      ║
+   ║      const d = window.matchMedia('(prefers-color-scheme: dark)')      ║
+   ║                  .matches;                                            ║
+   ║      document.documentElement.setAttribute('data-theme',              ║
+   ║        s || (d ? 'dark' : 'light'));                                  ║
+   ║    })();                                                              ║
+   ║    </script>                                                          ║
+   ║                                                                       ║
+   ║  Este arquivo NUNCA define layout — só variáveis + transições.        ║
+   ║  Cada página mantém seu CSS específico inline.                        ║
+   ╚═══════════════════════════════════════════════════════════════════════╝ */
+
+:root,
+[data-theme="light"] {
+  /* ── Texto ── */
+  --ink:           #0C110E;
+  --ink2:          #2A332C;
+  --muted:         #6B7870;
+
+  /* ── Brand verde ── */
+  --green:         #0A6640;
+  --green2:        #0D8A55;
+  --green3:        #12B870;
+
+  /* ── Fundos suaves ── */
+  --pale:          #EBF7F1;
+  --pale2:         #D4EFE2;
+  --white:         #F7FAF8;
+  --border:        #D8E8DF;
+  --chat-bg:       #F0F9F4;
+
+  /* ── Surfaces (cards, modais, chat msgs do médico/IA) ── */
+  --surface:       #FFFFFF;
+  --surface-2:     #F7FAF8;
+  --nav-bg:        rgba(247, 250, 248, 0.9);
+  --overlay:       rgba(12, 17, 14, 0.4);
+
+  /* ── Seções com fundo escuro (mantém escuro mesmo no light) ── */
+  --dark-section:        #0C110E;
+  --dark-section-text:   #F7FAF8;
+  --dark-on-dark:        rgba(255, 255, 255, 0.55);
+  --dark-on-dark-faint:  rgba(255, 255, 255, 0.08);
+
+  /* ── Gradientes do hero (index.html) ── */
+  --hero-grad-1: rgba(247, 250, 248, 0.97);
+  --hero-grad-2: rgba(247, 250, 248, 0.94);
+  --hero-grad-3: rgba(247, 250, 248, 0.75);
+  --hero-grad-4: rgba(247, 250, 248, 0.35);
+  --hero-grad-5: rgba(247, 250, 248, 0.15);
+
+  /* ── Sombras ── */
+  --shadow-soft:       0 32px 80px rgba(10, 102, 64, 0.12), 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-card:       0 16px 48px rgba(10, 102, 64, 0.10);
+  --shadow-btn:        0 6px 24px rgba(10, 102, 64, 0.28);
+  --shadow-btn-hover:  0 10px 32px rgba(10, 102, 64, 0.38);
+  --shadow-preco:      0 24px 60px rgba(10, 102, 64, 0.12);
+  --ring-dot:          rgba(10, 102, 64, 0.06);
+
+  /* ── Status (badges aguardando_medico, em_atendimento, concluida, etc) ──
+     Mantemos pasteis pra contraste em light. Dark sobrescreve abaixo.    */
+  --warning:     #D97706;
+  --warning-bg:  #FFFBEB;
+  --danger:      #DC2626;
+  --danger-bg:   #FEF2F2;
+  --success:     #059669;
+  --success-bg:  #ECFDF5;
+}
+
+[data-theme="dark"] {
+  /* ── Texto ── */
+  --ink:           #F7FAF8;
+  --ink2:          #CEDDD3;
+  --muted:         #9AB0A3;
+
+  /* ── Brand verde (mais brilhante pra contraste em fundo escuro) ── */
+  --green:         #12B870;
+  --green2:        #18D184;
+  --green3:        #4BE4A6;
+
+  /* ── Fundos suaves (escuros) ── */
+  --pale:          #0F2419;
+  --pale2:         #163A27;
+  --white:         #03100B;
+  --border:        #1A3527;
+  --chat-bg:       #0A1C14;
+
+  /* ── Surfaces (escuras) ── */
+  --surface:       #081710;
+  --surface-2:     #0A1C14;
+  --nav-bg:        rgba(3, 16, 11, 0.82);
+  --overlay:       rgba(0, 0, 0, 0.6);
+
+  /* ── Seções "escuras" ficam ainda mais pretas em dark ── */
+  --dark-section:        #010806;
+  --dark-section-text:   #F7FAF8;
+  --dark-on-dark:        rgba(255, 255, 255, 0.6);
+  --dark-on-dark-faint:  rgba(255, 255, 255, 0.06);
+
+  /* ── Gradientes do hero (escuros) ── */
+  --hero-grad-1: rgba(3, 16, 11, 0.97);
+  --hero-grad-2: rgba(3, 16, 11, 0.94);
+  --hero-grad-3: rgba(3, 16, 11, 0.78);
+  --hero-grad-4: rgba(3, 16, 11, 0.42);
+  --hero-grad-5: rgba(3, 16, 11, 0.18);
+
+  /* ── Sombras (mais escuras + glow verde sutil nos botões) ── */
+  --shadow-soft:       0 32px 80px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-card:       0 16px 48px rgba(0, 0, 0, 0.45);
+  --shadow-btn:        0 6px 24px rgba(18, 184, 112, 0.25);
+  --shadow-btn-hover:  0 10px 32px rgba(18, 184, 112, 0.35);
+  --shadow-preco:      0 24px 60px rgba(0, 0, 0, 0.5);
+  --ring-dot:          rgba(75, 228, 166, 0.08);
+
+  /* ── Status (cores um pouco mais saturadas em fundo escuro) ── */
+  --warning:     #FBBF24;
+  --warning-bg:  rgba(251, 191, 36, 0.12);
+  --danger:      #F87171;
+  --danger-bg:   rgba(248, 113, 113, 0.12);
+  --success:     #34D399;
+  --success-bg:  rgba(52, 211, 153, 0.12);
+}
+
+/* ── Transições suaves ao alternar tema ──
+   Aplicado em TODOS os elementos pra evitar "flash" de cor ao trocar.
+   Performance OK pq é GPU-accelerated (color/background-color/border).  */
+html {
+  color-scheme: light dark;
+}
+
+body {
+  background: var(--white);
+  color: var(--ink);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+body * {
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease,
+              box-shadow 0.2s ease,
+              fill 0.2s ease,
+              stroke 0.2s ease;
+}

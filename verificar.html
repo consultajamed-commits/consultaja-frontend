@@ -4,33 +4,46 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Verificação de Documento — ConsultaJá!</title>
+
+<!-- Theme init (evita FOUC) -->
+<script>
+(function(){
+  const s = localStorage.getItem('cj-theme');
+  const d = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.setAttribute('data-theme', s || (d ? 'dark' : 'light'));
+})();
+</script>
+
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --ink:#0C110E;
-  --ink2:#2A332C;
-  --muted:#6B7870;
-  --green:#0A6640;
-  --green2:#0D8A55;
-  --green3:#12B870;
-  --pale:#EBF7F1;
-  --pale2:#D4EFE2;
-  --white:#F7FAF8;
-  --border:#D8E8DF;
-  --red:#DC2626;
-  --red-pale:#FEF2F2;
-  --amber:#D97706;
-  --amber-pale:#FFFBEB;
+/* Apelidos locais. Variáveis principais herdadas de theme.css. */
+:root,[data-theme="light"]{
+  --red:        var(--danger);
+  --red-pale:   var(--danger-bg);
+  --amber:      var(--warning);
+  --amber-pale: var(--warning-bg);
+  /* Gradient de fundo da página (claro) */
+  --bg-grad-1: rgba(18,184,112,.08);
+  --bg-grad-2: rgba(10,102,64,.10);
+  --bg-grad-3: #F4FBF7;
+  --bg-grad-4: #E8F5EE;
+}
+[data-theme="dark"]{
+  /* Em dark, gradient mais sutil sobre fundo escuro */
+  --bg-grad-1: rgba(18,184,112,.06);
+  --bg-grad-2: rgba(75,228,166,.04);
+  --bg-grad-3: #03100B;
+  --bg-grad-4: #081710;
 }
 html,body{height:100%;margin:0}
 body{
   font-family:'DM Sans',sans-serif;
   background:
-    radial-gradient(ellipse at top left, rgba(18,184,112,.08) 0%, transparent 55%),
-    radial-gradient(ellipse at bottom right, rgba(10,102,64,.10) 0%, transparent 55%),
-    linear-gradient(180deg, #F4FBF7 0%, #E8F5EE 100%);
-  color:var(--ink);
+    radial-gradient(ellipse at top left, var(--bg-grad-1) 0%, transparent 55%),
+    radial-gradient(ellipse at bottom right, var(--bg-grad-2) 0%, transparent 55%),
+    linear-gradient(180deg, var(--bg-grad-3) 0%, var(--bg-grad-4) 100%);
   min-height:100vh;
   display:flex;
   flex-direction:column;

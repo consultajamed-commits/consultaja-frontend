@@ -4,26 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Consulta Confirmada — ConsultaJá!</title>
+
+<!-- Theme init (evita FOUC) -->
+<script>
+(function(){
+  const s = localStorage.getItem('cj-theme');
+  const d = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.setAttribute('data-theme', s || (d ? 'dark' : 'light'));
+})();
+</script>
+
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --green:#0A6640;
-  --green2:#0D8A55;
-  --green3:#12B870;
-  --pale:#EBF7F1;
-  --pale2:#D4EFE2;
-  --white:#F7FAF8;
-  --border:#D8E8DF;
-  --ink:#0C110E;
-  --ink2:#2A332C;
-  --muted:#6B7870;
-}
+/* Variáveis principais herdadas de theme.css */
 html,body{height:100%;margin:0}
 body{
   font-family:'DM Sans',sans-serif;
-  background:var(--white);
-  color:var(--ink);
   min-height:100vh;
   display:flex;flex-direction:column;
 }

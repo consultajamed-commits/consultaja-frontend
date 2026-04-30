@@ -4,77 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ConsultaJá! — Consulta médica em minutos, pelo celular</title>
+
+<!-- Theme init INLINE no <head> pra evitar flash of unstyled content (FOUC).
+     Roda ANTES do CSS aplicar e seta data-theme baseado em localStorage ou
+     preferência do SO. Toggle de tema fica em css/theme.css + script abaixo. -->
+<script>
+(function(){
+  const saved = localStorage.getItem('cj-theme');
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.setAttribute('data-theme', saved || (prefersDark ? 'dark' : 'light'));
+})();
+</script>
+
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<!-- Variáveis de tema compartilhadas (light + dark). Toggle persiste via
+     localStorage 'cj-theme' — todas as páginas herdam a preferência. -->
+<link rel="stylesheet" href="css/theme.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root,[data-theme="light"]{
-  --ink:#0C110E;
-  --ink2:#2A332C;
-  --muted:#6B7870;
-  --green:#0A6640;
-  --green2:#0D8A55;
-  --green3:#12B870;
-  --pale:#EBF7F1;
-  --pale2:#D4EFE2;
-  --white:#F7FAF8;
-  --border:#D8E8DF;
-  --chat-bg:#F0F9F4;
-  /* surfaces that flip in dark */
-  --surface:#FFFFFF;         /* cards, phone frame, chat msg-in */
-  --surface-2:#F7FAF8;       /* subtle secondary surface */
-  --nav-bg:rgba(247,250,248,0.9);
-  --overlay:rgba(12,17,14,.4);
-  --dark-section:#0C110E;    /* diff & app-hook & footer bg */
-  --dark-section-text:#F7FAF8;
-  --dark-on-dark:rgba(255,255,255,.55);
-  --dark-on-dark-faint:rgba(255,255,255,.08);
-  --hero-grad-1:rgba(247,250,248,.97);
-  --hero-grad-2:rgba(247,250,248,.94);
-  --hero-grad-3:rgba(247,250,248,.75);
-  --hero-grad-4:rgba(247,250,248,.35);
-  --hero-grad-5:rgba(247,250,248,.15);
-  --shadow-soft:0 32px 80px rgba(10,102,64,.12), 0 4px 16px rgba(0,0,0,.06);
-  --shadow-card:0 16px 48px rgba(10,102,64,.1);
-  --shadow-btn:0 6px 24px rgba(10,102,64,.28);
-  --shadow-btn-hover:0 10px 32px rgba(10,102,64,.38);
-  --shadow-preco:0 24px 60px rgba(10,102,64,.12);
-  --ring-dot:rgba(10,102,64,.06);
-}
-[data-theme="dark"]{
-  --ink:#F7FAF8;
-  --ink2:#CEDDD3;
-  --muted:#9AB0A3;
-  --green:#12B870;
-  --green2:#18D184;
-  --green3:#4BE4A6;
-  --pale:#0F2419;
-  --pale2:#163A27;
-  --white:#03100B;
-  --border:#1A3527;
-  --chat-bg:#0A1C14;
-  --surface:#081710;
-  --surface-2:#0A1C14;
-  --nav-bg:rgba(3,16,11,0.82);
-  --overlay:rgba(0,0,0,.6);
-  --dark-section:#010806;
-  --dark-section-text:#F7FAF8;
-  --dark-on-dark:rgba(255,255,255,.6);
-  --dark-on-dark-faint:rgba(255,255,255,.06);
-  --hero-grad-1:rgba(3,16,11,.97);
-  --hero-grad-2:rgba(3,16,11,.94);
-  --hero-grad-3:rgba(3,16,11,.78);
-  --hero-grad-4:rgba(3,16,11,.42);
-  --hero-grad-5:rgba(3,16,11,.18);
-  --shadow-soft:0 32px 80px rgba(0,0,0,.6), 0 4px 16px rgba(0,0,0,.3);
-  --shadow-card:0 16px 48px rgba(0,0,0,.45);
-  --shadow-btn:0 6px 24px rgba(18,184,112,.25);
-  --shadow-btn-hover:0 10px 32px rgba(18,184,112,.35);
-  --shadow-preco:0 24px 60px rgba(0,0,0,.5);
-  --ring-dot:rgba(75,228,166,.08);
-}
 html{scroll-behavior:smooth}
-body{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--ink);line-height:1.6;overflow-x:hidden;transition:background .2s ease, color .2s ease}
-body *{transition:background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, fill .2s ease, stroke .2s ease}
+body{font-family:'DM Sans',sans-serif;line-height:1.6;overflow-x:hidden}
 
 /* ── NAV ── */
 nav{
