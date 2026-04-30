@@ -27,7 +27,7 @@
   /* ── Texto ── */
   --ink:           #0C110E;
   --ink2:          #2A332C;
-  --muted:         #6B7870;
+  --muted:         #5A6961;
 
   /* ── Brand verde ── */
   --green:         #0A6640;
@@ -89,16 +89,16 @@
   --green2:        #18D184;
   --green3:        #4BE4A6;
 
-  /* ── Fundos suaves (escuros) ── */
-  --pale:          #0F2419;
-  --pale2:         #163A27;
-  --white:         #03100B;
-  --border:        #1A3527;
-  --chat-bg:       #0A1C14;
+  /* ── Fundos suaves (soft dark — leve pra site médico, não preto pitch) ── */
+  --pale:          #1A2E25;
+  --pale2:         #25453B;
+  --white:         #0E1A14;
+  --border:        #2A4736;
+  --chat-bg:       #13211B;
 
-  /* ── Surfaces (escuras) ── */
-  --surface:       #081710;
-  --surface-2:     #0A1C14;
+  /* ── Surfaces (escuras mas suavizadas) ── */
+  --surface:       #162A22;
+  --surface-2:     #1C342A;
   --nav-bg:        rgba(3, 16, 11, 0.82);
   --overlay:       rgba(0, 0, 0, 0.6);
 
@@ -199,4 +199,25 @@ body * {
 
 @media (max-width: 480px) {
   .theme-toggle-fab { top: 10px; right: 10px; width: 36px; height: 36px; }
+}
+
+/* ── Foco de teclado visível (acessibilidade WCAG 2.4.7) ──
+   Contorno verde brilhante em qualquer elemento focável via teclado.
+   `:focus-visible` só ativa em foco por teclado — não polui clique de mouse. */
+:focus-visible {
+  outline: 2px solid var(--green3);
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+
+/* ── Respeita preferência de movimento reduzido (WCAG 2.3.3) ──
+   Cancela animações longas e transições para usuários com sensibilidade
+   vestibular ou que preferiram reduzir movimento no SO. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
