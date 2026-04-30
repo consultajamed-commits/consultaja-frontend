@@ -1476,10 +1476,10 @@ function _escapeHtmlMedico(s) {
 // Solução: scroll inicial + re-scroll quando cada img dispara load/error.
 function _scrollChatPraFim(container) {
   if (!container) return;
-  _scrollChatPraFim(container);
+  container.scrollTop = container.scrollHeight;
   container.querySelectorAll('img').forEach(img => {
     if (img.complete) return;
-    const reScroll = () => { _scrollChatPraFim(container); };
+    const reScroll = () => { container.scrollTop = container.scrollHeight; };
     img.addEventListener('load',  reScroll, { once: true });
     img.addEventListener('error', reScroll, { once: true });
   });
