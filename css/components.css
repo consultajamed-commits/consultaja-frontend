@@ -96,10 +96,33 @@
   transform: translateY(-1px);
 }
 
+/* Warning — pendência / atenção (amarelo, ex: "Ativar assinatura digital") */
+.cj-btn-warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border-color: var(--warning);
+}
+.cj-btn-warning:hover:not(:disabled) {
+  background: var(--warning);
+  color: #fff;
+}
+
+/* Success — estado completo / ativo (verde mais discreto que primary) */
+.cj-btn-success {
+  background: var(--success-bg);
+  color: var(--success);
+  border-color: var(--success);
+  cursor: default;
+}
+.cj-btn-success:hover:not(:disabled) {
+  background: var(--success-bg);
+}
+
 /* ── Modifiers ─────────────────────────────────────────────────────── */
 /* Combinam com qualquer variante: <button class="cj-btn-primary cj-btn-sm"> */
 
 /* Tamanho */
+.cj-btn-xs  { padding: 6px 14px; font-size: 12px; gap: 6px; font-weight: 600; }
 .cj-btn-sm  { padding: 12px 20px; font-size: 14px; gap: 6px; }
 .cj-btn-md  { padding: 14px 24px; font-size: 15px; gap: 8px; }   /* default explícito */
 .cj-btn-lg  { padding: 17px 32px; font-size: 17px; gap: 10px; font-weight: 600; }
