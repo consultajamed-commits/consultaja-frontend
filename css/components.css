@@ -256,7 +256,49 @@
 
 
 /* ════════════════════════════════════════════════════════════════════════
+   SPINNERS — loader inline + loading state pra buttons
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Visual base (18px, branco, animação 0.7s) */
+.cj-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: cjSpin 0.7s linear infinite;
+  flex-shrink: 0;
+  display: inline-block;
+}
+@keyframes cjSpin { to { transform: rotate(360deg); } }
+
+/* Tamanhos */
+.cj-spinner-sm { width: 14px; height: 14px; border-width: 1.5px; }
+.cj-spinner-lg { width: 24px; height: 24px; border-width: 3px; }
+
+/* Variante dark — pra usar em fundo claro (bordas escuras) */
+.cj-spinner-dark {
+  border-color: rgba(0, 0, 0, 0.15);
+  border-top-color: var(--ink);
+}
+
+/* ── Loading state pra qualquer .cj-btn-* ──
+   <button class="cj-btn-primary">
+     <span class="cj-spinner"></span>   ← escondido por padrão
+     <span>Texto</span>
+   </button>
+   JS: btn.classList.add('cj-btn-loading')
+   → esconde tudo menos spinner, desabilita interação */
+[class^="cj-btn-"]:not(.cj-btn-loading) > .cj-spinner,
+[class*=" cj-btn-"]:not(.cj-btn-loading) > .cj-spinner {
+  display: none;
+}
+.cj-btn-loading { pointer-events: none; }
+.cj-btn-loading > .cj-spinner { display: inline-block; }
+.cj-btn-loading > *:not(.cj-spinner) { display: none; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
    FUTURO — primitivas a serem extraídas em sprints subsequentes:
-   .cj-spinner       — loader inline
    .cj-divider       — separador horizontal sutil
    ════════════════════════════════════════════════════════════════════════ */

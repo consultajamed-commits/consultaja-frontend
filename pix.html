@@ -219,17 +219,8 @@ main{
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   cursor:default;
 }
-.copy-btn{
-  background:var(--green);color:#fff;
-  border:none;border-radius:10px;
-  padding:11px 18px;cursor:pointer;
-  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
-  display:flex;align-items:center;gap:6px;white-space:nowrap;
-  transition:background .2s,transform .15s;
-  flex-shrink:0;
-}
-.copy-btn:hover{background:var(--green2);transform:translateY(-1px)}
-.copy-btn.copied{background:var(--ink);color:var(--surface)}
+/* .copy-btn migrado pra .cj-btn-primary.cj-btn-sm.cj-btn-rounded
+   Estado "copiado" via classList.replace pra .cj-btn-success */
 
 /* Steps */
 .steps-mini{
@@ -528,7 +519,7 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
           <div class="copy-box">
             <input class="copy-input" id="pix-code" readonly
               value="00020126580014br.gov.bcb.pix0136a629532e-7693-4846-b028-f142a8ef4b445204000053039865802BR5915MedicoJa Saude6009SAO PAULO62070503***6304B14F">
-            <button class="copy-btn" id="copy-btn" onclick="copiarPix()">
+            <button class="cj-btn-primary cj-btn-sm cj-btn-rounded" id="copy-btn" onclick="copiarPix()">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <rect x="4" y="1" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
                 <path d="M1 4v8a1 1 0 001 1h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
@@ -675,10 +666,10 @@ function copiarPix() {
   });
   const btn = document.getElementById('copy-btn');
   btn.textContent = '✓ Copiado!';
-  btn.classList.add('copied');
+  btn.classList.replace('cj-btn-primary', 'cj-btn-success');
   setTimeout(() => {
     btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4" y="1" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 4v8a1 1 0 001 1h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Copiar`;
-    btn.classList.remove('copied');
+    btn.classList.replace('cj-btn-success', 'cj-btn-primary');
   }, 2500);
 }
 
