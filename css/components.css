@@ -219,8 +219,44 @@
 
 
 /* ════════════════════════════════════════════════════════════════════════
+   BADGES — chips de status (pílulas pequenas pra indicar estado)
+   Uso: <span class="cj-badge cj-badge-success">concluído</span>
+   ════════════════════════════════════════════════════════════════════════ */
+
+.cj-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 100px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+/* ── Variantes semânticas ──────────────────────────────────────────── */
+
+/* Verde discreto — estado positivo "pronto pra ação" (ex: SOAP pronto) */
+.cj-badge-primary { background: var(--pale);       color: var(--green);   }
+
+/* Verde forte — estado final concluído */
+.cj-badge-success { background: var(--success-bg); color: var(--success); }
+
+/* Amarelo — em andamento, atenção */
+.cj-badge-warning { background: var(--warning-bg); color: var(--warning); }
+
+/* Vermelho — urgente, paciente esperando */
+.cj-badge-danger  { background: var(--danger-bg);  color: var(--danger);  }
+
+/* Cinza — neutro, cancelado, descontinuado */
+.cj-badge-muted   { background: var(--border);     color: var(--muted);   }
+
+
+/* ════════════════════════════════════════════════════════════════════════
    FUTURO — primitivas a serem extraídas em sprints subsequentes:
-   .cj-badge         — chip de status (success/warning/danger/info)
    .cj-spinner       — loader inline
    .cj-divider       — separador horizontal sutil
    ════════════════════════════════════════════════════════════════════════ */

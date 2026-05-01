@@ -258,16 +258,7 @@ body{font-family:'DM Sans',sans-serif;line-height:1.6;overflow:hidden;height:100
   margin-top:3px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.patient-status{
-  display:inline-flex;align-items:center;gap:4px;
-  font-size:10px;font-weight:600;
-  padding:2px 8px;border-radius:100px;
-  margin-top:6px;
-}
-.st-aguardando{background:var(--danger-bg);color:var(--danger)}
-.st-em_atendimento{background:var(--warning-bg);color:var(--warning)}
-.st-soap_gerado{background:var(--pale);color:var(--green)}
-.st-concluida{background:var(--success-bg);color:var(--success)}
+/* status badges migradas pra .cj-badge do design system (components.css) */
 
 .sidebar-stats{
   padding:16px 20px;
@@ -1586,6 +1577,13 @@ function renderPatientList() {
       'concluida': 'concluído',
       'cancelada': 'cancelado'
     }[c.status] || c.status;
+    const statusVariant = {
+      'aguardando_medico': 'danger',     // vermelho — paciente esperando
+      'em_atendimento':    'warning',    // amarelo — em andamento
+      'soap_gerado':       'primary',    // verde discreto — pronto pra revisar
+      'concluida':         'success',    // verde forte — finalizado
+      'cancelada':         'muted'       // cinza — neutro
+    }[c.status] || 'muted';
 
     return `
       <div class="patient-card ${isActive ? 'active' : ''} ${c.status === 'aguardando_medico' ? 'unread' : ''}"
@@ -1595,7 +1593,7 @@ function renderPatientList() {
           <span class="patient-time">${time}</span>
         </div>
         <div class="patient-queixa">${c.queixa || 'Sem queixa registrada'}</div>
-        <span class="patient-status st-${c.status}">${statusLabel}</span>
+        <span class="cj-badge cj-badge-${statusVariant}" style="margin-top:6px">${statusLabel}</span>
       </div>
     `;
   }).join('');
