@@ -299,6 +299,47 @@
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   FUTURO — primitivas a serem extraídas em sprints subsequentes:
-   .cj-divider       — separador horizontal sutil
+   DIVIDER — separador horizontal sutil
+   Uso: <hr class="cj-divider"> ou <div class="cj-divider"></div>
+   ════════════════════════════════════════════════════════════════════════ */
+
+.cj-divider {
+  border: none;
+  height: 1px;
+  background: var(--border);
+  margin: 16px 0;
+}
+
+/* Modifiers */
+.cj-divider-thick { height: 2px; }
+.cj-divider-tight { margin: 8px 0; }
+.cj-divider-loose { margin: 24px 0; }
+
+/* Variante com texto centralizado: <div class="cj-divider-with-text"><span>OU</span></div> */
+.cj-divider-with-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+.cj-divider-with-text::before,
+.cj-divider-with-text::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.cj-divider-with-text > span {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   Design system completo — 6 primitivas:
+   .cj-btn-*  | .cj-input  | .cj-card  | .cj-badge  | .cj-spinner  | .cj-divider
    ════════════════════════════════════════════════════════════════════════ */
