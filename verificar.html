@@ -693,11 +693,26 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
 </footer>
 
 <script>
-const N8N_WEBHOOK = 'https://n8nconsultaja.duckdns.org/webhook/bdd9397d-bc06-4404-8fb1-e16526cdd03b';
+// ──────────────────────────────────────────────────────────────────
+// Verificação ostensiva de documento médico — Sprint Verificação UUID
+// (Migration 014 + Sprint N1 da migração n8n).
+//
+// QR Code do PDF aponta pra `verificar.html?id=<verificacao_uuid>`.
+// Frontend chama Railway direto (substitui webhook n8n bdd9397d).
+//
+// Compat legado:
+//  - URL `?codigo=CJ-...&tipo=...` (PDFs antigos pré-Migration 014)
+//    mostra mensagem amigável pedindo pra solicitar PDF novo
+// ──────────────────────────────────────────────────────────────────
+
+const RAILWAY_API = 'https://web-production-0c606.up.railway.app';
 
 const params = new URLSearchParams(window.location.search);
-const urlCode = params.get('codigo') || '';
-const urlTipo = params.get('tipo') || '';
+const urlUuid          = (params.get('id') || '').trim();
+const urlCodigoLegacy  = (params.get('codigo') || '').trim();
+const urlTipoLegacy    = (params.get('tipo') || '').trim();
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function showState(id) {
   document.querySelectorAll('.state').forEach(s => s.classList.remove('active'));
@@ -705,8 +720,6 @@ function showState(id) {
 }
 
 // Converte timestamp ISO (UTC do Postgres) pra horário de Brasília explícito.
-// Se a string não for parseable como Date, devolve crua — defensive: prefere
-// mostrar texto bruto a quebrar a página.
 function fmtDataHoraBRT(s) {
   if (!s) return '—';
   const d = new Date(s);
@@ -723,7 +736,7 @@ function renderValido(code, data) {
   const dias = parseInt(data.dias) || 1;
   const pct  = Math.min(Math.round((dias / 30) * 100), 100) + '%';
 
-  document.getElementById('display-code').textContent = code;
+  document.getElementById('display-code').textContent = data.consulta_id || code;
   document.getElementById('v-paciente').textContent   = data.paciente || '—';
   document.getElementById('v-emissao').textContent    = fmtDataHoraBRT(data.data_emissao);
   // Período de afastamento — só exibe para atestados
@@ -749,75 +762,73 @@ function renderValido(code, data) {
   showState('state-valid');
 }
 
-async function verificar(code, tipo) {
-  const clean = code.trim().toUpperCase();
+async function verificarUuid(verificacaoUuid) {
+  const clean = (verificacaoUuid || '').trim();
   if (!clean) return;
 
   showState('state-loading');
 
   try {
-    const tipoParam = (tipo || '').trim();
-    const url = `${N8N_WEBHOOK}?id=${encodeURIComponent(clean)}&tipo=${encodeURIComponent(tipoParam)}`;
+    const url = `${RAILWAY_API}/verificar/${encodeURIComponent(clean)}`;
     const resp = await fetch(url);
-    if (!resp.ok) throw new Error('Erro');
-    const data = await resp.json();
+    const data = await resp.json().catch(() => ({}));
 
-    if (data && data.encontrado) {
+    if (resp.ok && data && data.encontrado) {
       renderValido(clean, data);
     } else {
-      document.getElementById('invalid-code').textContent = clean;
+      document.getElementById('invalid-code').textContent = clean.length > 20
+        ? clean.slice(0, 8) + '…' + clean.slice(-4)
+        : clean;
       showState('state-invalid');
     }
   } catch (err) {
+    document.getElementById('invalid-code').textContent = 'erro de conexão';
+    showState('state-invalid');
+  }
+}
+
+function buscaManualSubmit(rawValue) {
+  const clean = (rawValue || '').trim();
+  if (!clean) return;
+  // Aceita só UUIDs (formato novo). Códigos CJ-... antigos não são suportados
+  // — paciente precisa solicitar PDF novo.
+  if (UUID_RE.test(clean)) {
+    verificarUuid(clean);
+  } else {
     document.getElementById('invalid-code').textContent = clean;
     showState('state-invalid');
   }
 }
 
-// Quando usuário digita ID manualmente: pede pra escolher o tipo antes
-function pedirTipo(code) {
-  const clean = (code || '').trim().toUpperCase();
-  if (!clean) return;
-  document.getElementById('tipo-code').textContent = clean;
-  document.getElementById('btn-tipo-atestado').onclick = () => verificar(clean, 'atestado');
-  document.getElementById('btn-tipo-receituario').onclick = () => verificar(clean, 'receituario');
-  document.getElementById('btn-tipo-orientacoes').onclick = () => verificar(clean, 'orientacoes');
-  showState('state-tipo');
-}
-
-function buscarManual() {
-  const inp = document.getElementById('busca-input') || document.getElementById('manual-input');
-  if (inp && inp.value.trim()) pedirTipo(inp.value.trim());
-}
-
-function tentarNovamente() {
+// Atalho global pros onclick do HTML
+window.pedirTipo = buscaManualSubmit;  // input manual delega
+window.tentarNovamente = () => {
   const inp = document.getElementById('manual-input');
   if (inp) inp.value = '';
   showState('state-invalid');
-}
+};
 
-// Event listeners no campo e botão do HTML estático
-document.getElementById('btn-buscar')?.addEventListener('click', function() {
+// Event listeners do campo de busca
+document.getElementById('btn-buscar')?.addEventListener('click', () => {
   const inp = document.getElementById('busca-input');
-  if (inp && inp.value.trim()) pedirTipo(inp.value.trim());
+  if (inp) buscaManualSubmit(inp.value);
 });
-
 document.getElementById('busca-input')?.addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    const inp = document.getElementById('busca-input');
-    if (inp && inp.value.trim()) pedirTipo(inp.value.trim());
-  }
+  if (e.key === 'Enter') buscaManualSubmit(e.target.value);
 });
 
-// Auto-load: vindo do QR code (com tipo) → verifica direto
-//            sem tipo (alguém colou só ?id=) → pede pra escolher tipo
-if (urlCode) {
-  if (urlTipo) {
-    verificar(urlCode, urlTipo);
-  } else {
-    pedirTipo(urlCode);
-  }
+// Auto-load
+if (urlUuid) {
+  // QR novo (Migration 014+): UUID v4 dedicado
+  verificarUuid(urlUuid);
+} else if (urlCodigoLegacy) {
+  // QR antigo: PDF gerado antes da Migration 014.
+  // Não temos endpoint pra resolver. Mostra mensagem amigável.
+  document.getElementById('invalid-code').textContent =
+    urlCodigoLegacy + ' (formato legado — solicite PDF novo)';
+  showState('state-invalid');
 } else {
+  // Sem param: usuário entrou direto na página, mostra busca manual
   document.getElementById('invalid-card').style.display = 'none';
   showState('state-invalid');
 }
