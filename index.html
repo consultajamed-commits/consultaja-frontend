@@ -839,6 +839,13 @@ footer{
   .hero-left{padding:60px 24px 32px}
   .hero-right{padding:0 24px 60px}
   .phone-frame{width:240px}
+
+  /* Fix S23 Ultra (412px) — texto e número grande não estourar viewport */
+  h1{font-size:clamp(40px,9vw,60px);letter-spacing:-1.5px}
+  .hero-sub{max-width:100%;font-size:16px}
+  .preco-val{font-size:64px;letter-spacing:-2px}
+  .preco-val sup{font-size:24px}
+
   .hero-stats{gap:20px;flex-wrap:wrap}
   .section,.diff,.preco,.faq,.final,.equipe,.depo{padding:64px 24px}
   .steps{grid-template-columns:1fr}
@@ -852,6 +859,21 @@ footer{
   footer{padding:24px 20px;flex-direction:column;align-items:flex-start}
   .preco-card{padding:40px 28px}
   .side-panel{padding:80px 28px 28px}
+}
+
+/* Celulares estreitos (≤480px) — Pixel/Galaxy/iPhone padrão */
+@media(max-width:480px){
+  .hero-left{padding:48px 18px 24px}
+  .hero-right{padding:0 18px 48px}
+  .hero-sub{font-size:15px;line-height:1.55}
+  .hero-stats{gap:14px;flex-direction:column;align-items:flex-start;padding:12px 0}
+  .section,.diff,.preco,.faq,.final,.equipe,.depo{padding:56px 18px}
+  .preco-card{padding:32px 20px;max-width:100%}
+  .preco-val{font-size:56px;letter-spacing:-1.5px}
+  .preco-val sup{font-size:20px}
+  .doctors-avatars{gap:0}
+  .doc-av-img{width:32px;height:32px;margin-left:-8px}
+  footer{padding:24px 18px}
 }
 </style>
 </head>
