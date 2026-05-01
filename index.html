@@ -21,6 +21,29 @@
      localStorage 'cj-theme' — todas as páginas herdam a preferência. -->
 <link rel="stylesheet" href="css/theme.css">
 <link rel="stylesheet" href="css/components.css">
+
+<!-- ── PWA ──
+     manifest.json + ícone vetorial + cor da barra de status no celular.
+     Permite paciente "Adicionar à tela inicial" e usar como app instalado. -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0A6640">
+<link rel="icon" type="image/svg+xml" href="/img/icon.svg">
+<link rel="apple-touch-icon" href="/img/icon.svg">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ConsultaJá">
+
+<!-- Service Worker — cache de assets estáticos + offline da landing.
+     NUNCA cacheia chamadas de API (Railway, n8n, MP, Supabase) por privacidade. -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(err => console.warn('SW falhou:', err));
+  });
+}
+</script>
+
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}

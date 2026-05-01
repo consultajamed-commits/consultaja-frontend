@@ -1,0 +1,28 @@
+{
+  "name": "ConsultaJá! — Telemedicina",
+  "short_name": "ConsultaJá",
+  "description": "Consulta médica em minutos, pelo celular. Telemedicina regulamentada (Lei 14.510/2022).",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7FAF8",
+  "theme_color": "#0A6640",
+  "categories": ["health", "medical", "lifestyle"],
+  "icons": [
+    {
+      "src": "img/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
