@@ -141,22 +141,7 @@ body{font-family:'DM Sans',sans-serif;line-height:1.6;overflow:hidden;height:100
 }
 .btn-logout:hover{border-color:var(--danger);color:var(--danger)}
 
-/* VIDaaS button */
-.btn-vidaas{
-  font-size:12px;font-weight:600;
-  background:var(--warning-bg);color:var(--warning);
-  border:1px solid #fde68a;
-  padding:6px 14px;border-radius:100px;
-  cursor:pointer;font-family:'DM Sans',sans-serif;
-  display:flex;align-items:center;gap:6px;
-  transition:all .2s;
-}
-.btn-vidaas:hover{background:#fde68a}
-.btn-vidaas.active-sig{
-  background:var(--success-bg);color:var(--success);
-  border-color:#a7f3d0;cursor:default;
-}
-.btn-vidaas.active-sig:hover{background:var(--success-bg)}
+/* .btn-vidaas + .active-sig migrados pra .cj-btn-warning.cj-btn-xs ↔ .cj-btn-success.cj-btn-xs (components.css) */
 
 /* Hamburger mobile (escondido em desktop) */
 .dash-menu-toggle{
@@ -600,17 +585,7 @@ body{font-family:'DM Sans',sans-serif;line-height:1.6;overflow:hidden;height:100
 .soap-save-status.saving{color:var(--warning)}
 .soap-save-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
 
-.soap-btn-primary{
-  padding:12px 22px;
-  background:var(--green);color:#fff;
-  border:none;border-radius:100px;
-  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
-  cursor:pointer;display:flex;align-items:center;gap:8px;
-  transition:background .15s,transform .1s;
-  box-shadow:0 2px 8px rgba(10,102,64,.2);
-}
-.soap-btn-primary:hover:not(:disabled){background:var(--green2);transform:translateY(-1px)}
-.soap-btn-primary:disabled{opacity:.6;cursor:not-allowed}
+/* .soap-btn-primary migrado pra .cj-btn-primary.cj-btn-sm (components.css) */
 
 .soap-atestado-disabled{opacity:.45;pointer-events:none}
 
