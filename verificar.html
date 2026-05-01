@@ -787,13 +787,42 @@ async function verificarUuid(verificacaoUuid) {
   }
 }
 
+// Endpoint legacy: PDFs pré-Migration 014 (formato CJ-{timestamp} + tipo).
+// Cobre QR antigos (ex: atestado da Bianca emitido antes 01/05/2026).
+async function verificarLegacy(codigo, tipo) {
+  const codeClean = (codigo || '').trim();
+  if (!codeClean) return;
+
+  showState('state-loading');
+
+  try {
+    const qs = new URLSearchParams({ codigo: codeClean, tipo: (tipo || '').trim() });
+    const url = `${RAILWAY_API}/verificar?${qs.toString()}`;
+    const resp = await fetch(url);
+    const data = await resp.json().catch(() => ({}));
+
+    if (resp.ok && data && data.encontrado) {
+      renderValido(codeClean, data);
+    } else {
+      document.getElementById('invalid-code').textContent = codeClean;
+      showState('state-invalid');
+    }
+  } catch (err) {
+    document.getElementById('invalid-code').textContent = 'erro de conexão';
+    showState('state-invalid');
+  }
+}
+
 function buscaManualSubmit(rawValue) {
   const clean = (rawValue || '').trim();
   if (!clean) return;
-  // Aceita só UUIDs (formato novo). Códigos CJ-... antigos não são suportados
-  // — paciente precisa solicitar PDF novo.
+  // Auto-detecta formato: UUID v4 (Migration 014+) ou CJ-{timestamp} (legacy)
   if (UUID_RE.test(clean)) {
     verificarUuid(clean);
+  } else if (/^CJ-/i.test(clean)) {
+    // Manual: usuário não escolheu tipo, busca sem filtro de tipo
+    // (endpoint legacy retorna o primeiro documento encontrado)
+    verificarLegacy(clean.toUpperCase(), '');
   } else {
     document.getElementById('invalid-code').textContent = clean;
     showState('state-invalid');
@@ -822,11 +851,9 @@ if (urlUuid) {
   // QR novo (Migration 014+): UUID v4 dedicado
   verificarUuid(urlUuid);
 } else if (urlCodigoLegacy) {
-  // QR antigo: PDF gerado antes da Migration 014.
-  // Não temos endpoint pra resolver. Mostra mensagem amigável.
-  document.getElementById('invalid-code').textContent =
-    urlCodigoLegacy + ' (formato legado — solicite PDF novo)';
-  showState('state-invalid');
+  // QR antigo (pré-Migration 014): chama endpoint legacy do Railway.
+  // Cobre Bianca + qualquer PDF emitido antes 01/05/2026.
+  verificarLegacy(urlCodigoLegacy.toUpperCase(), urlTipoLegacy);
 } else {
   // Sem param: usuário entrou direto na página, mostra busca manual
   document.getElementById('invalid-card').style.display = 'none';
