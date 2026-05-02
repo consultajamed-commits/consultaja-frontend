@@ -2212,7 +2212,24 @@ function mostrarDigitando() {
   _scrollChatPraFim(chat);
 }
 
+// Agenda mostrarDigitando pra daqui N ms — usado em enviarMensagem pra
+// não mostrar a bolha "digitando…" imediato (sensação de IA). Janela
+// 1.0–2.5s simula "médico viu mensagem e começou a digitar".
+let _digitandoAgendado = null;
+function agendarMostrarDigitando(minMs = 1000, maxMs = 2500) {
+  cancelarMostrarDigitando();
+  const delay = minMs + Math.random() * (maxMs - minMs);
+  _digitandoAgendado = setTimeout(() => {
+    _digitandoAgendado = null;
+    mostrarDigitando();
+  }, delay);
+}
+function cancelarMostrarDigitando() {
+  if (_digitandoAgendado) { clearTimeout(_digitandoAgendado); _digitandoAgendado = null; }
+}
+
 function esconderDigitando() {
+  cancelarMostrarDigitando();
   const el = document.getElementById('digitando-bolha');
   if (el) el.remove();
 }
@@ -2256,9 +2273,11 @@ async function enviarMensagem() {
   inputErro.classList.remove('show');
   inputTexto.value = '';
 
-  // Render otimista: msg paciente + bolha "digitando..." aparecem imediato
+  // Render otimista da msg do paciente é imediato. Bolha "digitando…" só
+  // aparece após 1-2.5s — pausa simula médico lendo antes de começar a
+  // digitar (vs "digitando" instantâneo dá sensação de IA).
   renderOtimistaPaciente(txt);
-  mostrarDigitando();
+  agendarMostrarDigitando(1000, 2500);
 
   // Pausa polling automático pra não atrapalhar a animação (alvo máx ~5.5s
   // de "digitando" + folga pra fetchMe e render)
