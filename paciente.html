@@ -395,6 +395,29 @@ nav{
 .msg .msg-caption{
   margin-top:6px;font-size:13.5px;line-height:1.4;
 }
+/* Balão de documento (PDF) — laudos, exames anexados pelo paciente */
+.msg-midia-doc{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:10px;
+  background:var(--chat-bg);text-decoration:none;color:inherit;
+  min-width:200px;max-width:280px;
+  transition:background .15s ease;
+}
+.msg-midia-doc:hover{filter:brightness(1.08)}
+.msg-midia-doc-icon{
+  flex:0 0 auto;width:32px;height:40px;
+  display:flex;align-items:center;justify-content:center;
+  background:#E63946;color:#fff;border-radius:4px;
+  font-size:10px;font-weight:700;letter-spacing:.5px;
+}
+.msg-midia-doc-info{flex:1;min-width:0}
+.msg-midia-doc-nome{
+  font-size:13.5px;font-weight:500;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.msg-midia-doc-tam{
+  font-size:11px;color:var(--muted);margin-top:2px;
+}
 .input-erro{
   font-size:12px;color:var(--danger);
   padding:6px 18px 0;text-align:center;
@@ -827,10 +850,18 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
     <span class="logo-dot"></span>
     ConsultaJá!
   </a>
-  <span class="nav-status" id="navStatus">
-    <span class="live-dot" id="liveDot"></span>
-    <span id="liveText">Conectando...</span>
-  </span>
+  <div class="nav-right">
+    <a href="paciente.html" class="nav-painel-link" id="btnVoltarPainel" style="display:none" title="Voltar para minhas consultas">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+        <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Minhas consultas
+    </a>
+    <span class="nav-status" id="navStatus">
+      <span class="live-dot" id="liveDot"></span>
+      <span id="liveText">Conectando...</span>
+    </span>
+  </div>
 </nav>
 
 <!-- Estado: carregando -->
@@ -1099,6 +1130,13 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
         </svg>
         Galeria
       </button>
+      <button type="button" id="menuDocumento">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M14 3v6h6M9 13h6M9 17h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        Documento
+      </button>
       <!--
         Botão "Áudio" desativado: caso de uso (relato falado do paciente)
         será coberto pela fase de videochamada síncrona. Áudio assíncrono +
@@ -1118,8 +1156,9 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
 
     <!-- Inputs file invisíveis. capture="environment" abre câmera traseira no
          mobile; sem capture abre file picker (galeria + arquivos) -->
-    <input id="fileCamera"  type="file" accept="image/*" capture="environment" style="display:none">
-    <input id="fileGaleria" type="file" accept="image/*"                       style="display:none">
+    <input id="fileCamera"   type="file" accept="image/*" capture="environment" style="display:none">
+    <input id="fileGaleria"  type="file" accept="image/*"                       style="display:none">
+    <input id="fileDocumento" type="file" accept="application/pdf"              style="display:none">
 
     <input id="inputTexto" type="text" maxlength="2000"
            placeholder="Digite sua mensagem..." autocomplete="off">
@@ -1439,11 +1478,24 @@ function render(data) {
         bodyHtml =
           `<audio class="msg-midia-audio" src="${escapeHtml(m.media_url)}" controls preload="metadata"></audio>` +
           (cap ? `<div class="msg-caption">${escapeHtml(cap)}</div>` : '');
+      } else if (tipo === 'documento' && m.media_url) {
+        // PDF (laudo/exame). Caption guarda o nome original do arquivo.
+        const nome = (m.conteudo || 'Documento.pdf').trim();
+        const tam = m.media_size_bytes ? fmtTamanho(m.media_size_bytes) : 'PDF';
+        bodyHtml =
+          `<a class="msg-midia-doc" href="${escapeHtml(m.media_url)}" target="_blank" rel="noopener">` +
+            `<div class="msg-midia-doc-icon">PDF</div>` +
+            `<div class="msg-midia-doc-info">` +
+              `<div class="msg-midia-doc-nome">${escapeHtml(nome)}</div>` +
+              `<div class="msg-midia-doc-tam">${escapeHtml(tam)}</div>` +
+            `</div>` +
+          `</a>`;
       } else if (tipo !== 'texto') {
         // Mídia sem media_url (ex: signed URL falhou no backend). Mostra
         // placeholder pro paciente saber que tem algo, mas pode dar refresh.
-        const rotulo = tipo === 'imagem' ? 'Imagem indisponível no momento'
-                     : tipo === 'audio'  ? 'Áudio indisponível no momento'
+        const rotulo = tipo === 'imagem'    ? 'Imagem indisponível no momento'
+                     : tipo === 'audio'     ? 'Áudio indisponível no momento'
+                     : tipo === 'documento' ? 'Documento indisponível no momento'
                      : 'Mídia indisponível';
         bodyHtml = `<em style="color:var(--muted);font-size:13px">${escapeHtml(rotulo)}</em>`;
       } else {
@@ -1839,6 +1891,51 @@ menuGaleria.addEventListener('click', () => {
 });
 fileGaleria.addEventListener('change', () => _processarFotoSelecionada(fileGaleria));
 
+// ── Documento (PDF: laudo, exame, prescrição externa) ──
+const fileDocumento = document.getElementById('fileDocumento');
+const menuDocumento = document.getElementById('menuDocumento');
+const LIMITE_DOC_BYTES = 10 * 1024 * 1024;
+
+function fmtTamanho(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+}
+
+async function _processarDocumentoSelecionado(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  input.value = '';
+
+  if (file.type !== 'application/pdf') {
+    mostrarErro('Apenas PDF é aceito como documento.');
+    return;
+  }
+  if (file.size > LIMITE_DOC_BYTES) {
+    mostrarErro(`Arquivo muito grande (${fmtTamanho(file.size)}). Limite: 10 MB.`);
+    return;
+  }
+
+  // Sem preview overlay — PDF não cabe pré-visualizar inline. Upload direto;
+  // render otimista no chat já indica "enviando…".
+  await _enviarMidiaUpload({
+    blob: file,
+    mime: 'application/pdf',
+    tipo: 'documento',
+    caption: file.name || 'documento.pdf',
+    objectUrl: null,
+  });
+}
+
+if (menuDocumento) {
+  menuDocumento.addEventListener('click', () => {
+    fecharMidiaMenu();
+    fileDocumento.value = '';
+    fileDocumento.click();
+  });
+  fileDocumento.addEventListener('change', () => _processarDocumentoSelecionado(fileDocumento));
+}
+
 // ── Preview compartilhado (foto + áudio) ──
 
 function abrirPreview({ blob, mime, tipo, titulo }) {
@@ -1932,10 +2029,11 @@ async function _enviarMidiaUpload({ blob, mime, tipo, caption, objectUrl }) {
   pausaPollingAteMs = Date.now() + 12000;
 
   try {
-    const ext = mime === 'image/jpeg' ? 'jpg'
-              : mime === 'audio/webm' ? 'webm'
-              : mime === 'audio/mp4'  ? 'm4a'
-              : mime === 'audio/ogg'  ? 'ogg'
+    const ext = mime === 'image/jpeg'      ? 'jpg'
+              : mime === 'audio/webm'      ? 'webm'
+              : mime === 'audio/mp4'       ? 'm4a'
+              : mime === 'audio/ogg'       ? 'ogg'
+              : mime === 'application/pdf' ? 'pdf'
               : 'bin';
     const fd = new FormData();
     fd.append('file', blob, `upload.${ext}`);
@@ -2025,10 +2123,26 @@ function renderOtimistaMidia(otimistaId, tipo, objectUrl, caption) {
   let inner;
   if (tipo === 'imagem') {
     inner = `<img class="msg-midia-img" src="${objectUrl}" alt="">`;
+  } else if (tipo === 'documento') {
+    // Caption pra documento = nome do arquivo. Sem link funcional ainda
+    // (objectUrl seria revogado quando upload terminar). Render real
+    // substitui assim que o /me responder com signed URL.
+    const nome = caption || 'Documento.pdf';
+    inner = `<div class="msg-midia-doc">
+      <div class="msg-midia-doc-icon">PDF</div>
+      <div class="msg-midia-doc-info">
+        <div class="msg-midia-doc-nome">${escapeHtml(nome)}</div>
+        <div class="msg-midia-doc-tam">enviando…</div>
+      </div>
+    </div>`;
   } else {
     inner = `<audio class="msg-midia-audio" src="${objectUrl}" controls preload="metadata"></audio>`;
   }
-  if (caption) inner += `<div class="msg-caption">${escapeHtml(caption)}</div>`;
+  // Caption só vai pro corpo da bolha quando NÃO é documento (pra documento,
+  // o nome já apareceu dentro do balão acima).
+  if (caption && tipo !== 'documento') {
+    inner += `<div class="msg-caption">${escapeHtml(caption)}</div>`;
+  }
   inner += `<div class="msg-meta">${time} · enviando…</div>`;
   div.innerHTML = inner;
   chat.appendChild(div);
@@ -3165,15 +3279,18 @@ if (btnDocsVoltar) {
 function bootstrap() {
   // Indicador "live" só faz sentido no modo chat — esconde nav fora dele
   const navStatus = document.getElementById('navStatus');
+  const btnVoltarPainel = document.getElementById('btnVoltarPainel');
 
   if (token) {
     // Modo CHAT (link com ?t=) — fluxo antigo, intocado
     if (navStatus) navStatus.style.display = '';
+    if (btnVoltarPainel) btnVoltarPainel.style.display = 'inline-flex';
     startPolling();
     return;
   }
 
   if (navStatus) navStatus.style.display = 'none';
+  if (btnVoltarPainel) btnVoltarPainel.style.display = 'none';
 
   const hash = (window.location.hash || '').replace('#', '').toLowerCase();
   const sess = getSession();
