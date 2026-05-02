@@ -396,13 +396,95 @@ select.cj-input{
 .online-dot{width:7px;height:7px;border-radius:50%;background:var(--green3);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
 
+/* ── Componentes mobile-only — ocultos por default no desktop ── */
+.summary-mobile-bar{display:none}
+.trust-row-mobile{display:none}
+.summary-toggle{
+  /* No desktop: <summary> não aparece, <details> sempre comporta como aberto.
+     Como o atributo `open` está hardcoded no HTML, basta esconder o toggle. */
+  display:none;
+}
+.summary-details{display:block}
+
 /* ── RESPONSIVE ── */
 @media(max-width:780px){
   nav{padding:14px 20px}
   .steps-bar .step-pip .label{display:none}
   main{grid-template-columns:1fr;padding:24px 16px;gap:32px}
-  .summary-col{position:static;order:-1}
+  /* No mobile, o resumo desce pro fim da página (depois do botão).
+     order default 0 já é maior que o do form-col (que mantém 0 também),
+     mas como flex/grid só permite reorder via display flex, usamos a
+     ordem natural do DOM: form-col vem antes (ok) e summary-col fica abaixo. */
+  .summary-col{position:static;order:1}
+  .form-col{order:0}
   .field-row{grid-template-columns:1fr}
+
+  /* Mini-resumo sticky logo abaixo do nav */
+  .summary-mobile-bar{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    position:sticky;top:0;z-index:10;
+    height:44px;padding:0 16px;
+    background:var(--surface);
+    -webkit-backdrop-filter:blur(8px);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--border);
+    font-size:13px;color:var(--ink2);font-weight:500;
+    letter-spacing:-.1px;
+    /* Fallback pra iOS Safari quando backdrop-filter falha */
+    background-color:var(--surface);
+  }
+  .summary-mobile-bar .smb-product{color:var(--ink2)}
+  .summary-mobile-bar .smb-price{color:var(--ink);font-weight:700}
+  .summary-mobile-bar .smb-sep{color:var(--muted);opacity:.6}
+  .summary-mobile-bar .smb-icp{
+    display:inline-flex;align-items:center;gap:4px;
+    color:var(--green);font-weight:600;
+  }
+
+  /* Trust row compacta horizontal abaixo do botão Pagar */
+  .trust-row-mobile{
+    display:flex;align-items:center;justify-content:center;
+    gap:8px;flex-wrap:wrap;
+    margin-top:14px;
+    font-size:11px;color:var(--muted);
+    line-height:1.4;
+  }
+  .trust-row-mobile .trm-item{
+    display:inline-flex;align-items:center;gap:4px;
+    white-space:nowrap;
+  }
+  .trust-row-mobile .trm-item svg{color:var(--green);flex-shrink:0}
+  .trust-row-mobile .trm-sep{color:var(--border)}
+
+  /* Accordion: <summary> visível como botão clicável */
+  .summary-toggle{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    cursor:pointer;
+    font-size:14px;font-weight:600;color:var(--ink);
+    list-style:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .summary-toggle::-webkit-details-marker{display:none}
+  .summary-toggle::marker{content:''}
+  .summary-toggle:focus-visible{
+    outline:2px solid var(--green);outline-offset:2px;
+  }
+  .summary-toggle-chevron{
+    color:var(--muted);
+    transition:transform .2s ease;
+  }
+  .summary-details[open] > .summary-toggle .summary-toggle-chevron{
+    transform:rotate(180deg);
+  }
+  .summary-details[open] > .summary-toggle{
+    margin-bottom:12px;
+  }
+  /* No mobile, força fechar por default via JS no load (remove atributo `open`).
+     Mantém o atributo no HTML pra desktop nunca quebrar caso JS falhe. */
 }
 </style>
 </head>
@@ -420,6 +502,35 @@ function cjToggleTheme(){
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('cj-theme', next);
 }
+
+// Accordion mobile: o <details> fica `open` no HTML pra desktop nunca quebrar.
+// No mobile (≤780px), removemos `open` pra forçar accordion fechado por default.
+// Sincroniza no load e em resize.
+(function syncSummaryAccordion(){
+  const mql = window.matchMedia('(max-width:780px)');
+  function apply(){
+    const det = document.querySelector('.summary-details');
+    if(!det) return;
+    if(mql.matches){
+      // Mobile: só fecha na primeira aplicação. Depois respeita escolha do user.
+      if(!det.dataset.mobileInit){
+        det.removeAttribute('open');
+        det.dataset.mobileInit = '1';
+      }
+    } else {
+      // Desktop: sempre aberto.
+      det.setAttribute('open','');
+      delete det.dataset.mobileInit;
+    }
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', apply);
+  } else {
+    apply();
+  }
+  if(mql.addEventListener) mql.addEventListener('change', apply);
+  else if(mql.addListener) mql.addListener(apply);
+})();
 </script>
 
 <!-- NAV -->
@@ -445,6 +556,18 @@ function cjToggleTheme(){
     </div>
   </div>
 </nav>
+
+<!-- Mini-resumo sticky (apenas mobile) — sempre visível abaixo do nav -->
+<div class="summary-mobile-bar" aria-hidden="false">
+  <span class="smb-product">Consulta médica</span>
+  <span class="smb-sep">·</span>
+  <span class="smb-price">R$ 49,90</span>
+  <span class="smb-sep">·</span>
+  <span class="smb-icp">
+    <svg width="11" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><rect x="1.5" y="3.5" width="10" height="8" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M4 3.5V3a2.5 2.5 0 015 0v.5" stroke="currentColor" stroke-width="1.1"/></svg>
+    ICP-Brasil
+  </span>
+</div>
 
 <main>
 
@@ -622,11 +745,34 @@ function cjToggleTheme(){
         Ambiente seguro · Seus dados nunca são compartilhados
       </div>
 
+      <!-- Trust row compacta — só aparece no mobile (CSS) -->
+      <div class="trust-row-mobile" aria-hidden="false">
+        <span class="trm-item">
+          <svg width="11" height="11" viewBox="0 0 13 13" fill="none" aria-hidden="true"><rect x="1.5" y="3.5" width="10" height="8" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M4 3.5V3a2.5 2.5 0 015 0v.5" stroke="currentColor" stroke-width="1.1"/></svg>
+          Pagamento seguro
+        </span>
+        <span class="trm-sep" aria-hidden="true">·</span>
+        <span class="trm-item">
+          <svg width="11" height="11" viewBox="0 0 13 13" fill="none" aria-hidden="true"><path d="M6.5 1l1.3 2.6 2.9.4-2.1 2 .5 2.9L6.5 7.4 4.4 8.9l.5-2.9-2.1-2 2.9-.4z" stroke="currentColor" stroke-width="1"/></svg>
+          Em minutos
+        </span>
+        <span class="trm-sep" aria-hidden="true">·</span>
+        <span class="trm-item">
+          <svg width="11" height="11" viewBox="0 0 13 13" fill="none" aria-hidden="true"><path d="M2 6.5l3 3 6-6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Conduta médica
+        </span>
+      </div>
+
     </form>
   </div>
 
   <!-- RESUMO -->
   <div class="summary-col">
+    <details class="summary-details" open>
+      <summary class="summary-toggle">
+        <span class="summary-toggle-text">Ver detalhes da consulta</span>
+        <svg class="summary-toggle-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
     <div class="summary-card cj-card cj-card-lg cj-card-flush">
       <div class="summary-header">
         <div class="summary-product">Consulta médica online</div>
@@ -689,6 +835,7 @@ function cjToggleTheme(){
         </div>
       </div>
     </div>
+    </details>
   </div>
 
 </main>
