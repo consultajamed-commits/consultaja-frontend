@@ -2268,7 +2268,9 @@ async function enviarMensagem() {
   const txt = (inputTexto.value || '').trim();
   if (!txt) return;
 
-  inputTexto.disabled = true;
+  // Só desabilita o botão (impede envio duplo). Input fica livre pra
+  // paciente já digitar a próxima enquanto espera IA — UX humana, sem
+  // a sensação de "trava" que duplica com a bolha "digitando…".
   btnEnviar.disabled = true;
   inputErro.classList.remove('show');
   inputTexto.value = '';
@@ -2342,7 +2344,6 @@ async function enviarMensagem() {
     mostrarErro('Não foi possível enviar agora. Tente novamente.');
   } finally {
     pausaPollingAteMs = 0;  // libera polling normal
-    inputTexto.disabled = false;
     btnEnviar.disabled = false;
     if (!inputTexto.matches(':focus')) inputTexto.focus();
   }
@@ -2352,6 +2353,7 @@ btnEnviar.addEventListener('click', enviarMensagem);
 inputTexto.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
+    if (btnEnviar.disabled) return;  // espera envio anterior terminar
     enviarMensagem();
   }
 });
