@@ -49,6 +49,22 @@ if ('serviceWorker' in navigator) {
 html{scroll-behavior:smooth}
 body{font-family:'DM Sans',sans-serif;line-height:1.6;overflow-x:hidden}
 
+/* ── Tokens locais p/ animações shimmer + border-beam ──
+   Sobrescreve no escopo do index. Light: brilho mais escuro/saturado pra
+   visibilidade contra fundo pale. Dark: brilho claro com transparência. */
+:root,[data-theme="light"]{
+  --shimmer-from: rgba(10, 102, 64, 0.30);
+  --shimmer-to:   rgba(255, 255, 255, 0.95);
+  --beam-from:    rgba(10, 102, 64, 0);
+  --beam-to:      rgba(18, 184, 112, 0.95);
+}
+[data-theme="dark"]{
+  --shimmer-from: rgba(75, 228, 166, 0.55);
+  --shimmer-to:   rgba(255, 255, 255, 1);
+  --beam-from:    rgba(75, 228, 166, 0);
+  --beam-to:      rgba(75, 228, 166, 0.85);
+}
+
 /* ── NAV ── */
 nav{
   position:fixed;top:0;left:0;right:0;z-index:100;
@@ -215,6 +231,35 @@ nav{
   background:var(--green3);
   animation:blink 1.5s infinite;
 }
+/* ── Animated shiny text on pill ──
+   Gradient claro varre o texto da esquerda pra direita em loop.
+   Usa background-clip: text + color: transparent. Fallback: cor sólida
+   herdada de .pill (var(--green)). Pulse antigo (.pill-pulse) preservado. */
+.pill-text{
+  background:linear-gradient(
+    90deg,
+    var(--green) 0%,
+    var(--green) 35%,
+    var(--shimmer-from) 50%,
+    var(--shimmer-to) 55%,
+    var(--green) 70%,
+    var(--green) 100%
+  );
+  background-size:200% 100%;
+  background-position:100% 0;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  color:transparent;
+  animation:pillShimmer 3s linear infinite;
+}
+@keyframes pillShimmer{
+  0%{background-position:100% 0}
+  100%{background-position:-100% 0}
+}
+@media (prefers-reduced-motion:reduce){
+  .pill-text{animation:none;-webkit-text-fill-color:var(--green);color:var(--green)}
+}
 
 h1{
   font-family:'Bricolage Grotesque',sans-serif;
@@ -330,6 +375,53 @@ h1 .line2{display:block;font-weight:400;font-style:italic;color:var(--ink2)}
   overflow:hidden;
   position:relative;
   opacity:0;animation:fadeUp .7s .4s forwards;
+}
+/* ── Border beam ──
+   Luz percorrendo a borda do phone-frame. Pseudo-elemento posicionado
+   absoluto, conic-gradient rotacionando, mask recortando o miolo pra ficar
+   só no perímetro. Não interfere com conteúdo interno (pointer-events:none).
+   Velocidade: 6s por volta. */
+.phone-frame::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  padding:1.5px;
+  background:conic-gradient(
+    from var(--beam-angle, 0deg),
+    var(--beam-from) 0deg,
+    var(--beam-from) 270deg,
+    var(--beam-to) 330deg,
+    var(--beam-from) 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+          mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+          mask-composite:exclude;
+  pointer-events:none;
+  z-index:3;
+  animation:beamSpin 6s linear infinite;
+}
+/* Property pra animar conic-gradient angle (Houdini, suportado em
+   Chrome/Edge/Safari/Firefox modernos). Fallback degrada gracioso:
+   sem animação, beam fica estático no canto — discreto, não quebra. */
+@property --beam-angle{
+  syntax:'<angle>';
+  inherits:false;
+  initial-value:0deg;
+}
+@keyframes beamSpin{
+  to{--beam-angle:360deg}
+}
+@media (prefers-reduced-motion:reduce){
+  .phone-frame::before{animation:none;display:none}
+}
+@media (max-width:480px){
+  .phone-frame::before{display:none}
 }
 .phone-notch{
   height:28px;background:var(--ink);
@@ -949,7 +1041,7 @@ footer{
   <div class="hero-left">
     <div class="pill">
       <span class="pill-pulse"></span>
-      Médicos disponíveis agora
+      <span class="pill-text">Médicos disponíveis agora</span>
     </div>
     <h1>
       Consulta médica<br>
@@ -989,7 +1081,7 @@ footer{
     <!-- STATS BAR -->
     <div class="hero-stats">
       <div class="hero-stat">
-        <div class="hero-stat-val"><span class="live-dot"></span> 3</div>
+        <div class="hero-stat-val"><span class="live-dot"></span> <span class="num-ticker" data-target="3">3</span></div>
         <div class="hero-stat-label">Médicos online</div>
       </div>
       <div class="hero-stat">
@@ -997,7 +1089,7 @@ footer{
         <div class="hero-stat-label">Início da consulta</div>
       </div>
       <div class="hero-stat">
-        <div class="hero-stat-val">1.200+</div>
+        <div class="hero-stat-val"><span class="num-ticker" data-target="1200">1.200</span>+</div>
         <div class="hero-stat-label">Consultas realizadas</div>
       </div>
     </div>
@@ -1419,6 +1511,56 @@ document.querySelectorAll('.side-panel a[href^="#"]').forEach(a=>{
     setTimeout(()=>{ if(document.getElementById('sidePanel').classList.contains('open')) toggleMenu(); },50);
   });
 });
+
+// ── Number ticker (hero-stats) ──
+// Anima 0 → target em ~1.5s (easeOutQuad). IntersectionObserver dispara 1x.
+// Preserva formatação pt-BR (1.247 = 1.247). prefers-reduced-motion: pula
+// pro valor final imediatamente. Disparo único — não reanima ao re-scroll.
+(function(){
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-color-scheme: no-preference)') &&
+                       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fmt = new Intl.NumberFormat('pt-BR');
+  const tickers = document.querySelectorAll('.num-ticker[data-target]');
+  if(!tickers.length) return;
+
+  function animate(el){
+    const target = parseInt(el.getAttribute('data-target'), 10);
+    if(!Number.isFinite(target)) return;
+    if(reduceMotion){
+      el.textContent = fmt.format(target);
+      return;
+    }
+    const duration = 1500;
+    const start = performance.now();
+    function tick(now){
+      const t = Math.min(1, (now - start) / duration);
+      // easeOutQuad: 1 - (1-t)^2
+      const eased = 1 - (1 - t) * (1 - t);
+      const cur = Math.round(target * eased);
+      el.textContent = fmt.format(cur);
+      if(t < 1) requestAnimationFrame(tick);
+      else el.textContent = fmt.format(target);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // Set initial state to 0 (formatado) ANTES do observer rodar — evita flash
+  tickers.forEach(el=>{
+    el.dataset.fired = '0';
+    el.textContent = fmt.format(0);
+  });
+
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting && entry.target.dataset.fired === '0'){
+        entry.target.dataset.fired = '1';
+        animate(entry.target);
+        io.unobserve(entry.target);
+      }
+    });
+  }, {threshold: 0.4});
+  tickers.forEach(el => io.observe(el));
+})();
 
 function toggleFaq(btn){
   const item=btn.closest('.faq-item');
