@@ -52,18 +52,17 @@ main{
   flex:1;display:flex;align-items:center;justify-content:center;
   padding:48px 24px;
   position:relative;
-  overflow:hidden;
-  isolation:isolate;
 }
 
 /* ── Aurora Background (#5) ────────────────────────────────────
    4 blobs grandes em radial-gradient, posicionados absolutos.
    Em light: tons claros sutis. Em dark: verde mais vivo.
-   Animação 24s flutuando devagar. */
+   Animação 24s flutuando devagar. Fixed pra cobrir o viewport
+   inteiro independente da altura do conteúdo. */
 .aurora{
-  position:absolute;inset:-15%;
+  position:fixed;inset:0;
   pointer-events:none;
-  z-index:0;
+  z-index:-1;
   overflow:hidden;
   filter:blur(90px);
   opacity:.85;
@@ -313,11 +312,12 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
   </a>
 </nav>
 
+<div class="aurora" aria-hidden="true">
+  <div class="aurora-b"></div>
+  <div class="aurora-c"></div>
+</div>
+
 <main>
-  <div class="aurora" aria-hidden="true">
-    <div class="aurora-b"></div>
-    <div class="aurora-c"></div>
-  </div>
   <div class="card cj-card cj-card-xl cj-card-shadow">
     <div class="check-circle">
       <span class="sparkle s1" aria-hidden="true"></span>
