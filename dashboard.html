@@ -2328,35 +2328,40 @@ const ZAPI_TOKEN = '87332EFD6AB3A5A23F2334E7';
 const ZAPI_CLIENT = 'Fb1711fd53ae14c568d65610729d95caeS';
 const ZAPI_BASE = `https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}`;
 
-// Webhook do n8n para comandos disparados pelo dashboard (botões #atender, #gerar, #aprovar).
-// Substitui o fluxo antigo de "digitar comando no chat" que vazava mensagens
-// internas para o WhatsApp do paciente e causava duplicatas.
-const DASHBOARD_WEBHOOK_URL = 'https://n8nconsultaja.duckdns.org/webhook/0db2858c-743e-4853-aa1f-a39f2c42c3fd';
+// Comandos do dashboard (#atender, #gerar, #aprovar) — POST autenticado no
+// Railway. Substitui o webhook n8n antigo (Sprint N5.1+5.2+5.3 da migração).
+// JWT do médico vai no Authorization: Bearer; backend valida + executa
+// pipeline correspondente (status update, SOAP generation, geração de PDFs +
+// Z-API outbound).
+const DASHBOARD_COMANDO_URL = 'https://web-production-0c606.up.railway.app/dashboard/comando';
 
-// Dispara um comando (#atender, #gerar, #aprovar, #editar) direto no workflow do n8n,
-// sem passar pelo Z-API e sem poluir o chat do paciente.
 async function enviarComandoDashboard(acao) {
   if (!currentConsulta || !currentMedico) return { ok: false, error: 'Sem consulta ou médico ativo' };
+  if (!authToken) return { ok: false, error: 'sessão expirada — faça login de novo' };
   try {
-    const res = await fetch(DASHBOARD_WEBHOOK_URL, {
+    const res = await fetch(DASHBOARD_COMANDO_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${authToken}`,
+      },
       body: JSON.stringify({
         acao,
-        consulta_id: currentConsulta.id,
+        consulta_id:         currentConsulta.id,
         consulta_id_legivel: currentConsulta.consulta_id_legivel || '',
-        paciente_telefone: currentConsulta.paciente_telefone || '',
-        medico_crm: currentMedico.crm || '',
-        medico_id: currentMedico.id || ''
+        paciente_telefone:   currentConsulta.paciente_telefone || '',
+        medico_crm:          currentMedico.crm || '',
+        medico_id:           currentMedico.id || ''
       })
     });
-    if (!res.ok) {
-      console.error('Erro no webhook dashboard:', res.status, await res.text().catch(() => ''));
-      return { ok: false, error: `HTTP ${res.status}` };
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      console.error('Erro no comando dashboard:', res.status, data);
+      return { ok: false, error: data.erro || `HTTP ${res.status}` };
     }
-    return { ok: true };
+    return { ok: true, data };
   } catch(e) {
-    console.error('Falha ao chamar webhook dashboard:', e);
+    console.error('Falha ao chamar comando dashboard:', e);
     return { ok: false, error: e.message };
   }
 }
