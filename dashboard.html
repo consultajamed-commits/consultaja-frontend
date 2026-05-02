@@ -2691,19 +2691,29 @@ async function aprovarConsulta() {
   const consultaId = currentConsulta.id;
   if (acaoPendente[consultaId]) return;
 
+  // Trava o botão IMEDIATAMENTE pra evitar 2 modais sobrepostos quando o
+  // médico der double-click rápido (caso real reportado 02/05). Se cancelar,
+  // destrava abaixo. Se confirmar, segue o fluxo já travado.
+  setAcaoPendente(consultaId, 'aprovando');
+  renderActions(currentConsulta);
+  sincronizarBotaoSoapAprovar();
+
   const ok = await confirmarAcao({
     titulo: 'Aprovar e enviar consulta?',
     descricao: 'Os documentos (atestado e receituário) serão gerados, assinados via VIDaaS e enviados ao paciente por WhatsApp. Esta ação não pode ser desfeita.',
   });
-  if (!ok) return;
-
-  setAcaoPendente(consultaId, 'aprovando');
-  renderActions(currentConsulta);
+  if (!ok) {
+    limparAcaoPendente(consultaId);
+    renderActions(currentConsulta);
+    sincronizarBotaoSoapAprovar();
+    return;
+  }
 
   const r = await enviarComandoDashboard('aprovar');
   if (!r.ok) {
     limparAcaoPendente(consultaId);
     renderActions(currentConsulta);
+    sincronizarBotaoSoapAprovar();
     alert('Erro ao aprovar consulta: ' + (r.error || 'desconhecido'));
     return;
   }
@@ -2998,14 +3008,23 @@ async function soapAprovarEEnviar() {
   const consultaId = soapState.consultaId;
   if (acaoPendente[consultaId]) return; // guard duplo-clique
 
+  // Trava o botão IMEDIATAMENTE — se aguardarmos a confirmação pra travar,
+  // double-click rápido abre 2 modais e cada um dispara o backend (caso
+  // real reportado 02/05: documentos duplicados).
+  setAcaoPendente(consultaId, 'aprovando');
+  sincronizarBotaoSoapAprovar();
+  renderActions(currentConsulta);
+
   const ok = await confirmarAcao({
     titulo: 'Aprovar e enviar consulta?',
     descricao: 'O SOAP atual será salvo, os documentos (atestado e receituário) serão gerados, assinados via VIDaaS e enviados ao paciente por WhatsApp. Esta ação não pode ser desfeita.',
   });
-  if (!ok) return;
-
-  setAcaoPendente(consultaId, 'aprovando');
-  sincronizarBotaoSoapAprovar();
+  if (!ok) {
+    limparAcaoPendente(consultaId);
+    sincronizarBotaoSoapAprovar();
+    renderActions(currentConsulta);
+    return;
+  }
 
   try {
     // 1. Garantir que a versão final está salva no banco antes de chamar o workflow
