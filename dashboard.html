@@ -823,6 +823,29 @@ body{font-family:'DM Sans',sans-serif;line-height:1.6;overflow:hidden;height:100
 .chat-msg-erro-midia{
   font-style:italic;color:var(--muted);font-size:13px;
 }
+/* Balão de documento (PDF) — paciente envia laudo/exame, médico baixa */
+.chat-msg-midia-doc{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:8px;
+  background:var(--pale);text-decoration:none;color:inherit;
+  min-width:180px;max-width:240px;
+  transition:filter .15s ease;
+}
+.chat-msg-midia-doc:hover{filter:brightness(1.05)}
+.chat-msg-midia-doc-icon{
+  flex:0 0 auto;width:28px;height:34px;
+  display:flex;align-items:center;justify-content:center;
+  background:#E63946;color:#fff;border-radius:4px;
+  font-size:9px;font-weight:700;letter-spacing:.5px;
+}
+.chat-msg-midia-doc-info{flex:1;min-width:0}
+.chat-msg-midia-doc-nome{
+  font-size:13px;font-weight:500;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.chat-msg-midia-doc-tam{
+  font-size:10.5px;color:var(--muted);margin-top:2px;
+}
 
 /* FASE 6: badge "Análise IA" abaixo da imagem (paciente → médico).
    Cor distinta (lavanda/lilás) pra diferenciar de caption do paciente.
@@ -1795,10 +1818,12 @@ function renderMsg(m, mediaUrls = {}) {
   const tipo = m.tipo || 'texto';
   let body;
 
-  if (tipo === 'imagem' || tipo === 'audio') {
+  if (tipo === 'imagem' || tipo === 'audio' || tipo === 'documento') {
     const url = mediaUrls[m.media_path];
     const cap = (m.conteudo || '').trim();
-    const captionHtml = cap ? `<div class="chat-msg-caption">${_escapeHtmlMedico(cap)}</div>` : '';
+    const captionHtml = cap && tipo !== 'documento'
+      ? `<div class="chat-msg-caption">${_escapeHtmlMedico(cap)}</div>`
+      : '';
 
     // FASE 6: descrição clínica gerada por GPT-4o vision. Aparece SÓ pra
     // imagens recebidas DO PACIENTE (não pras enviadas pelo médico).
@@ -1816,8 +1841,21 @@ function renderMsg(m, mediaUrls = {}) {
 
     if (!url) {
       // Sem URL: signed URL falhou OU mensagem ainda sem path (otimista pré-render)
-      const rotulo = tipo === 'imagem' ? 'Imagem indisponível no momento' : 'Áudio indisponível no momento';
+      const rotulo = tipo === 'imagem'    ? 'Imagem indisponível no momento'
+                   : tipo === 'documento' ? 'Documento indisponível no momento'
+                   : 'Áudio indisponível no momento';
       body = `<div class="chat-msg-erro-midia">${rotulo}</div>${captionHtml}${iaDescHtml}`;
+    } else if (tipo === 'documento') {
+      // PDF — caption guarda o nome original do arquivo
+      const nome = cap || 'Documento.pdf';
+      const tam = m.media_size_bytes ? _fmtTamanhoMidia(m.media_size_bytes) : 'PDF';
+      body = `<a class="chat-msg-midia-doc" href="${_escapeHtmlMedico(url)}" target="_blank" rel="noopener">
+        <div class="chat-msg-midia-doc-icon">PDF</div>
+        <div class="chat-msg-midia-doc-info">
+          <div class="chat-msg-midia-doc-nome">${_escapeHtmlMedico(nome)}</div>
+          <div class="chat-msg-midia-doc-tam">${_escapeHtmlMedico(tam)}</div>
+        </div>
+      </a>`;
     } else if (tipo === 'imagem') {
       body = `<img class="chat-msg-midia-img" src="${_escapeHtmlMedico(url)}" alt="" loading="lazy">${captionHtml}${iaDescHtml}`;
     } else {
@@ -1841,6 +1879,13 @@ function _escapeHtmlMedico(s) {
   return String(s).replace(/[&<>"']/g, c => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
   ));
+}
+
+function _fmtTamanhoMidia(bytes) {
+  if (!bytes) return '';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1024 / 1024).toFixed(1) + ' MB';
 }
 
 // Scroll robusto: imagens carregam de forma assíncrona DEPOIS do innerHTML ser
