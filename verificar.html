@@ -117,6 +117,105 @@ body{
 @media (prefers-reduced-motion: reduce){
   .magnifier, .scan-pulse{ animation:none; }
 }
+
+/* ── ÓRBITAS (certificação digital ICP-Brasil) ── */
+.orbits{
+  position:fixed;
+  left:50%;
+  top:50%;
+  /* Alinha visualmente com a lupa (que está em y=540 no viewBox 900 = centro+10%) */
+  transform:translate(-50%, calc(-50% + 6vh));
+  width:0;height:0;
+  pointer-events:none;
+  z-index:0;
+}
+.orbit{
+  position:absolute;
+  left:0;top:0;
+  border-radius:50%;
+  border:1px dashed var(--border);
+  opacity:.55;
+}
+[data-theme="dark"] .orbit{ opacity:.4; }
+.orbit-1{
+  width:200px; height:200px;
+  margin-left:-100px; margin-top:-100px;
+  animation:orbitSpin 12s linear infinite;
+}
+.orbit-2{
+  width:320px; height:320px;
+  margin-left:-160px; margin-top:-160px;
+  animation:orbitSpinReverse 18s linear infinite;
+  opacity:.45;
+}
+.orbit-3{
+  width:440px; height:440px;
+  margin-left:-220px; margin-top:-220px;
+  animation:orbitSpinReverse 24s linear infinite;
+  opacity:.35;
+  border-color:var(--pale2);
+}
+[data-theme="dark"] .orbit-3{ border-color:var(--pale2); opacity:.3; }
+
+.orbit-dot{
+  position:absolute;
+  top:0; left:50%;
+  width:10px; height:10px;
+  margin-left:-5px;
+  margin-top:-5px;
+  border-radius:50%;
+  background:var(--green3);
+  box-shadow:
+    0 0 0 3px rgba(18,184,112,.12),
+    0 2px 8px rgba(10,102,64,.25);
+}
+[data-theme="dark"] .orbit-dot{
+  background:var(--green3);
+  box-shadow:
+    0 0 0 3px rgba(75,228,166,.10),
+    0 0 12px rgba(75,228,166,.35);
+}
+.orbit-dot.small{ width:7px; height:7px; margin-left:-3.5px; margin-top:-3.5px; opacity:.75; }
+.orbit-dot.alt{ background:var(--green); }
+[data-theme="dark"] .orbit-dot.alt{ background:var(--green2); }
+
+/* Posicionamento angular dos pontos via rotação do contêiner pai */
+.orbit-1 .orbit-dot:nth-child(1){ transform:rotate(0deg)   translateY(-100px) rotate(0deg); }
+.orbit-2 .orbit-dot:nth-child(1){ transform:rotate(40deg)  translateY(-160px) rotate(-40deg); }
+.orbit-2 .orbit-dot:nth-child(2){ transform:rotate(210deg) translateY(-160px) rotate(-210deg); }
+.orbit-3 .orbit-dot:nth-child(1){ transform:rotate(20deg)  translateY(-220px) rotate(-20deg); }
+.orbit-3 .orbit-dot:nth-child(2){ transform:rotate(140deg) translateY(-220px) rotate(-140deg); }
+.orbit-3 .orbit-dot:nth-child(3){ transform:rotate(265deg) translateY(-220px) rotate(-265deg); }
+
+@keyframes orbitSpin{
+  from{ transform:rotate(0deg); }
+  to{   transform:rotate(360deg); }
+}
+@keyframes orbitSpinReverse{
+  from{ transform:rotate(0deg); }
+  to{   transform:rotate(-360deg); }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .orbit-1, .orbit-2, .orbit-3{ animation:none; }
+}
+
+/* Mobile: encolher as órbitas pra caber sem poluir */
+@media (max-width:480px){
+  .orbits{ display:none; }
+}
+@media (min-width:481px) and (max-width:768px){
+  .orbit-1{ width:140px; height:140px; }
+  .orbit-1 .orbit-dot:nth-child(1){ transform:rotate(0deg) translateY(-70px) rotate(0deg); }
+  .orbit-2{ width:220px; height:220px; }
+  .orbit-2 .orbit-dot:nth-child(1){ transform:rotate(40deg)  translateY(-110px) rotate(-40deg); }
+  .orbit-2 .orbit-dot:nth-child(2){ transform:rotate(210deg) translateY(-110px) rotate(-210deg); }
+  .orbit-3{ width:300px; height:300px; }
+  .orbit-3 .orbit-dot:nth-child(1){ transform:rotate(20deg)  translateY(-150px) rotate(-20deg); }
+  .orbit-3 .orbit-dot:nth-child(2){ transform:rotate(140deg) translateY(-150px) rotate(-140deg); }
+  .orbit-3 .orbit-dot:nth-child(3){ transform:rotate(265deg) translateY(-150px) rotate(-265deg); }
+}
+
 /* Garantir que conteúdo fique acima do fundo */
 nav, main{ position:relative; z-index:1; }
 
@@ -498,6 +597,21 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
       </g>
     </g>
   </svg>
+  <!-- Órbitas concêntricas em volta da lupa: evoca certificação digital -->
+  <div class="orbits" aria-hidden="true">
+    <div class="orbit orbit-1">
+      <span class="orbit-dot"></span>
+    </div>
+    <div class="orbit orbit-2">
+      <span class="orbit-dot"></span>
+      <span class="orbit-dot small alt"></span>
+    </div>
+    <div class="orbit orbit-3">
+      <span class="orbit-dot small"></span>
+      <span class="orbit-dot alt"></span>
+      <span class="orbit-dot small"></span>
+    </div>
+  </div>
 </div>
 
 <!-- NAV -->

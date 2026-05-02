@@ -51,6 +51,79 @@ nav{
 main{
   flex:1;display:flex;align-items:center;justify-content:center;
   padding:48px 24px;
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+}
+
+/* ── Aurora Background (#5) ────────────────────────────────────
+   4 blobs grandes em radial-gradient, posicionados absolutos.
+   Em light: tons claros sutis. Em dark: verde mais vivo.
+   Animação 24s flutuando devagar. */
+.aurora{
+  position:absolute;inset:-15%;
+  pointer-events:none;
+  z-index:0;
+  overflow:hidden;
+  filter:blur(90px);
+  opacity:.85;
+}
+.aurora::before,
+.aurora::after,
+.aurora-b,
+.aurora-c{
+  content:"";
+  position:absolute;
+  border-radius:50%;
+  will-change:transform;
+}
+.aurora::before{
+  /* blob 1 — verde principal, top-left */
+  width:55vw;height:55vw;
+  top:-10%;left:-10%;
+  background:radial-gradient(circle, color-mix(in oklab, var(--green) 38%, transparent) 0%, transparent 65%);
+  animation:auroraFloat1 24s ease-in-out infinite;
+}
+.aurora::after{
+  /* blob 2 — verde claro, bottom-right */
+  width:60vw;height:60vw;
+  bottom:-15%;right:-12%;
+  background:radial-gradient(circle, color-mix(in oklab, var(--green3) 32%, transparent) 0%, transparent 65%);
+  animation:auroraFloat2 28s ease-in-out infinite;
+}
+.aurora-b{
+  /* blob 3 — pale tone, top-right */
+  width:45vw;height:45vw;
+  top:-5%;right:-5%;
+  background:radial-gradient(circle, color-mix(in oklab, var(--pale2) 80%, transparent) 0%, transparent 60%);
+  animation:auroraFloat3 22s ease-in-out infinite;
+}
+.aurora-c{
+  /* blob 4 — verde2, bottom-left center */
+  width:48vw;height:48vw;
+  bottom:-8%;left:15%;
+  background:radial-gradient(circle, color-mix(in oklab, var(--green2) 28%, transparent) 0%, transparent 65%);
+  animation:auroraFloat4 26s ease-in-out infinite;
+}
+[data-theme="dark"] .aurora{
+  opacity:.7;
+  filter:blur(110px);
+}
+@keyframes auroraFloat1{
+  0%,100%{transform:translate(0,0) scale(1)}
+  50%{transform:translate(6%,4%) scale(1.08)}
+}
+@keyframes auroraFloat2{
+  0%,100%{transform:translate(0,0) scale(1)}
+  50%{transform:translate(-5%,-3%) scale(1.05)}
+}
+@keyframes auroraFloat3{
+  0%,100%{transform:translate(0,0) scale(1)}
+  50%{transform:translate(-4%,5%) scale(1.06)}
+}
+@keyframes auroraFloat4{
+  0%,100%{transform:translate(0,0) scale(1)}
+  50%{transform:translate(5%,-4%) scale(1.07)}
 }
 
 /* base + sombra agora vem do .cj-card.cj-card-xl.cj-card-shadow (components.css) */
@@ -60,6 +133,8 @@ main{
   text-align:center;
   opacity:0;
   animation:cardIn .6s .1s forwards;
+  position:relative;
+  z-index:1;
 }
 @keyframes cardIn{
   from{opacity:0;transform:translateY(24px)}
@@ -73,12 +148,53 @@ main{
   display:flex;align-items:center;justify-content:center;
   margin:0 auto 28px;
   animation:popIn .5s .4s both;
+  position:relative;
 }
 @keyframes popIn{
   from{transform:scale(0)}
   to{transform:scale(1)}
 }
-.check-circle svg{color:var(--green)}
+.check-circle svg{color:var(--green);position:relative;z-index:2}
+
+/* ── Sparkles (#9) ─────────────────────────────────────────────
+   12 pontinhos brilhantes emanando do centro do .check-circle no
+   momento do popIn. Disparam UMA VEZ no load. */
+.sparkle{
+  position:absolute;
+  top:50%;left:50%;
+  width:8px;height:8px;
+  margin:-4px 0 0 -4px;
+  pointer-events:none;
+  opacity:0;
+  z-index:1;
+  background:radial-gradient(circle, var(--green3) 0%, color-mix(in oklab, var(--green3) 50%, transparent) 50%, transparent 80%);
+  border-radius:50%;
+  filter:blur(.3px);
+  animation:sparkleOut 1s ease-out forwards;
+}
+[data-theme="dark"] .sparkle{
+  background:radial-gradient(circle, #BFFADC 0%, color-mix(in oklab, var(--green3) 60%, transparent) 50%, transparent 80%);
+  box-shadow:0 0 8px color-mix(in oklab, var(--green3) 60%, transparent);
+}
+/* 12 sparkles dispostos em circle, ~30° entre si, distância e delay variando */
+.sparkle.s1 { --tx: 0px;     --ty: -52px;   animation-delay:.5s;  }
+.sparkle.s2 { --tx: 26px;    --ty: -45px;   animation-delay:.55s; }
+.sparkle.s3 { --tx: 45px;    --ty: -26px;   animation-delay:.6s;  }
+.sparkle.s4 { --tx: 52px;    --ty: 0px;     animation-delay:.65s; }
+.sparkle.s5 { --tx: 45px;    --ty: 26px;    animation-delay:.7s;  }
+.sparkle.s6 { --tx: 26px;    --ty: 45px;    animation-delay:.75s; }
+.sparkle.s7 { --tx: 0px;     --ty: 52px;    animation-delay:.8s;  }
+.sparkle.s8 { --tx: -26px;   --ty: 45px;    animation-delay:.85s; }
+.sparkle.s9 { --tx: -45px;   --ty: 26px;    animation-delay:.9s;  }
+.sparkle.s10{ --tx: -52px;   --ty: 0px;     animation-delay:.55s; }
+.sparkle.s11{ --tx: -45px;   --ty: -26px;   animation-delay:.6s;  }
+.sparkle.s12{ --tx: -26px;   --ty: -45px;   animation-delay:.65s; }
+@keyframes sparkleOut{
+  0%   {opacity:0; transform:translate(0,0) scale(.3)}
+  20%  {opacity:1; transform:translate(calc(var(--tx) * .3), calc(var(--ty) * .3)) scale(1.2)}
+  60%  {opacity:.9; transform:translate(calc(var(--tx) * .8), calc(var(--ty) * .8)) scale(1)}
+  100% {opacity:0; transform:translate(var(--tx), var(--ty)) scale(.4)}
+}
 
 .card-title{
   font-family:'Bricolage Grotesque',sans-serif;
@@ -168,6 +284,17 @@ footer{
   .card{padding:36px 24px}
   footer{padding:16px 20px}
 }
+
+/* ── prefers-reduced-motion ────────────────────────────────────
+   Aurora estática (mantém a presença visual sem flutuar) e
+   sparkles sem animação (ficam ocultos). */
+@media (prefers-reduced-motion: reduce){
+  .aurora::before,
+  .aurora::after,
+  .aurora-b,
+  .aurora-c{ animation:none !important; }
+  .sparkle{ animation:none !important; opacity:0 !important; }
+}
 </style>
 </head>
 <body>
@@ -187,8 +314,24 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
 </nav>
 
 <main>
+  <div class="aurora" aria-hidden="true">
+    <div class="aurora-b"></div>
+    <div class="aurora-c"></div>
+  </div>
   <div class="card cj-card cj-card-xl cj-card-shadow">
     <div class="check-circle">
+      <span class="sparkle s1" aria-hidden="true"></span>
+      <span class="sparkle s2" aria-hidden="true"></span>
+      <span class="sparkle s3" aria-hidden="true"></span>
+      <span class="sparkle s4" aria-hidden="true"></span>
+      <span class="sparkle s5" aria-hidden="true"></span>
+      <span class="sparkle s6" aria-hidden="true"></span>
+      <span class="sparkle s7" aria-hidden="true"></span>
+      <span class="sparkle s8" aria-hidden="true"></span>
+      <span class="sparkle s9" aria-hidden="true"></span>
+      <span class="sparkle s10" aria-hidden="true"></span>
+      <span class="sparkle s11" aria-hidden="true"></span>
+      <span class="sparkle s12" aria-hidden="true"></span>
       <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
         <path d="M7 18l7.5 7.5L29 11" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
