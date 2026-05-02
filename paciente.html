@@ -52,6 +52,26 @@ nav{
 .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green3);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
 .nav-status{font-size:12px;color:var(--muted)}
+.nav-right{
+  display:flex;align-items:center;gap:12px;
+  flex-wrap:wrap;justify-content:flex-end;
+}
+.nav-painel-link{
+  display:inline-flex;align-items:center;gap:6px;
+  height:32px;padding:0 12px;
+  font-family:'DM Sans',sans-serif;
+  font-size:12.5px;font-weight:600;line-height:1;
+  color:var(--green);background:var(--pale);
+  border:1px solid var(--pale2);border-radius:100px;
+  text-decoration:none;white-space:nowrap;
+  transition:background .15s,color .15s,border-color .15s,transform .1s;
+  -webkit-tap-highlight-color:transparent;
+}
+.nav-painel-link:hover{
+  background:var(--green);color:#fff;border-color:var(--green);
+  transform:translateY(-1px);
+}
+.nav-painel-link svg{flex-shrink:0;stroke:currentColor}
 
 /* ── HEADER ── */
 .header{
@@ -522,6 +542,10 @@ nav{
   .chat{padding:14px 10px 20px}
   .msg{max-width:88%;font-size:13.5px}
   .foot-info{padding:12px 14px;font-size:12.5px}
+  .nav-right{gap:8px}
+  .nav-painel-link{height:30px;padding:0 10px;font-size:12px}
+  .nav-painel-link .nav-painel-label{display:none}
+  .nav-status{font-size:11px}
 }
 
 /* ── FASE 4: LOGIN / MINHAS CONSULTAS / TROCAR SENHA ── */
@@ -851,11 +875,11 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
     ConsultaJá!
   </a>
   <div class="nav-right">
-    <a href="paciente.html" class="nav-painel-link" id="btnVoltarPainel" style="display:none" title="Voltar para minhas consultas">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+    <a href="paciente.html" class="nav-painel-link" id="btnVoltarPainel" style="display:none" title="Voltar para minhas consultas" aria-label="Voltar para minhas consultas">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      Minhas consultas
+      <span class="nav-painel-label">Minhas consultas</span>
     </a>
     <span class="nav-status" id="navStatus">
       <span class="live-dot" id="liveDot"></span>
