@@ -1567,9 +1567,26 @@ async function fetchMe() {
     if (!data.ok) throw new Error(data.erro || 'erro');
 
     render(data);
+    aplicarMedicoDigitando(data.consulta);
   } catch (e) {
     // erro de rede — não derruba a tela, marca como stale e tenta de novo no próximo tick
     setLive(false);
+  }
+}
+
+// Lê consulta.medico_digitando_ate (Migration 016, populado pelo dashboard
+// com debounce 500ms enquanto médico digita) e mostra/esconde a mesma bolha
+// "Dr. Matheus digitando..." que já existe pra IA. Não interfere durante a
+// fase pós-envio do paciente (pausaPollingAteMs), onde enviarMensagem
+// controla a bolha com timer próprio.
+function aplicarMedicoDigitando(consulta) {
+  if (!consulta) return;
+  if (Date.now() < pausaPollingAteMs) return;
+  const ate = consulta.medico_digitando_ate;
+  if (ate && new Date(ate).getTime() > Date.now()) {
+    mostrarDigitando();
+  } else {
+    esconderDigitando();
   }
 }
 

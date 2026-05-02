@@ -2462,6 +2462,40 @@ async function sendWhatsApp(phone, message) {
   } catch(e) { console.error('Z-API erro:', e); }
 }
 
+// ═══════════════ "MÉDICO ESTÁ DIGITANDO" ═══════════════
+// Debounce 500ms: cada keystroke agenda UPDATE de medico_digitando_ate.
+// TTL 5s pra cobrir pausas naturais entre palavras sem ficar "off". Quando
+// envia (sendMessage) ou troca de consulta, limpa pra null imediato.
+// paciente.html lê via /paciente/me (polling 5s) e mostra a bolha digitando.
+let _digitandoDebounce = null;
+async function _sinalizarDigitando() {
+  if (!currentConsulta) return;
+  const ate = new Date(Date.now() + 5000).toISOString();
+  try {
+    await sb.from('consultas').update({ medico_digitando_ate: ate })
+      .eq('id', currentConsulta.id);
+  } catch (e) { /* best-effort */ }
+}
+async function _limparDigitando() {
+  if (!currentConsulta) return;
+  if (_digitandoDebounce) { clearTimeout(_digitandoDebounce); _digitandoDebounce = null; }
+  try {
+    await sb.from('consultas').update({ medico_digitando_ate: null })
+      .eq('id', currentConsulta.id);
+  } catch (e) { /* best-effort */ }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('chatInput');
+  if (!input) return;
+  input.addEventListener('input', () => {
+    if (!currentConsulta) return;
+    if (input.value.trim() === '') { _limparDigitando(); return; }
+    if (_digitandoDebounce) clearTimeout(_digitandoDebounce);
+    _digitandoDebounce = setTimeout(_sinalizarDigitando, 500);
+  });
+  input.addEventListener('blur', _limparDigitando);
+});
+
 async function sendMessage() {
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
@@ -2475,6 +2509,9 @@ async function sendMessage() {
   }
 
   input.value = '';
+
+  // Limpa flag "digitando" imediato — paciente vê a mensagem em vez da bolha
+  _limparDigitando();
 
   const msg = {
     consulta_id: currentConsulta.id,
