@@ -2264,19 +2264,16 @@ async function fetchMeRaw() {
   return data;
 }
 
-// Flag in-flight pra impedir envio duplo (clique duplo / Enter duplo)
-// sem trava visual. Backend já tem lock ia_processando + re-disparo,
-// então UI fica livre como WhatsApp/Telegram — paciente manda quantas
-// mensagens quiser; IA acumula contexto e responde no próximo turno.
-let _enviandoMsg = false;
+// Sem trava visual nem flag in-flight: backend tem lock ia_processando +
+// re-disparo, então paciente pode mandar quantas mensagens quiser em
+// paralelo (WhatsApp/Telegram-style). Proteção contra duplo-clique é
+// natural: input.value='' no início faz o segundo clique cair no
+// "if (!txt) return" abaixo (txt vazio).
 async function enviarMensagem() {
   const txt = (inputTexto.value || '').trim();
   if (!txt) return;
-  if (_enviandoMsg) return;
-  _enviandoMsg = true;
-
-  inputErro.classList.remove('show');
   inputTexto.value = '';
+  inputErro.classList.remove('show');
 
   // Render otimista da msg do paciente é imediato. Bolha "digitando…" só
   // aparece após 1-2.5s — pausa simula médico lendo antes de começar a
@@ -2347,7 +2344,6 @@ async function enviarMensagem() {
     mostrarErro('Não foi possível enviar agora. Tente novamente.');
   } finally {
     pausaPollingAteMs = 0;  // libera polling normal
-    _enviandoMsg = false;
     if (!inputTexto.matches(':focus')) inputTexto.focus();
   }
 }
