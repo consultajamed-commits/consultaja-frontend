@@ -84,7 +84,7 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
 </div>
 
 <script>
-const N8N_VIDAAS_TOKEN = 'https://n8nconsultaja.duckdns.org/webhook/consultaja-vidaas-token';
+const VIDAAS_TOKEN_URL = 'https://web-production-0c606.up.railway.app/vidaas/token';
 
 function showState(id) {
   document.querySelectorAll('.state').forEach(s => s.classList.remove('active'));
@@ -113,7 +113,7 @@ async function processCallback() {
   }
 
   try {
-    const resp = await fetch(N8N_VIDAAS_TOKEN, {
+    const resp = await fetch(VIDAAS_TOKEN_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
