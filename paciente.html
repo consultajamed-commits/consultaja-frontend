@@ -862,6 +862,7 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
                placeholder="Sua senha" autocomplete="current-password" required>
       </div>
       <button type="submit" class="cj-btn-primary cj-btn-block cj-btn-rounded" id="btnLogin">Entrar</button>
+      <a class="auth-link" id="btnEsqueciSenha" href="#" style="display:block;text-align:center;margin-top:14px">Esqueci minha senha</a>
     </form>
     <div class="auth-rodape">
       Ainda não tem conta? Você recebe seu acesso após a primeira consulta aprovada.
@@ -934,6 +935,74 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
       </div>
       <button type="submit" class="cj-btn-primary cj-btn-block cj-btn-rounded" id="btnTrocarSenha">Trocar senha</button>
       <a class="auth-link" id="btnVoltarConsultas">← Voltar para minhas consultas</a>
+    </form>
+  </div>
+</div>
+
+<!-- Estado: recuperar senha — passo 1 (informar CPF) -->
+<div class="auth-wrap" id="state-recuperar-senha" style="display:none">
+  <div class="auth-card">
+    <div class="auth-titulo">Esqueci minha senha</div>
+    <div class="auth-sub">
+      Informe seu CPF — vamos enviar um código de 6 dígitos pelo WhatsApp cadastrado na sua conta.
+    </div>
+    <div class="auth-erro" id="recCpfErro"></div>
+    <form id="formRecCpf" autocomplete="off">
+      <div class="auth-field">
+        <label for="recCpf">CPF</label>
+        <input id="recCpf" class="cj-input" name="cpf" type="text" inputmode="numeric"
+               placeholder="000.000.000-00" maxlength="14" required>
+      </div>
+      <button type="submit" class="cj-btn-primary cj-btn-block cj-btn-rounded" id="btnRecCpf">Enviar código</button>
+      <a class="auth-link" id="btnRecCancelar1" style="display:block;text-align:center;margin-top:12px">← Voltar para o login</a>
+    </form>
+  </div>
+</div>
+
+<!-- Estado: recuperar senha — passo 2 (validar código) -->
+<div class="auth-wrap" id="state-recuperar-codigo" style="display:none">
+  <div class="auth-card">
+    <div class="auth-titulo">Digite o código</div>
+    <div class="auth-sub">
+      Se o CPF estiver cadastrado, você recebeu um código de 6 dígitos pelo WhatsApp. Ele expira em 10 minutos.
+    </div>
+    <div class="auth-erro" id="recCodigoErro"></div>
+    <form id="formRecCodigo" autocomplete="off">
+      <div class="auth-field">
+        <label for="recCodigo">Código</label>
+        <input id="recCodigo" class="cj-input" name="codigo" type="text" inputmode="numeric"
+               placeholder="000000" maxlength="6" autocomplete="one-time-code"
+               style="letter-spacing:6px;text-align:center;font-size:1.3em" required>
+      </div>
+      <button type="submit" class="cj-btn-primary cj-btn-block cj-btn-rounded" id="btnRecCodigo">Validar código</button>
+      <a class="auth-link" id="btnRecCancelar2" style="display:block;text-align:center;margin-top:12px">← Voltar para o login</a>
+    </form>
+  </div>
+</div>
+
+<!-- Estado: recuperar senha — passo 3 (nova senha) -->
+<div class="auth-wrap" id="state-recuperar-nova-senha" style="display:none">
+  <div class="auth-card">
+    <div class="auth-titulo">Crie uma nova senha</div>
+    <div class="auth-sub">
+      Mínimo 6 caracteres. É essa senha que você vai usar pra entrar de agora em diante.
+    </div>
+    <div class="auth-erro" id="recNovaErro"></div>
+    <div class="auth-ok-msg" id="recNovaOk">Senha alterada com sucesso. Redirecionando…</div>
+    <form id="formRecNova" autocomplete="off">
+      <div class="auth-field">
+        <label for="recNovaSenha">Nova senha</label>
+        <input id="recNovaSenha" class="cj-input" name="senha_nova" type="password"
+               placeholder="Nova senha (mín. 6 caracteres)" minlength="6"
+               autocomplete="new-password" required>
+      </div>
+      <div class="auth-field">
+        <label for="recNovaSenha2">Confirme a nova senha</label>
+        <input id="recNovaSenha2" class="cj-input" name="senha_nova2" type="password"
+               placeholder="Repita a nova senha" minlength="6"
+               autocomplete="new-password" required>
+      </div>
+      <button type="submit" class="cj-btn-primary cj-btn-block cj-btn-rounded" id="btnRecNova">Salvar nova senha</button>
     </form>
   </div>
 </div>
@@ -1203,7 +1272,8 @@ function fmtDataHoraBRT(s) {
 function showState(id) {
   // Esconde tudo, mostra só o solicitado.
   const todos = ['state-loading', 'state-error', 'state-ok',
-                 'state-login', 'state-consultas', 'state-trocar-senha'];
+                 'state-login', 'state-consultas', 'state-trocar-senha',
+                 'state-recuperar-senha', 'state-recuperar-codigo', 'state-recuperar-nova-senha'];
   todos.forEach(s => {
     const el = document.getElementById(s);
     if (!el) return;
@@ -2663,6 +2733,204 @@ function abrirLogin() {
   showState('state-login');
   setTimeout(() => loginCpf?.focus(), 50);
 }
+
+// ── ESQUECI MINHA SENHA ────────────────────────────────────────────────────
+let recCpfAtual = '';
+let recResetToken = '';
+
+function _mostrarErroRec(elId, msg) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function abrirRecuperarSenha() {
+  recCpfAtual = '';
+  recResetToken = '';
+  const cpfEl = document.getElementById('recCpf');
+  const errEl = document.getElementById('recCpfErro');
+  if (cpfEl) cpfEl.value = '';
+  if (errEl) errEl.classList.remove('show');
+  showState('state-recuperar-senha');
+  setTimeout(() => cpfEl?.focus(), 50);
+}
+
+const btnEsqueciSenha = document.getElementById('btnEsqueciSenha');
+if (btnEsqueciSenha) {
+  btnEsqueciSenha.addEventListener('click', ev => {
+    ev.preventDefault();
+    abrirRecuperarSenha();
+  });
+}
+
+const recCpfEl = document.getElementById('recCpf');
+if (recCpfEl) {
+  recCpfEl.addEventListener('input', e => {
+    e.target.value = fmtCpfMask(e.target.value);
+  });
+}
+
+const recCodigoEl = document.getElementById('recCodigo');
+if (recCodigoEl) {
+  recCodigoEl.addEventListener('input', e => {
+    e.target.value = (e.target.value || '').replace(/\D/g, '').slice(0, 6);
+  });
+}
+
+const formRecCpf = document.getElementById('formRecCpf');
+if (formRecCpf) {
+  formRecCpf.addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const errEl = document.getElementById('recCpfErro');
+    errEl.classList.remove('show');
+    const cpf = (recCpfEl.value || '').replace(/\D/g, '');
+    if (cpf.length !== 11) {
+      _mostrarErroRec('recCpfErro', 'Informe um CPF válido (11 dígitos).');
+      return;
+    }
+    const btn = document.getElementById('btnRecCpf');
+    btn.disabled = true;
+    btn.textContent = 'Enviando…';
+    try {
+      const r = await fetch(`${API}/paciente/recuperar-senha/iniciar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cpf }),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (r.status === 429) {
+        const minutos = Math.ceil((data.retry_after || 60) / 60);
+        _mostrarErroRec('recCpfErro', `Muitos pedidos. Tente novamente em ~${minutos} min.`);
+        return;
+      }
+      if (!r.ok || !data.ok) {
+        _mostrarErroRec('recCpfErro', data.erro || 'Não foi possível enviar agora.');
+        return;
+      }
+      recCpfAtual = cpf;
+      const codEl = document.getElementById('recCodigo');
+      const codErr = document.getElementById('recCodigoErro');
+      if (codEl) codEl.value = '';
+      if (codErr) codErr.classList.remove('show');
+      showState('state-recuperar-codigo');
+      setTimeout(() => codEl?.focus(), 50);
+    } catch (e) {
+      _mostrarErroRec('recCpfErro', 'Erro de rede. Tente novamente.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Enviar código';
+    }
+  });
+}
+
+const formRecCodigo = document.getElementById('formRecCodigo');
+if (formRecCodigo) {
+  formRecCodigo.addEventListener('submit', async ev => {
+    ev.preventDefault();
+    document.getElementById('recCodigoErro').classList.remove('show');
+    const codigo = (recCodigoEl.value || '').replace(/\D/g, '');
+    if (codigo.length !== 6) {
+      _mostrarErroRec('recCodigoErro', 'O código tem 6 dígitos.');
+      return;
+    }
+    if (!recCpfAtual) {
+      _mostrarErroRec('recCodigoErro', 'Sessão expirou. Comece de novo.');
+      return;
+    }
+    const btn = document.getElementById('btnRecCodigo');
+    btn.disabled = true;
+    btn.textContent = 'Validando…';
+    try {
+      const r = await fetch(`${API}/paciente/recuperar-senha/validar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cpf: recCpfAtual, codigo }),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (r.status === 429) {
+        _mostrarErroRec('recCodigoErro', 'Código bloqueado por excesso de tentativas. Peça um novo código.');
+        return;
+      }
+      if (!r.ok || !data.ok || !data.reset_token) {
+        _mostrarErroRec('recCodigoErro', data.erro || 'Código inválido ou expirado.');
+        return;
+      }
+      recResetToken = data.reset_token;
+      const ns1 = document.getElementById('recNovaSenha');
+      const ns2 = document.getElementById('recNovaSenha2');
+      const nsErr = document.getElementById('recNovaErro');
+      const nsOk  = document.getElementById('recNovaOk');
+      if (ns1) ns1.value = '';
+      if (ns2) ns2.value = '';
+      if (nsErr) nsErr.classList.remove('show');
+      if (nsOk)  nsOk.classList.remove('show');
+      showState('state-recuperar-nova-senha');
+      setTimeout(() => ns1?.focus(), 50);
+    } catch (e) {
+      _mostrarErroRec('recCodigoErro', 'Erro de rede. Tente novamente.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Validar código';
+    }
+  });
+}
+
+const formRecNova = document.getElementById('formRecNova');
+if (formRecNova) {
+  formRecNova.addEventListener('submit', async ev => {
+    ev.preventDefault();
+    document.getElementById('recNovaErro').classList.remove('show');
+    document.getElementById('recNovaOk').classList.remove('show');
+    const sn = (document.getElementById('recNovaSenha').value  || '').trim();
+    const s2 = (document.getElementById('recNovaSenha2').value || '').trim();
+    if (sn.length < 6) {
+      _mostrarErroRec('recNovaErro', 'A senha precisa ter ao menos 6 caracteres.');
+      return;
+    }
+    if (sn !== s2) {
+      _mostrarErroRec('recNovaErro', 'A confirmação não confere com a nova senha.');
+      return;
+    }
+    if (!recResetToken) {
+      _mostrarErroRec('recNovaErro', 'Sessão expirou. Comece de novo.');
+      return;
+    }
+    const btn = document.getElementById('btnRecNova');
+    btn.disabled = true;
+    btn.textContent = 'Salvando…';
+    try {
+      const r = await fetch(`${API}/paciente/recuperar-senha/finalizar`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${recResetToken}`,
+        },
+        body: JSON.stringify({ senha_nova: sn }),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok || !data.ok) {
+        _mostrarErroRec('recNovaErro', data.erro || 'Não foi possível salvar.');
+        return;
+      }
+      document.getElementById('recNovaOk').classList.add('show');
+      recCpfAtual = '';
+      recResetToken = '';
+      setTimeout(() => abrirLogin(), 1500);
+    } catch (e) {
+      _mostrarErroRec('recNovaErro', 'Erro de rede. Tente novamente.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Salvar nova senha';
+    }
+  });
+}
+
+const btnRecCancelar1 = document.getElementById('btnRecCancelar1');
+if (btnRecCancelar1) btnRecCancelar1.addEventListener('click', ev => { ev.preventDefault(); abrirLogin(); });
+
+const btnRecCancelar2 = document.getElementById('btnRecCancelar2');
+if (btnRecCancelar2) btnRecCancelar2.addEventListener('click', ev => { ev.preventDefault(); abrirLogin(); });
 
 // ── ROUTER ─────────────────────────────────────────────────────────────────
 
