@@ -607,6 +607,19 @@ nav{
   color:var(--muted);font-size:14px;
   background:var(--surface);border:1px dashed var(--border);border-radius:12px;
 }
+.consultas-mes-header{
+  font-size:12px;font-weight:600;letter-spacing:0.05em;
+  text-transform:uppercase;color:var(--muted);
+  padding:14px 4px 8px;margin-top:6px;
+}
+.consultas-mes-header:first-child{margin-top:0;padding-top:4px}
+.consulta-docs-pill{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 8px;border-radius:999px;font-size:11px;
+  background:var(--pale, #ECFDF5);color:var(--green, #047857);
+  font-weight:500;
+}
+.consulta-docs-pill svg{flex-shrink:0}
 
 .menu-paciente{
   display:flex;gap:8px;align-items:center;
@@ -2588,13 +2601,34 @@ async function abrirMinhasConsultas() {
   }
 
   try {
-    const r = await fetch(`${API}/paciente/consultas`, {
-      headers: { 'Authorization': `Bearer ${sess.jwt}` },
-    });
-    if (r.status === 401) { clearSession(); abrirLogin(); return; }
-    if (!r.ok) throw new Error('http ' + r.status);
-    const data = await r.json();
+    // Paralelo: consultas (obrigatório) + documentos (best-effort, só pra contagem)
+    const [rConsultas, rDocs] = await Promise.all([
+      fetch(`${API}/paciente/consultas`, {
+        headers: { 'Authorization': `Bearer ${sess.jwt}` },
+      }),
+      fetch(`${API}/paciente/documentos-todos`, {
+        headers: { 'Authorization': `Bearer ${sess.jwt}` },
+      }).catch(() => null),
+    ]);
+
+    if (rConsultas.status === 401) { clearSession(); abrirLogin(); return; }
+    if (!rConsultas.ok) throw new Error('http ' + rConsultas.status);
+    const data = await rConsultas.json();
     if (!data.ok) throw new Error(data.erro || 'erro');
+
+    // Conta documentos por consulta (silencioso se falhar)
+    const docsPorConsulta = new Map();
+    if (rDocs && rDocs.ok) {
+      try {
+        const dataDocs = await rDocs.json();
+        if (dataDocs.ok) {
+          (dataDocs.documentos || []).forEach(d => {
+            if (!d.consulta_id) return;
+            docsPorConsulta.set(d.consulta_id, (docsPorConsulta.get(d.consulta_id) || 0) + 1);
+          });
+        }
+      } catch (_) {}
+    }
 
     const consultas = data.consultas || [];
     const lista = document.getElementById('consultasLista');
@@ -2604,25 +2638,18 @@ async function abrirMinhasConsultas() {
         Você ainda não tem consultas registradas no seu histórico.
       </div>`;
     } else {
-      lista.innerHTML = consultas.map(c => {
-        const queixa = escapeHtml(c.queixa || c.motivo || 'Consulta médica');
-        const dataC  = fmtDataConsulta(c.created_at);
-        const status = c.status || '';
-        const statusLabel = STATUS_LABEL[status] || status || '—';
-        const idLeg = escapeHtml(c.consulta_id_legivel || '');
-        return `
-          <button class="consulta-card" data-id="${escapeHtml(c.id)}" type="button">
-            <div class="consulta-card-top">
-              <div class="consulta-card-queixa">${queixa}</div>
-              <div class="consulta-card-data">${dataC}</div>
-            </div>
-            <div class="consulta-card-bottom">
-              <span class="status-badge ${status}"><span class="dot"></span>${statusLabel}</span>
-              ${idLeg ? `<span class="id-pill">${idLeg}</span>` : ''}
-            </div>
-          </button>
-        `;
-      }).join('');
+      // Render agrupado por mês (timeline)
+      const html = [];
+      let ultimoMes = '';
+      for (const c of consultas) {
+        const mesKey = mesAnoKey(c.created_at);
+        if (mesKey && mesKey !== ultimoMes) {
+          html.push(`<div class="consultas-mes-header">${escapeHtml(mesAnoLabel(c.created_at))}</div>`);
+          ultimoMes = mesKey;
+        }
+        html.push(renderConsultaCard(c, docsPorConsulta.get(c.id) || 0));
+      }
+      lista.innerHTML = html.join('');
       lista.querySelectorAll('.consulta-card').forEach(btn => {
         btn.addEventListener('click', () => abrirConsulta(btn.dataset.id));
       });
@@ -2633,6 +2660,54 @@ async function abrirMinhasConsultas() {
     showError('Não foi possível carregar suas consultas',
               'Verifique sua conexão e tente recarregar a página.');
   }
+}
+
+function mesAnoKey(s) {
+  if (!s) return '';
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return '';
+  return new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo', month: '2-digit', year: 'numeric',
+  }).format(d);
+}
+
+function mesAnoLabel(s) {
+  if (!s) return '';
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return '';
+  const fmt = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo', month: 'long', year: 'numeric',
+  }).format(d);
+  return fmt.charAt(0).toUpperCase() + fmt.slice(1);
+}
+
+function renderConsultaCard(c, docCount) {
+  const queixa = escapeHtml(c.queixa || c.motivo || 'Consulta médica');
+  const dataC  = fmtDataConsulta(c.created_at);
+  const status = c.status || '';
+  const statusLabel = STATUS_LABEL[status] || status || '—';
+  const idLeg = escapeHtml(c.consulta_id_legivel || '');
+  const docsBadge = docCount > 0 ? `
+    <span class="consulta-docs-pill">
+      <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+        <path d="M3 1h6l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1z" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M9 1v3h3" stroke="currentColor" stroke-width="1.4"/>
+      </svg>
+      ${docCount} ${docCount === 1 ? 'documento' : 'documentos'}
+    </span>` : '';
+  return `
+    <button class="consulta-card" data-id="${escapeHtml(c.id)}" type="button">
+      <div class="consulta-card-top">
+        <div class="consulta-card-queixa">${queixa}</div>
+        <div class="consulta-card-data">${dataC}</div>
+      </div>
+      <div class="consulta-card-bottom">
+        <span class="status-badge ${status}"><span class="dot"></span>${statusLabel}</span>
+        ${idLeg ? `<span class="id-pill">${idLeg}</span>` : ''}
+        ${docsBadge}
+      </div>
+    </button>
+  `;
 }
 
 // Polling leve da lista — paciente não usa Realtime do Supabase aqui
