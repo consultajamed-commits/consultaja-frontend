@@ -895,14 +895,46 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
 
     <!-- CTA Nova consulta -->
     <button class="cj-btn-primary cj-btn-block cj-btn-rounded" id="btnNovaConsulta" type="button" style="
-      margin-bottom:18px;display:flex;align-items:center;justify-content:center;gap:8px;">
+      margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       </svg>
       Iniciar nova consulta
     </button>
 
+    <!-- CTA Meus documentos -->
+    <button class="cj-btn-block cj-btn-rounded" id="btnMeusDocumentos" type="button" style="
+      margin-bottom:18px;display:flex;align-items:center;justify-content:center;gap:8px;
+      background:transparent;border:1.5px solid var(--cj-border, #d4d4d4);color:inherit;
+      padding:11px 16px;font-weight:500;cursor:pointer;">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M10 2v3h3" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+      Meus documentos
+    </button>
+
     <div id="consultasLista"></div>
+  </div>
+</div>
+
+<!-- Estado: lista de TODOS os documentos do paciente -->
+<div class="auth-wrap" id="state-documentos" style="display:none">
+  <div style="width:100%;max-width:520px">
+    <div class="consultas-header">
+      <div>
+        <div class="consultas-saudacao">Meus documentos</div>
+        <div class="consultas-sub">Receitas, atestados e orientações de todas as suas consultas.</div>
+      </div>
+      <div class="menu-paciente">
+        <button class="icon-btn" id="btnDocsVoltar" title="Voltar" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div id="documentosLista"></div>
   </div>
 </div>
 
@@ -1273,7 +1305,8 @@ function showState(id) {
   // Esconde tudo, mostra só o solicitado.
   const todos = ['state-loading', 'state-error', 'state-ok',
                  'state-login', 'state-consultas', 'state-trocar-senha',
-                 'state-recuperar-senha', 'state-recuperar-codigo', 'state-recuperar-nova-senha'];
+                 'state-recuperar-senha', 'state-recuperar-codigo', 'state-recuperar-nova-senha',
+                 'state-documentos'];
   todos.forEach(s => {
     const el = document.getElementById(s);
     if (!el) return;
@@ -2970,6 +3003,87 @@ if (btnRecCancelar1) btnRecCancelar1.addEventListener('click', ev => { ev.preven
 
 const btnRecCancelar2 = document.getElementById('btnRecCancelar2');
 if (btnRecCancelar2) btnRecCancelar2.addEventListener('click', ev => { ev.preventDefault(); abrirLogin(); });
+
+// ── MEUS DOCUMENTOS (todos, fora da janela de 72h) ────────────────────────
+async function abrirMeusDocumentos() {
+  const sess = getSession();
+  if (!sess) { abrirLogin(); return; }
+  showState('state-loading');
+  try {
+    const r = await fetch(`${API}/paciente/documentos-todos`, {
+      headers: { 'Authorization': `Bearer ${sess.jwt}` },
+    });
+    if (r.status === 401) { clearSession(); abrirLogin(); return; }
+    if (!r.ok) throw new Error('http ' + r.status);
+    const data = await r.json();
+    if (!data.ok) throw new Error(data.erro || 'erro');
+
+    const docs = data.documentos || [];
+    const lista = document.getElementById('documentosLista');
+
+    if (!docs.length) {
+      lista.innerHTML = `<div class="consultas-vazio">
+        Você ainda não tem documentos disponíveis no seu histórico.
+      </div>`;
+    } else {
+      lista.innerHTML = `<div class="docs-grid">${docs.map(renderDocCardHistorico).join('')}</div>`;
+    }
+    showState('state-documentos');
+  } catch (e) {
+    showError('Erro', 'Não foi possível carregar seus documentos agora. Tente novamente.');
+  }
+}
+
+function renderDocCardHistorico(d) {
+  const data    = escapeHtml(d.data_emissao_brt || '');
+  const tipo    = escapeHtml(d.tipo || 'Documento');
+  const queixa  = escapeHtml(d.consulta_queixa || '');
+  const assTxt  = d.assinado ? 'assinado ICP-Brasil' : 'não assinado';
+
+  if (d.disponivel_download && d.url) {
+    return `
+      <a class="doc-card" href="${escapeHtml(d.url)}" target="_blank" rel="noopener">
+        <div class="doc-icon">PDF</div>
+        <div class="doc-info">
+          <div class="doc-tipo">${tipo}</div>
+          <div class="doc-data">${data}${data ? ' · ' : ''}${assTxt}</div>
+          ${queixa ? `<div class="doc-data" style="margin-top:2px;font-style:italic;opacity:0.85">${queixa}</div>` : ''}
+        </div>
+        <div class="doc-action">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 2v8M3 6l4 4 4-4M2 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </a>
+    `;
+  }
+  return `
+    <div class="doc-card disabled" title="Disponível só pelo WhatsApp">
+      <div class="doc-icon">PDF</div>
+      <div class="doc-info">
+        <div class="doc-tipo">${tipo}</div>
+        <div class="doc-data">${data}${data ? ' · ' : ''}disponível só pelo WhatsApp</div>
+        ${queixa ? `<div class="doc-data" style="margin-top:2px;font-style:italic;opacity:0.85">${queixa}</div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+const btnMeusDocumentos = document.getElementById('btnMeusDocumentos');
+if (btnMeusDocumentos) {
+  btnMeusDocumentos.addEventListener('click', ev => {
+    ev.preventDefault();
+    abrirMeusDocumentos();
+  });
+}
+
+const btnDocsVoltar = document.getElementById('btnDocsVoltar');
+if (btnDocsVoltar) {
+  btnDocsVoltar.addEventListener('click', ev => {
+    ev.preventDefault();
+    abrirMinhasConsultas();
+  });
+}
 
 // ── ROUTER ─────────────────────────────────────────────────────────────────
 
