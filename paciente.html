@@ -2264,14 +2264,17 @@ async function fetchMeRaw() {
   return data;
 }
 
+// Flag in-flight pra impedir envio duplo (clique duplo / Enter duplo)
+// sem trava visual. Backend já tem lock ia_processando + re-disparo,
+// então UI fica livre como WhatsApp/Telegram — paciente manda quantas
+// mensagens quiser; IA acumula contexto e responde no próximo turno.
+let _enviandoMsg = false;
 async function enviarMensagem() {
   const txt = (inputTexto.value || '').trim();
   if (!txt) return;
+  if (_enviandoMsg) return;
+  _enviandoMsg = true;
 
-  // Só desabilita o botão (impede envio duplo). Input fica livre pra
-  // paciente já digitar a próxima enquanto espera IA — UX humana, sem
-  // a sensação de "trava" que duplica com a bolha "digitando…".
-  btnEnviar.disabled = true;
   inputErro.classList.remove('show');
   inputTexto.value = '';
 
@@ -2344,7 +2347,7 @@ async function enviarMensagem() {
     mostrarErro('Não foi possível enviar agora. Tente novamente.');
   } finally {
     pausaPollingAteMs = 0;  // libera polling normal
-    btnEnviar.disabled = false;
+    _enviandoMsg = false;
     if (!inputTexto.matches(':focus')) inputTexto.focus();
   }
 }
@@ -2353,7 +2356,6 @@ btnEnviar.addEventListener('click', enviarMensagem);
 inputTexto.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
-    if (btnEnviar.disabled) return;  // espera envio anterior terminar
     enviarMensagem();
   }
 });
