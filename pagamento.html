@@ -412,6 +412,10 @@ select.cj-input{
   .steps-bar .step-pip .label{display:none}
   main{grid-template-columns:1fr;padding:24px 20px;gap:32px;min-width:0}
   .form-col,.summary-col{min-width:0}
+  /* Box explicativo do Pix some no mobile — paciente já escolheu Pix
+     no radio acima e o botão diz "Pagar e iniciar consulta". Em desktop
+     fica como tranquilizador útil; aqui é fricção pré-botão. */
+  .pix-info{display:none}
   /* No mobile, o resumo desce pro fim da página (depois do botão).
      order default 0 já é maior que o do form-col (que mantém 0 também),
      mas como flex/grid só permite reorder via display flex, usamos a
