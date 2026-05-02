@@ -32,7 +32,7 @@
   --err:      var(--danger);
   --err-pale: var(--danger-bg);
 }
-html,body{height:100%}
+html,body{height:100%;overflow-x:hidden}
 body{
   font-family:'DM Sans',sans-serif;
   min-height:100vh;
@@ -410,7 +410,8 @@ select.cj-input{
 @media(max-width:780px){
   nav{padding:14px 20px}
   .steps-bar .step-pip .label{display:none}
-  main{grid-template-columns:1fr;padding:24px 16px;gap:32px}
+  main{grid-template-columns:1fr;padding:24px 20px;gap:32px;min-width:0}
+  .form-col,.summary-col{min-width:0}
   /* No mobile, o resumo desce pro fim da página (depois do botão).
      order default 0 já é maior que o do form-col (que mantém 0 também),
      mas como flex/grid só permite reorder via display flex, usamos a
@@ -423,7 +424,7 @@ select.cj-input{
   .summary-mobile-bar{
     display:flex;align-items:center;justify-content:center;gap:8px;
     position:sticky;top:0;z-index:10;
-    height:44px;padding:0 16px;
+    height:44px;padding:0 20px;
     background:var(--surface);
     -webkit-backdrop-filter:blur(8px);
     backdrop-filter:blur(8px);
