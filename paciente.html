@@ -2602,6 +2602,45 @@ async function abrirMinhasConsultas() {
   }
 }
 
+// Polling leve da lista — paciente não usa Realtime do Supabase aqui
+// (sem cliente sb global). Atualiza só badges de status por UUID,
+// mantendo handlers e scroll. Silenciosamente skipa se a tela de
+// consultas não estiver visível ou sem sessão.
+async function refreshConsultasLista() {
+  const tela = document.getElementById('state-consultas');
+  if (!tela || tela.style.display === 'none') return;
+  const sess = getSession();
+  if (!sess) return;
+
+  let data;
+  try {
+    const r = await fetch(`${API}/paciente/consultas`, {
+      headers: { 'Authorization': `Bearer ${sess.jwt}` },
+    });
+    if (!r.ok) return;
+    data = await r.json();
+    if (!data.ok) return;
+  } catch (_) { return; }
+
+  const lista = document.getElementById('consultasLista');
+  if (!lista) return;
+  (data.consultas || []).forEach(c => {
+    const card = lista.querySelector(`[data-id="${c.id}"]`);
+    if (!card) return;
+    const badge = card.querySelector('.status-badge');
+    if (!badge) return;
+    const status = c.status || '';
+    const novaClasse = `status-badge ${status}`;
+    if (badge.className !== novaClasse) {
+      badge.className = novaClasse;
+      const label = STATUS_LABEL[status] || status || '—';
+      badge.innerHTML = `<span class="dot"></span>${label}`;
+    }
+  });
+}
+
+setInterval(refreshConsultasLista, 5000);
+
 async function abrirConsulta(consultaId) {
   const sess = getSession();
   if (!sess) { abrirLogin(); return; }
