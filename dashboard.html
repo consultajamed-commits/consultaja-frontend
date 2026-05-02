@@ -1010,6 +1010,35 @@ body{font-family:'DM Sans',sans-serif;line-height:1.6;overflow:hidden;height:100
 .vc-medico-soap-hint{
   font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4;
 }
+
+/* ═══ Modal de confirmação genérico (cj-confirm) ═══ */
+.cj-confirm-overlay{
+  position:fixed;inset:0;
+  background:var(--overlay);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;
+  z-index:1000;
+  opacity:0;pointer-events:none;
+  transition:opacity .2s ease-out;
+  padding:16px;
+}
+.cj-confirm-overlay.show{opacity:1;pointer-events:auto}
+.cj-confirm-card{
+  max-width:440px;width:100%;
+  background:var(--surface);
+  border-radius:16px;
+  padding:24px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+  animation:overlayIn .2s ease-out;
+}
+.cj-confirm-card h3{
+  margin:0 0 8px;font-size:18px;font-weight:600;color:var(--ink);
+}
+.cj-confirm-card p{
+  margin:0 0 20px;color:var(--muted);font-size:14px;line-height:1.5;
+}
+.cj-confirm-actions{
+  display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;
+}
 </style>
 </head>
 <body>
@@ -2546,6 +2575,48 @@ async function sendMessage() {
   }
 }
 
+// ═══════════════ MODAL DE CONFIRMAÇÃO ═══════════════
+// Helper Promise-based pra perguntar "Confirmar / Cancelar" antes de
+// ações irreversíveis (ex: aprovar e enviar). Cria modal on-the-fly,
+// remove ao fechar. Retorna Promise<boolean>: true se confirmou, false
+// se cancelou (clique em Cancelar, fora do card, ou Esc).
+function confirmarAcao({ titulo, descricao, btnConfirmar = 'Confirmar', btnCancelar = 'Cancelar' }) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.className = 'cj-confirm-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.innerHTML = `
+      <div class="cj-confirm-card">
+        <h3>${titulo}</h3>
+        ${descricao ? `<p>${descricao}</p>` : ''}
+        <div class="cj-confirm-actions">
+          <button type="button" class="cj-btn-secondary cj-btn-sm" data-cancel>${btnCancelar}</button>
+          <button type="button" class="cj-btn-primary cj-btn-sm" data-ok>${btnConfirmar}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('show'));
+
+    const fechar = (resultado) => {
+      document.removeEventListener('keydown', onKey);
+      overlay.classList.remove('show');
+      setTimeout(() => overlay.remove(), 200);
+      resolve(resultado);
+    };
+    function onKey(e) {
+      if (e.key === 'Escape') fechar(false);
+      else if (e.key === 'Enter') fechar(true);
+    }
+
+    overlay.querySelector('[data-cancel]').addEventListener('click', () => fechar(false));
+    overlay.querySelector('[data-ok]').addEventListener('click', () => fechar(true));
+    overlay.addEventListener('click', e => { if (e.target === overlay) fechar(false); });
+    document.addEventListener('keydown', onKey);
+    setTimeout(() => overlay.querySelector('[data-ok]')?.focus(), 50);
+  });
+}
+
 // ═══════════════ ACTIONS ═══════════════
 async function atenderPaciente() {
   if (!currentConsulta || !currentMedico) return;
@@ -2619,6 +2690,12 @@ async function aprovarConsulta() {
   if (!currentConsulta) return;
   const consultaId = currentConsulta.id;
   if (acaoPendente[consultaId]) return;
+
+  const ok = await confirmarAcao({
+    titulo: 'Aprovar e enviar consulta?',
+    descricao: 'Os documentos (atestado e receituário) serão gerados, assinados via VIDaaS e enviados ao paciente por WhatsApp. Esta ação não pode ser desfeita.',
+  });
+  if (!ok) return;
 
   setAcaoPendente(consultaId, 'aprovando');
   renderActions(currentConsulta);
@@ -2920,6 +2997,12 @@ async function soapAprovarEEnviar() {
   if (!soapState.consultaId || !currentConsulta) return;
   const consultaId = soapState.consultaId;
   if (acaoPendente[consultaId]) return; // guard duplo-clique
+
+  const ok = await confirmarAcao({
+    titulo: 'Aprovar e enviar consulta?',
+    descricao: 'O SOAP atual será salvo, os documentos (atestado e receituário) serão gerados, assinados via VIDaaS e enviados ao paciente por WhatsApp. Esta ação não pode ser desfeita.',
+  });
+  if (!ok) return;
 
   setAcaoPendente(consultaId, 'aprovando');
   sincronizarBotaoSoapAprovar();
