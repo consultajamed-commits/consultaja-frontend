@@ -2663,7 +2663,7 @@ function setAcaoPendente(consultaId, tipo) {
       renderActions(currentConsulta);
       sincronizarBotaoSoapAprovar();
     }
-    alert(`A ação "${tipo === 'gerando' ? 'gerar SOAP' : 'aprovar e enviar'}" demorou mais que o esperado. Verifique o workflow n8n e tente novamente.`);
+    alert(`A ação "${tipo === 'gerando' ? 'gerar SOAP' : 'aprovar e enviar'}" demorou mais que o esperado. Tente novamente.`);
   }, ms);
   acaoPendente[consultaId] = { tipo, timeoutId };
 }
