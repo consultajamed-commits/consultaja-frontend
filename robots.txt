@@ -1,9 +1,9 @@
-# ConsultaJá! — robots.txt
+# Now Médicos! — robots.txt
 # Última atualização: 30/04/2026
 
 # ──────────────────────────────────────────────────────────────────
 # Bots de IA / scrapers — bloqueados
-# ConsultaJá é plataforma médica com dados sensíveis (LGPD).
+# Now Médicos é plataforma médica com dados sensíveis (LGPD).
 # Não autorizamos uso do conteúdo pra treinar modelos de linguagem
 # nem indexação por crawlers que não respeitem privacidade.
 # ──────────────────────────────────────────────────────────────────

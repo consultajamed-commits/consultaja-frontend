@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────────
-   ConsultaJá! — Service Worker (PWA cache estratégia mínima)
+   Now Médicos! — Service Worker (PWA cache estratégia mínima)
 
    Princípios:
    - Cache APENAS assets estáticos da landing (HTML/CSS/JS/imagens públicas)
@@ -8,7 +8,7 @@
    - Cache-first pra CSS/JS/imagens (offline funcional)
    ──────────────────────────────────────────────────────────────────── */
 
-const CACHE = 'consultaja-static-v1';
+const CACHE = 'nowmedicos-static-v1';
 
 // Assets pré-cacheados no install — só os essenciais da landing
 const PRECACHE_ASSETS = [
