@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ConsultaJá! — Painel do Médico</title>
+<title>Now Médicos! — Painel do Médico</title>
 
 <!-- Theme init (evita FOUC) — herda 'cj-theme' do localStorage -->
 <script>
@@ -24,7 +24,7 @@
 <link rel="apple-touch-icon" href="img/icon.svg">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="ConsultaJá Médico">
+<meta name="apple-mobile-web-app-title" content="Now Médicos Médico">
 <!-- Agora.io SDK pra videochamada (Sprint V.2) -->
 <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.20.2.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1078,7 +1078,7 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
   <div class="login-card">
     <div class="login-logo">
       <span class="dot"></span>
-      ConsultaJá!
+      Now Médicos!
     </div>
     <div class="login-subtitle">Painel do médico — faça login para atender</div>
     
@@ -1105,7 +1105,7 @@ function cjToggleTheme(){const c=document.documentElement.getAttribute('data-the
       </button>
       <div class="topbar-logo">
         <span class="dot"></span>
-        ConsultaJá!
+        Now Médicos!
       </div>
       <span class="topbar-badge">Painel médico</span>
     </div>
@@ -2442,7 +2442,7 @@ async function enviarComandoDashboard(acao) {
 
 // ═══════════════ VIDAAS CONFIG ═══════════════
 const VIDAAS_CLIENT_ID = '99ecdbad-0025-49c8-a7e3-8dcb6388ce4e';
-const VIDAAS_REDIRECT = 'https://consultaja.netlify.app/confirmacao.html';
+const VIDAAS_REDIRECT = 'https://www.nowmedicos.com.br/confirmacao.html';
 
 async function checkVidaasStatus() {
   if (!currentMedico) return;
